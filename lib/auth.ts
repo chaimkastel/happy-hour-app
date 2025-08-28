@@ -41,25 +41,14 @@ export const authOptions: any = {
         }
 
         try {
-          // Find user in database
-          const user = await prisma.user.findUnique({
-            where: {
-              email: credentials.email
-            }
-          });
-
-          if (!user) {
-            return null;
-          }
-
-          // In a real app, you'd hash and compare passwords
-          // For now, we'll use a simple check
-          if (credentials.password === 'password123' || credentials.password === 'demo123') {
+          // For demo purposes, allow any email with demo123 password
+          // In production, you'd check against a real database
+          if (credentials.password === 'demo123' || credentials.password === 'password123') {
             return {
-              id: user.id,
-              email: user.email,
-              name: user.email.split('@')[0], // Use email prefix as name
-              role: user.role
+              id: `user_${Date.now()}`,
+              email: credentials.email,
+              name: credentials.email.split('@')[0],
+              role: 'USER'
             };
           }
 
