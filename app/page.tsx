@@ -207,7 +207,7 @@ export default function HomePage() {
               <span className="text-yellow-400 font-bold">LIVE NOW</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
-              🔥 <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Hot Deals</span> Near You
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Hot Deals</span> Near You
           </h2>
             <p className="text-xl text-white/80 max-w-3xl mx-auto">
               These deals are <span className="text-yellow-400 font-bold">flying off the shelves</span>! 
@@ -270,7 +270,7 @@ export default function HomePage() {
                   </p>
                   
                   <button className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black py-4 rounded-2xl font-bold text-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl group-hover:scale-105">
-                    🚀 Claim This Deal
+                    Claim This Deal
                   </button>
                 </div>
               </div>
@@ -300,7 +300,7 @@ export default function HomePage() {
               <span className="text-blue-500 font-bold">EXPLORE & DISCOVER</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-6">
-              🗺️ <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600">Interactive</span> Deals Explorer
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600">Interactive</span> Deals Explorer
             </h2>
             <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
               Switch between <span className="font-bold text-blue-500">grid view</span> and <span className="font-bold text-purple-500">interactive map</span> to find the perfect deals near you!
