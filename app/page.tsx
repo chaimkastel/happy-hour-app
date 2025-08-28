@@ -105,7 +105,7 @@ export default function HomePage() {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: 'url(/images/hero-food-deals.jpg)',
+          backgroundImage: 'url(/images/hero-food-deals.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
