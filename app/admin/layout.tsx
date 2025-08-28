@@ -14,13 +14,14 @@ export default function AdminLayout({
 
   useEffect(() => {
     // Check admin authentication
-    const adminAuth = localStorage.getItem('adminAuth');
-    const adminUser = localStorage.getItem('adminUser');
-    
-    if (adminAuth === 'true' && adminUser) {
-      setIsAuthenticated(true);
-    } else {
-      router.push('/admin/login');
+    if (typeof window !== 'undefined') {
+      const adminAuth = localStorage.getItem('admin-authenticated');
+      
+      if (adminAuth === 'true') {
+        setIsAuthenticated(true);
+      } else {
+        router.push('/admin-access');
+      }
     }
     
     setLoading(false);
