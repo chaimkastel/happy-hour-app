@@ -25,8 +25,9 @@ export async function GET(request: NextRequest) {
     // Build the query
     let whereClause: any = {
       status: 'LIVE', // Only show live deals
-      startAt: { lte: new Date() }, // Only show deals that have started
-      endAt: { gt: new Date() }, // Only show deals that haven't expired
+      // For demo purposes, show all LIVE deals regardless of date
+      // startAt: { lte: new Date() }, // Only show deals that have started
+      // endAt: { gt: new Date() }, // Only show deals that haven't expired
     };
 
     // Add search filter
