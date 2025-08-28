@@ -5,7 +5,7 @@ import { LucideIcon } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'accent' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning';
+  variant?: 'primary' | 'secondary' | 'accent' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning' | 'glass';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   loading?: boolean;
   leftIcon?: LucideIcon;
@@ -134,6 +134,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         
         // Warning variant
         'bg-warning-500 hover:bg-warning-600 text-white focus:ring-warning-500': variant === 'warning',
+        
+        // Glass variant
+        'bg-white/20 dark:bg-slate-800/40 backdrop-blur-sm text-slate-700 dark:text-slate-300 hover:bg-white/30 dark:hover:bg-slate-800/60 border border-white/30 dark:border-slate-600/40 focus:ring-slate-500': variant === 'glass',
       },
       
       // Hover effects

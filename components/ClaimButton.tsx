@@ -100,7 +100,7 @@ export default function ClaimButton({
 
   const getButtonVariant = () => {
     if (isExpired || isFullyClaimed) return 'secondary'
-    return 'primary'
+    return 'glass'
   }
 
   const getButtonDisabled = () => {

@@ -204,13 +204,13 @@ export default function LocationSelector({
   return (
     <div className={`relative ${className}`}>
       {/* Location Input Field */}
-      <div className="flex items-center gap-3 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border border-orange-200/50 dark:border-orange-700/50 rounded-2xl px-4 py-3 shadow-sm hover:shadow-lg transition-all duration-300">
-        <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center flex-shrink-0">
-          <MapPin className="w-4 h-4 text-white" />
+      <div className="flex items-center gap-4 bg-white/10 dark:bg-slate-900/20 backdrop-blur-xl border border-white/20 dark:border-slate-700/30 rounded-2xl px-5 py-4 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:bg-white/15 dark:hover:bg-slate-900/30">
+        <div className="w-10 h-10 bg-white/20 dark:bg-slate-800/40 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0 border border-white/30 dark:border-slate-600/40 shadow-lg">
+          <MapPin className="w-5 h-5 text-slate-700 dark:text-slate-300" />
         </div>
         
         <div className="flex-1 min-w-0">
-          <p className="text-xs text-orange-600 dark:text-orange-400 font-medium">Location</p>
+          <p className="text-xs text-slate-600 dark:text-slate-400 font-medium mb-1 tracking-wide uppercase">Location</p>
           <div className="relative">
             <input
               ref={inputRef}
@@ -225,7 +225,7 @@ export default function LocationSelector({
               }}
               placeholder={placeholder}
               className={`
-                w-full bg-transparent border-none outline-none text-sm font-semibold text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400
+                w-full bg-transparent border-none outline-none text-base font-medium text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400
                 ${error ? 'text-red-600 dark:text-red-400' : ''}
               `}
               aria-label="Location input with autocomplete"
@@ -239,7 +239,7 @@ export default function LocationSelector({
             {/* Loading/Status Icons */}
             <div className="absolute right-0 top-0 h-full flex items-center">
               {isLoading ? (
-                <Loader2 className="h-4 w-4 text-orange-500 animate-spin" />
+                <Loader2 className="h-4 w-4 text-slate-500 dark:text-slate-400 animate-spin" />
               ) : error ? (
                 <AlertCircle className="h-4 w-4 text-red-500" />
               ) : isValid ? (
@@ -251,16 +251,16 @@ export default function LocationSelector({
         
         <button
           onClick={onMyLocationClick}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-300 flex-shrink-0 ${
+          className={`inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex-shrink-0 backdrop-blur-sm border ${
             isResolvingLocation 
-              ? 'bg-slate-200 text-slate-600 cursor-not-allowed' 
-              : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 hover:shadow-lg hover:scale-105'
+              ? 'bg-slate-200/50 text-slate-600 cursor-not-allowed border-slate-300/50' 
+              : 'bg-white/20 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:bg-white/30 dark:hover:bg-slate-800/60 border-white/30 dark:border-slate-600/40 hover:shadow-lg hover:scale-105'
           }`}
           title="Use my location"
           aria-label="Use my current location"
           disabled={isResolvingLocation}
         >
-          <Crosshair className="w-3.5 h-3.5" />
+          <Crosshair className="w-4 h-4" />
           {isResolvingLocation ? 'Locating…' : 'My Location'}
         </button>
       </div>
@@ -277,7 +277,7 @@ export default function LocationSelector({
       {isOpen && suggestions.length > 0 && (
         <ul
           ref={listRef}
-          className="absolute z-50 w-full mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-60 overflow-auto"
+          className="absolute z-50 w-full mt-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/30 dark:border-slate-700/50 rounded-2xl shadow-2xl max-h-60 overflow-auto"
           role="listbox"
           aria-label="Location suggestions"
         >
@@ -285,22 +285,24 @@ export default function LocationSelector({
             <li
               key={suggestion.place_id}
               className={`
-                px-4 py-3 cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-b-0
-                hover:bg-orange-50 dark:hover:bg-orange-900/20 focus:bg-orange-50 dark:focus:bg-orange-900/20
-                ${selectedIndex === index ? 'bg-orange-50 dark:bg-orange-900/20' : ''}
+                px-5 py-4 cursor-pointer border-b border-white/20 dark:border-slate-700/30 last:border-b-0 transition-all duration-200
+                hover:bg-white/20 dark:hover:bg-slate-800/30 focus:bg-white/20 dark:focus:bg-slate-800/30
+                ${selectedIndex === index ? 'bg-white/20 dark:bg-slate-800/30' : ''}
               `}
               onClick={() => handleSuggestionSelect(suggestion)}
               onMouseEnter={() => setSelectedIndex(index)}
               role="option"
               aria-selected={selectedIndex === index}
             >
-              <div className="flex items-start gap-3">
-                <MapPin className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+              <div className="flex items-start gap-4">
+                <div className="w-8 h-8 bg-white/20 dark:bg-slate-800/40 backdrop-blur-sm rounded-lg flex items-center justify-center flex-shrink-0 border border-white/30 dark:border-slate-600/40">
+                  <MapPin className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                  <div className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-1">
                     {suggestion.structured_formatting.main_text}
                   </div>
-                  <div className="text-sm text-slate-500 dark:text-slate-400">
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
                     {suggestion.structured_formatting.secondary_text}
                   </div>
                 </div>

@@ -114,18 +114,18 @@ export default function HomePage() {
         }}
       ></div>
       
-      {/* Warm overlay to enhance the food image */}
-      <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 via-amber-500/15 to-yellow-500/20"></div>
+      {/* Smoky glass overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900/40 via-slate-800/30 to-slate-900/40 backdrop-blur-sm"></div>
       
       {/* Subtle dark overlay for text readability */}
-      <div className="absolute inset-0 bg-black/15"></div>
+      <div className="absolute inset-0 bg-black/20"></div>
 
       {/* Hero Section - Exciting & Engaging */}
       <div className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-24 lg:py-32">
           <div className="text-center">
             {/* Social Proof Badge */}
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8 animate-fade-in">
+            <div className="inline-flex items-center gap-2 bg-white/20 dark:bg-slate-800/40 backdrop-blur-xl border border-white/30 dark:border-slate-600/40 rounded-full px-4 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8 animate-fade-in shadow-2xl">
               <div className="flex -space-x-1 sm:-space-x-2">
                 <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full border-2 border-white"></div>
                 <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-pink-400 to-red-500 rounded-full border-2 border-white"></div>
@@ -165,17 +165,17 @@ export default function HomePage() {
 
             {/* Live Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto mb-8 sm:mb-12 animate-fade-in">
-              <div className="bg-white/15 backdrop-blur-sm border border-white/30 rounded-2xl p-4 sm:p-6 hover:bg-white/25 transition-all duration-300 shadow-lg">
-                <div className="text-2xl sm:text-3xl font-bold text-yellow-300 mb-2 drop-shadow-lg">1,247</div>
-                <div className="text-white/90 text-sm sm:text-base">Live Deals Right Now</div>
+              <div className="bg-white/20 dark:bg-slate-800/40 backdrop-blur-xl border border-white/30 dark:border-slate-600/40 rounded-2xl p-4 sm:p-6 hover:bg-white/30 dark:hover:bg-slate-800/60 transition-all duration-300 shadow-2xl">
+                <div className="text-2xl sm:text-3xl font-bold text-slate-200 dark:text-slate-100 mb-2 drop-shadow-lg">1,247</div>
+                <div className="text-slate-300 dark:text-slate-300 text-sm sm:text-base">Live Deals Right Now</div>
               </div>
-              <div className="bg-white/15 backdrop-blur-sm border border-white/30 rounded-2xl p-4 sm:p-6 hover:bg-white/25 transition-all duration-300 shadow-lg">
-                <div className="text-2xl sm:text-3xl font-bold text-orange-300 mb-2 drop-shadow-lg">12.3k</div>
-                <div className="text-white/90 text-sm sm:text-base">Deals Claimed Today</div>
+              <div className="bg-white/20 dark:bg-slate-800/40 backdrop-blur-xl border border-white/30 dark:border-slate-600/40 rounded-2xl p-4 sm:p-6 hover:bg-white/30 dark:hover:bg-slate-800/60 transition-all duration-300 shadow-2xl">
+                <div className="text-2xl sm:text-3xl font-bold text-slate-200 dark:text-slate-100 mb-2 drop-shadow-lg">12.3k</div>
+                <div className="text-slate-300 dark:text-slate-300 text-sm sm:text-base">Deals Claimed Today</div>
               </div>
-              <div className="bg-white/15 backdrop-blur-sm border border-white/30 rounded-2xl p-4 sm:p-6 hover:bg-white/25 transition-all duration-300 shadow-lg">
-                <div className="text-2xl sm:text-3xl font-bold text-red-300 mb-2 drop-shadow-lg">$47</div>
-                <div className="text-white/90 text-sm sm:text-base">Average Savings</div>
+              <div className="bg-white/20 dark:bg-slate-800/40 backdrop-blur-xl border border-white/30 dark:border-slate-600/40 rounded-2xl p-4 sm:p-6 hover:bg-white/30 dark:hover:bg-slate-800/60 transition-all duration-300 shadow-2xl">
+                <div className="text-2xl sm:text-3xl font-bold text-slate-200 dark:text-slate-100 mb-2 drop-shadow-lg">$47</div>
+                <div className="text-slate-300 dark:text-slate-300 text-sm sm:text-base">Average Savings</div>
               </div>
             </div>
             
@@ -186,9 +186,9 @@ export default function HomePage() {
                 <input
                   type="text"
                   placeholder="Enter your address or city to find amazing deals..."
-                  className="w-full pl-12 sm:pl-16 pr-24 sm:pr-32 py-4 sm:py-6 text-lg sm:text-xl bg-white/15 backdrop-blur-sm border-2 border-white/40 rounded-2xl sm:rounded-3xl focus:border-yellow-300 focus:outline-none transition-all duration-300 text-white placeholder-white/70 shadow-2xl"
+                  className="w-full pl-12 sm:pl-16 pr-24 sm:pr-32 py-4 sm:py-6 text-lg sm:text-xl bg-white/20 dark:bg-slate-800/40 backdrop-blur-xl border-2 border-white/30 dark:border-slate-600/40 rounded-2xl sm:rounded-3xl focus:border-slate-400 dark:focus:border-slate-500 focus:outline-none transition-all duration-300 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 shadow-2xl"
                 />
-                <button className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-yellow-300 to-orange-400 text-white px-4 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-lg hover:from-yellow-400 hover:to-orange-500 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105">
+                <button className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-white/20 dark:bg-slate-800/40 backdrop-blur-sm text-slate-700 dark:text-slate-300 px-4 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-lg hover:bg-white/30 dark:hover:bg-slate-800/60 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 border border-white/30 dark:border-slate-600/40">
                   <span className="hidden sm:inline">Find Deals</span>
                   <span className="sm:hidden">Search</span>
                 </button>
@@ -199,7 +199,7 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-12 sm:mb-16 animate-fade-in">
               <button 
                 onClick={() => router.push('/explore')}
-                className="group bg-gradient-to-r from-yellow-300 to-orange-400 text-white px-8 sm:px-12 py-4 sm:py-6 rounded-2xl sm:rounded-3xl font-black text-lg sm:text-2xl hover:from-yellow-400 hover:to-orange-500 transition-all duration-300 shadow-2xl hover:shadow-yellow-300/25 hover:scale-105 flex items-center gap-3 sm:gap-4"
+                className="group bg-white/20 dark:bg-slate-800/40 backdrop-blur-sm text-slate-700 dark:text-slate-300 px-8 sm:px-12 py-4 sm:py-6 rounded-2xl sm:rounded-3xl font-black text-lg sm:text-2xl hover:bg-white/30 dark:hover:bg-slate-800/60 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 flex items-center gap-3 sm:gap-4 border border-white/30 dark:border-slate-600/40"
               >
                 <Rocket className="w-6 h-6 sm:w-8 sm:h-8 group-hover:animate-bounce" />
                 <span className="hidden sm:inline">Explore Deals</span>

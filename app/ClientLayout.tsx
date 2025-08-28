@@ -204,20 +204,20 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
     <SessionProvider>
       <div className={`min-h-screen transition-all duration-500 ${isHydrated && isDarkMode ? 'dark' : ''}`}>
       {/* Modern Header */}
-      <header className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl sticky top-0 z-50 border-b border-orange-200/30 dark:border-orange-800/30 shadow-lg" role="banner">
+      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl sticky top-0 z-50 border-b border-white/20 dark:border-slate-700/30 shadow-2xl" role="banner">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between gap-6">
             {/* Modern Logo */}
             <a href="/" className="flex-shrink-0 group">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                  <span className="text-white text-xl font-bold">🍺</span>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/20 dark:bg-slate-800/40 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-2xl group-hover:shadow-3xl transition-all duration-500 group-hover:scale-105 border border-white/30 dark:border-slate-600/40">
+                  <span className="text-slate-700 dark:text-slate-300 text-2xl font-bold">🍺</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-2xl sm:text-3xl font-black tracking-tight bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent group-hover:from-orange-500 group-hover:to-red-500 transition-all duration-300">
+                  <span className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-all duration-300">
                     Happy Hour
                   </span>
-                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium tracking-wider uppercase">
+                  <span className="text-xs text-slate-600 dark:text-slate-400 font-medium tracking-wider uppercase">
                     Find Amazing Deals
                   </span>
                 </div>
@@ -238,24 +238,24 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
               </div>
 
               {/* Modern Navigation Links */}
-              <div className="flex items-center gap-2">
-                <a href="/explore" className="text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 px-4 py-2.5 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group">
+              <div className="flex items-center gap-3">
+                <a href="/explore" className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/20 dark:hover:bg-slate-800/30 px-5 py-3 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-slate-600/30">
                   <Compass className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
                   Explore
                 </a>
-                <a href="/favorites" className="text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 px-4 py-2.5 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group">
+                <a href="/favorites" className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/20 dark:hover:bg-slate-800/30 px-5 py-3 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-slate-600/30">
                   <Heart className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                   Favorites
                 </a>
-                <a href="/account" className="text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 px-4 py-2.5 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group">
+                <a href="/account" className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/20 dark:hover:bg-slate-800/30 px-5 py-3 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-slate-600/30">
                   <User className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                   Account
                 </a>
-                <a href="/wallet" className="text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 px-4 py-2.5 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group">
+                <a href="/wallet" className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/20 dark:hover:bg-slate-800/30 px-5 py-3 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-slate-600/30">
                   <CreditCard className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                   Wallet
                 </a>
-                <a href="/partner" className="text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 px-4 py-2.5 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group">
+                <a href="/partner" className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/20 dark:hover:bg-slate-800/30 px-5 py-3 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-slate-600/30">
                   <Building2 className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                   Partner
                 </a>
@@ -266,33 +266,33 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                 {!isLoggedIn ? (
                   <div className="relative group">
                     <button
-                      className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 text-sm bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 shadow-lg hover:shadow-xl hover:scale-105"
+                      className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 text-sm bg-white/20 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:bg-white/30 dark:hover:bg-slate-800/60 shadow-2xl hover:shadow-3xl hover:scale-105 backdrop-blur-sm border border-white/30 dark:border-slate-600/40"
                     >
                       <LogIn className="w-4 h-4" />
                       Login
                     </button>
                     
                     {/* Login Dropdown */}
-                    <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="absolute right-0 top-full mt-3 w-52 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/30 dark:border-slate-700/50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                       <div className="py-2">
                         <a
                           href="/login"
-                          className="flex items-center gap-3 px-4 py-3 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                          className="flex items-center gap-3 px-5 py-4 text-slate-700 dark:text-slate-300 hover:bg-white/20 dark:hover:bg-slate-800/30 transition-all duration-200 rounded-xl mx-2"
                         >
                           <User className="w-4 h-4" />
                           <div>
                             <div className="font-medium">Customer Login</div>
-                            <div className="text-xs text-slate-500">Find great deals</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">Find great deals</div>
                           </div>
                         </a>
                         <a
                           href="/merchant/login"
-                          className="flex items-center gap-3 px-4 py-3 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                          className="flex items-center gap-3 px-5 py-4 text-slate-700 dark:text-slate-300 hover:bg-white/20 dark:hover:bg-slate-800/30 transition-all duration-200 rounded-xl mx-2"
                         >
                           <User className="w-4 h-4" />
                           <div>
                             <div className="font-medium">Merchant Login</div>
-                            <div className="text-xs text-slate-500">Manage your business</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">Manage your business</div>
                           </div>
                         </a>
                       </div>
@@ -310,7 +310,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
                 <button
                   onClick={toggleDarkMode}
-                  className="p-3 rounded-xl transition-all duration-300 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 text-slate-600 dark:text-slate-400 hover:from-orange-100 hover:to-amber-100 dark:hover:from-orange-900/20 dark:hover:to-amber-900/20 hover:text-orange-600 dark:hover:text-orange-400 hover:scale-105 shadow-sm hover:shadow-md"
+                  className="p-3 rounded-xl transition-all duration-300 bg-white/20 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400 hover:bg-white/30 dark:hover:bg-slate-800/60 hover:scale-105 shadow-2xl hover:shadow-3xl backdrop-blur-sm border border-white/30 dark:border-slate-600/40"
                   title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                   aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                 >
