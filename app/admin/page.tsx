@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, Building2, CreditCard, BarChart3, Settings, Shield, Eye, EyeOff, Plus, Edit, Trash2, Search, Filter, Download, Upload, AlertTriangle, CheckCircle, Clock, TrendingUp, DollarSign, MapPin, Star, Heart, MessageSquare, Power, Lock, Unlock, Globe, Database, Server, Activity, Zap, AlertCircle, Ban, UserCheck, UserX, Pause, Play, RefreshCw, Bell, BellOff, FileText, ThumbsUp, ThumbsDown, Mail, Phone, Calendar } from 'lucide-react';
+import { Users, Building2, CreditCard, BarChart3, Settings, Shield, Eye, EyeOff, Plus, Edit, Trash2, Search, Filter, Download, Upload, AlertTriangle, CheckCircle, Clock, TrendingUp, DollarSign, MapPin, Star, Heart, MessageSquare, Power, Lock, Unlock, Globe, Database, Server, Activity, Zap, AlertCircle, Ban, UserCheck, UserX, Pause, Play, RefreshCw, Bell, BellOff, FileText, ThumbsUp, ThumbsDown, Mail, Phone, Calendar, Bug } from 'lucide-react';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
+import MonitoringDashboard from '@/components/MonitoringDashboard';
 
 interface User {
   id: string;
@@ -70,8 +71,28 @@ interface MerchantApplication {
   notes?: string;
 }
 
+interface ErrorLog {
+  id: string;
+  level: 'error' | 'warning' | 'info';
+  message: string;
+  timestamp: string;
+  resolved: boolean;
+  tags: string[];
+  context?: Record<string, any>;
+  userId?: string;
+  url?: string;
+  stack?: string;
+}
+
+interface ErrorPattern {
+  pattern: string;
+  count: number;
+  lastOccurrence: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+}
+
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'merchants' | 'deals' | 'dealReview' | 'settings' | 'safety' | 'analytics' | 'applications' | 'monitoring' | 'health'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'merchants' | 'deals' | 'dealReview' | 'settings' | 'safety' | 'analytics' | 'applications' | 'monitoring' | 'health' | 'errors'>('overview');
   const [users, setUsers] = useState<User[]>([]);
   const [merchants, setMerchants] = useState<Merchant[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -80,6 +101,7 @@ export default function AdminDashboard() {
   const [healthData, setHealthData] = useState<any>(null);
   const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [monitoringData, setMonitoringData] = useState<any>(null);
+  const [errorData, setErrorData] = useState<any>(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [merchantApplications, setMerchantApplications] = useState<MerchantApplication[]>([]);
   const [loading, setLoading] = useState(false);
@@ -272,6 +294,8 @@ export default function AdminDashboard() {
       fetchAnalyticsData();
     } else if (activeTab === 'monitoring') {
       fetchMonitoringData();
+    } else if (activeTab === 'errors') {
+      fetchErrorData();
     }
   }, [activeTab]);
 
@@ -286,6 +310,8 @@ export default function AdminDashboard() {
         fetchMonitoringData();
       } else if (activeTab === 'analytics') {
         fetchAnalyticsData();
+      } else if (activeTab === 'errors') {
+        fetchErrorData();
       }
     }, 30000); // Refresh every 30 seconds
 
@@ -439,13 +465,25 @@ export default function AdminDashboard() {
 
   const fetchMonitoringData = async () => {
     try {
-      const response = await fetch('/api/admin/monitoring');
+      const response = await fetch('/api/admin/monitoring?includeMetrics=true&includeAlerts=true');
       if (response.ok) {
         const data = await response.json();
         setMonitoringData(data);
       }
     } catch (error) {
       console.error('Error fetching monitoring data:', error);
+    }
+  };
+
+  const fetchErrorData = async () => {
+    try {
+      const response = await fetch('/api/admin/errors?timeRange=24h&limit=50');
+      if (response.ok) {
+        const data = await response.json();
+        setErrorData(data);
+      }
+    } catch (error) {
+      console.error('Error fetching error data:', error);
     }
   };
 
@@ -619,6 +657,18 @@ export default function AdminDashboard() {
         >
           <Server className="w-5 h-5" />
           System Health
+        </button>
+        
+        <button
+          onClick={() => setActiveTab('errors')}
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+            activeTab === 'errors'
+              ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'
+              : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+          }`}
+        >
+          <Bug className="w-5 h-5" />
+          Error Tracking
         </button>
               <button
                 onClick={() => setActiveTab('safety')}
@@ -1392,114 +1442,18 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* System Health Tab */}
-      {activeTab === 'health' && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">System Health</h2>
-              <p className="text-slate-600 dark:text-slate-400">Database and system health monitoring</p>
-            </div>
-            <button
-              onClick={fetchHealthData}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-            >
-              <RefreshCw className="w-4 h-4 inline mr-2" />
-              Check Health
-            </button>
-          </div>
-
-          {healthData ? (
-            <div className="space-y-6">
-              {/* Overall Status */}
-              <div className={`p-6 rounded-lg border-2 ${
-                healthData.overall?.status === 'healthy' 
-                  ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-700'
-                  : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-700'
-              }`}>
-                <div className="flex items-center">
-                  {healthData.overall?.status === 'healthy' ? (
-                    <CheckCircle className="w-8 h-8 text-green-600 mr-3" />
-                  ) : (
-                    <AlertCircle className="w-8 h-8 text-red-600 mr-3" />
-                  )}
-                  <div>
-                    <h3 className="text-lg font-semibold">
-                      {healthData.overall?.status === 'healthy' ? 'System Healthy' : 'System Issues Detected'}
-                    </h3>
-                    <p className="text-sm opacity-75">{healthData.overall?.message}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Database Status */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                  <h3 className="text-lg font-semibold mb-4">Database Status</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span>Status:</span>
-                      <span className={`font-medium ${
-                        healthData.database?.status === 'healthy' ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {healthData.database?.status}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Response Time:</span>
-                      <span>{healthData.database?.responseTime}ms</span>
-                    </div>
-                    {healthData.database?.error && (
-                      <div className="text-red-600 text-sm">
-                        Error: {healthData.database.error}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                  <h3 className="text-lg font-semibold mb-4">Database Stats</h3>
-                  {healthData.database?.stats ? (
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>Users:</span>
-                        <span>{healthData.database.stats.users}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Merchants:</span>
-                        <span>{healthData.database.stats.merchants}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Venues:</span>
-                        <span>{healthData.database.stats.venues}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Deals:</span>
-                        <span>{healthData.database.stats.deals}</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-gray-500">No data available</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading health data...</p>
-            </div>
-          )}
-        </div>
+      {/* Comprehensive Monitoring Tab */}
+      {(activeTab === 'monitoring' || activeTab === 'health') && (
+        <MonitoringDashboard />
       )}
 
-      {/* Real-time Monitoring Tab */}
-      {activeTab === 'monitoring' && (
+      {/* Error Tracking Tab */}
+      {activeTab === 'errors' && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Real-time Monitoring</h2>
-              <p className="text-slate-600 dark:text-slate-400">Live system performance and endpoint monitoring</p>
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Error Tracking</h2>
+              <p className="text-slate-600 dark:text-slate-400">Monitor and analyze application errors</p>
             </div>
             <div className="flex items-center space-x-3">
               <label className="flex items-center">
@@ -1512,8 +1466,8 @@ export default function AdminDashboard() {
                 <span className="text-sm">Auto-refresh</span>
               </label>
               <button
-                onClick={fetchMonitoringData}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                onClick={fetchErrorData}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
               >
                 <RefreshCw className="w-4 h-4 inline mr-2" />
                 Refresh
@@ -1521,71 +1475,166 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {monitoringData ? (
+          {errorData ? (
             <div className="space-y-6">
-              {/* Overall Health */}
-              <div className={`p-6 rounded-lg border-2 ${
-                monitoringData.overallHealth === 'healthy' 
-                  ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-700'
-                  : 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-700'
-              }`}>
-                <div className="flex items-center">
-                  {monitoringData.overallHealth === 'healthy' ? (
-                    <CheckCircle className="w-8 h-8 text-green-600 mr-3" />
-                  ) : (
-                    <AlertTriangle className="w-8 h-8 text-yellow-600 mr-3" />
-                  )}
-                  <div>
-                    <h3 className="text-lg font-semibold">
-                      {monitoringData.overallHealth === 'healthy' ? 'All Systems Operational' : 'System Degraded'}
-                    </h3>
-                    <p className="text-sm opacity-75">
-                      {monitoringData.summary?.healthyTests} of {monitoringData.summary?.totalTests} tests passing
-                    </p>
+              {/* Error Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Errors</p>
+                      <p className="text-2xl font-bold text-slate-900 dark:text-white">{errorData.stats?.total || 0}</p>
+                    </div>
+                    <Bug className="w-8 h-8 text-red-600" />
+                  </div>
+                </div>
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Critical Errors</p>
+                      <p className="text-2xl font-bold text-red-600">{errorData.stats?.byLevel?.error || 0}</p>
+                    </div>
+                    <AlertCircle className="w-8 h-8 text-red-600" />
+                  </div>
+                </div>
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Warnings</p>
+                      <p className="text-2xl font-bold text-yellow-600">{errorData.stats?.byLevel?.warning || 0}</p>
+                    </div>
+                    <AlertTriangle className="w-8 h-8 text-yellow-600" />
+                  </div>
+                </div>
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Recent (24h)</p>
+                      <p className="text-2xl font-bold text-blue-600">{errorData.stats?.recentErrors || 0}</p>
+                    </div>
+                    <Clock className="w-8 h-8 text-blue-600" />
                   </div>
                 </div>
               </div>
 
-              {/* Test Results */}
-              <div className="grid grid-cols-1 gap-4">
-                <h3 className="text-lg font-semibold">Endpoint Tests</h3>
-                {monitoringData.tests?.map((test: any, index: number) => (
-                  <div key={index} className={`p-4 rounded-lg border ${
-                    test.status === 'healthy' 
-                      ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-700'
-                      : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-700'
-                  }`}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        {test.status === 'healthy' ? (
-                          <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
-                        ) : (
-                          <AlertCircle className="w-5 h-5 text-red-600 mr-3" />
-                        )}
-                        <div>
-                          <h4 className="font-medium">{test.name}</h4>
-                          {test.error && (
-                            <p className="text-sm text-red-600">{test.error}</p>
+              {/* Error Patterns */}
+              {errorData.patterns && errorData.patterns.length > 0 && (
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+                  <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Error Patterns</h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Recurring error patterns detected</p>
+                  </div>
+                  <div className="p-6">
+                    <div className="space-y-3">
+                      {errorData.patterns.slice(0, 5).map((pattern: ErrorPattern, index: number) => (
+                        <div key={index} className="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-700 rounded-lg">
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">{pattern.pattern}</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">
+                              Last seen: {new Date(pattern.lastOccurrence).toLocaleString()}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm font-medium">{pattern.count} occurrences</span>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              pattern.severity === 'critical' ? 'bg-red-100 text-red-800' :
+                              pattern.severity === 'high' ? 'bg-orange-100 text-orange-800' :
+                              pattern.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-green-100 text-green-800'
+                            }`}>
+                              {pattern.severity}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Recent Errors */}
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+                <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Recent Errors</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Latest error occurrences</p>
+                </div>
+                <div className="divide-y divide-slate-200 dark:divide-slate-700">
+                  {errorData.errors && errorData.errors.length > 0 ? (
+                    errorData.errors.slice(0, 10).map((error: ErrorLog) => (
+                      <div key={error.id} className="p-6">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                error.level === 'error' ? 'bg-red-100 text-red-800' :
+                                error.level === 'warning' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-blue-100 text-blue-800'
+                              }`}>
+                                {error.level.toUpperCase()}
+                              </span>
+                              <span className="text-xs text-slate-500 dark:text-slate-400">
+                                {new Date(error.timestamp).toLocaleString()}
+                              </span>
+                              {error.resolved && (
+                                <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                                  Resolved
+                                </span>
+                              )}
+                            </div>
+                            <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-1">
+                              {error.message}
+                            </h4>
+                            {error.url && (
+                              <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                URL: {error.url}
+                              </p>
+                            )}
+                            {error.tags && error.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {error.tags.map((tag, tagIndex) => (
+                                  <span key={tagIndex} className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded text-xs">
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          {!error.resolved && (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const response = await fetch('/api/admin/errors', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ action: 'resolve_error', errorId: error.id })
+                                  });
+                                  if (response.ok) {
+                                    fetchErrorData(); // Refresh data
+                                  }
+                                } catch (err) {
+                                  console.error('Failed to resolve error:', err);
+                                }
+                              }}
+                              className="px-3 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                            >
+                              Resolve
+                            </button>
                           )}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium">
-                          {test.responseTime}ms
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {test.critical ? 'Critical' : 'Standard'}
-                        </div>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="p-6 text-center text-slate-500 dark:text-slate-400">
+                      No errors found
                     </div>
-                  </div>
-                ))}
+                  )}
+                </div>
               </div>
             </div>
           ) : (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading monitoring data...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading error data...</p>
             </div>
           )}
         </div>

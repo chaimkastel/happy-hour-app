@@ -14,7 +14,13 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "node prisma/seed.mjs",
     "clean": "rm -rf .next node_modules/.cache",
-    "optimize": "npm run clean && npm install --production=false"
+    "optimize": "npm run clean && npm install --production=false",
+    "monitor:start": "node scripts/monitoring-daemon.js start",
+    "monitor:stop": "node scripts/monitoring-daemon.js stop",
+    "monitor:status": "node scripts/monitoring-daemon.js status",
+    "health:check": "node -e \"fetch('http://localhost:3000/api/admin/health').then(r=>r.json()).then(console.log).catch(console.error)\"",
+    "test:functionality": "node test-functionality.js",
+    "test:admin-integration": "node test-admin-integration.js"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
