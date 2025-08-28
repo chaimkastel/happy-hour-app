@@ -3,8 +3,9 @@ import Redis from 'ioredis'
 // Redis connection configuration - only connect if REDIS_URL is provided
 let redis: Redis | null = null
 
-if (process.env.REDIS_URL) {
-  redis = new Redis(process.env.REDIS_URL, {
+const redisUrl = process.env.KV_URL || process.env.REDIS_URL;
+if (redisUrl) {
+  redis = new Redis(redisUrl, {
     lazyConnect: true,
     maxRetriesPerRequest: null,
   })
@@ -247,7 +248,7 @@ export async function checkRedisHealth(): Promise<{
   if (!redis) {
     return {
       status: 'not_configured',
-      message: 'Redis not configured - no REDIS_URL provided'
+      message: 'Redis not configured - no KV_URL or REDIS_URL provided'
     }
   }
 
