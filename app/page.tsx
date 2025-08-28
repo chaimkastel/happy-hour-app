@@ -227,7 +227,7 @@ export default function HomePage() {
                   <div 
                     className="w-full h-full bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
                     style={{
-                      backgroundImage: `url(https://via.placeholder.com/800x600/FF6B35/FFFFFF?text=Food+${index + 1})`
+                      backgroundImage: `url(https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=800&h=600&fit=crop&crop=center&auto=format&q=80)`
                     }}
                   ></div>
                   <div className="absolute inset-0 bg-gradient-to-br from-black/30 to-black/50 group-hover:from-black/40 group-hover:to-black/60 transition-all duration-300"></div>
