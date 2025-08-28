@@ -234,7 +234,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
               {/* Navigation Links */}
               <div className="flex items-center gap-6">
-                <a href="/" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 font-medium text-sm tracking-wide">
+                <a href="/explore" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 font-medium text-sm tracking-wide">
                   Explore
                 </a>
                 <a href="/favorites" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 font-medium text-sm tracking-wide flex items-center gap-2">
@@ -368,28 +368,12 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
               {/* Mobile Navigation Links */}
               <div className="space-y-3">
                 <a 
-                  href="/" 
-                  className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-6 py-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-4 font-semibold text-lg"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <span className="text-2xl">🏠</span>
-                  Explore
-                </a>
-                <a 
                   href="/explore" 
                   className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-6 py-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-4 font-semibold text-lg"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <span className="text-2xl">🧠</span>
-                  AI Search
-                </a>
-                <a 
-                  href="/deals" 
-                  className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-6 py-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-4 font-semibold text-lg"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <span className="text-2xl">🗺️</span>
-                  All Deals
+                  Explore & Search
                 </a>
                 <a 
                   href="/favorites" 
