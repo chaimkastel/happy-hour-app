@@ -46,4 +46,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = nextConfig;// Deployment trigger Thu Aug 28 19:22:39 EDT 2025
