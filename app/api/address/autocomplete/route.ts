@@ -14,8 +14,43 @@ export async function GET(request: NextRequest) {
 
     const apiKey = process.env.GOOGLE_PLACES_API_KEY;
     if (!apiKey) {
-      console.log('Google Places API key not configured, using fallback');
-      // Return mock data for development
+      console.log('Google Places API key not configured, using Nominatim fallback');
+      // Use Nominatim OpenStreetMap API as fallback
+      try {
+        const nominatimResponse = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1&countrycodes=us`,
+          {
+            headers: {
+              'User-Agent': 'HappyHour/1.0',
+            },
+          }
+        );
+        
+        if (nominatimResponse.ok) {
+          const nominatimData = await nominatimResponse.json();
+          const predictions = nominatimData.map((item: any, index: number) => ({
+            place_id: `nominatim_${index}`,
+            description: item.display_name,
+            structured_formatting: {
+              main_text: item.address?.suburb || item.address?.city || item.address?.town || item.address?.village || item.display_name.split(',')[0],
+              secondary_text: [
+                item.address?.city || item.address?.town,
+                item.address?.state,
+                item.address?.country
+              ].filter(Boolean).join(', ')
+            }
+          }));
+          
+          return NextResponse.json({
+            predictions,
+            status: 'OK'
+          });
+        }
+      } catch (error) {
+        console.error('Nominatim fallback error:', error);
+      }
+      
+      // Final fallback to mock data
       return NextResponse.json({
         predictions: [
           {

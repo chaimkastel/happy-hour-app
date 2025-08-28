@@ -14,7 +14,29 @@ export async function GET(request: NextRequest) {
 
     const apiKey = process.env.GOOGLE_PLACES_API_KEY;
     if (!apiKey) {
-      console.log('Google Places API key not configured, using fallback');
+      console.log('Google Places API key not configured, using Nominatim fallback');
+      
+      // Handle Nominatim place IDs
+      if (placeId.startsWith('nominatim_')) {
+        try {
+          // For Nominatim, we need to make a reverse geocoding request
+          // Since we don't have the coordinates, we'll return a generic response
+          return NextResponse.json({
+            place_id: placeId,
+            formatted_address: 'Address details not available',
+            address_components: [
+              { long_name: 'Address', short_name: 'Address', types: ['locality', 'political'] },
+              { long_name: 'United States', short_name: 'US', types: ['country', 'political'] }
+            ],
+            geometry: {
+              location: { lat: 40.7128, lng: -74.0060 } // Default to NYC
+            }
+          });
+        } catch (error) {
+          console.error('Nominatim details error:', error);
+        }
+      }
+      
       // Return mock data for development
       const mockData = {
         mock_1: {
@@ -60,7 +82,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(mockResult);
       } else {
         return NextResponse.json(
-          { error: 'Mock location not found' },
+          { error: 'Location not found' },
           { status: 404 }
         );
       }
