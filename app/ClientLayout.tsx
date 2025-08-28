@@ -280,19 +280,31 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
             </nav>
 
             {/* Mobile Menu Button */}
-            <div className="lg:hidden flex items-center gap-3">
+            <div className="lg:hidden flex items-center gap-2">
               <button
                 onClick={toggleDarkMode}
-                className="p-2.5 rounded-xl transition-all duration-200 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                className="p-3 rounded-2xl transition-all duration-200 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105"
               >
                 {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
               
               <button 
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2.5 rounded-xl transition-all duration-200 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+                className={`relative p-4 rounded-2xl transition-all duration-300 font-bold text-sm shadow-lg hover:shadow-xl hover:scale-105 ${
+                  isMobileMenuOpen 
+                    ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' 
+                    : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700'
+                }`}
               >
-                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                <div className="flex items-center gap-2">
+                  {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                  <span className="hidden sm:inline">
+                    {isMobileMenuOpen ? 'Close' : 'Menu'}
+                  </span>
+                </div>
+                {!isMobileMenuOpen && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+                )}
               </button>
             </div>
           </div>
@@ -301,7 +313,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
           <div className="lg:hidden border-t border-slate-200/60 dark:border-slate-700/60">
-            <nav className="px-4 sm:px-6 py-6 space-y-4 bg-white/98 dark:bg-slate-900/98 backdrop-blur-2xl">
+            <nav className="px-4 sm:px-6 py-8 space-y-6 bg-white/98 dark:bg-slate-900/98 backdrop-blur-2xl">
               {/* Mobile Location Control */}
               <div className="space-y-3">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -354,36 +366,54 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
               </div>
 
               {/* Mobile Navigation Links */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <a 
                   href="/" 
-                  className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-4 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-3 font-medium"
+                  className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-6 py-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-4 font-semibold text-lg"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  🏠 Explore
+                  <span className="text-2xl">🏠</span>
+                  Explore
+                </a>
+                <a 
+                  href="/explore" 
+                  className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-6 py-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-4 font-semibold text-lg"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <span className="text-2xl">🧠</span>
+                  AI Search
+                </a>
+                <a 
+                  href="/deals" 
+                  className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-6 py-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-4 font-semibold text-lg"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <span className="text-2xl">🗺️</span>
+                  All Deals
                 </a>
                 <a 
                   href="/favorites" 
-                  className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-4 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-3 font-medium"
+                  className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-6 py-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-4 font-semibold text-lg"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <Heart className="w-5 h-5" />
+                  <Heart className="w-6 h-6" />
                   Favorites
                 </a>
                 <a 
                   href="/account" 
-                  className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-4 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-3 font-medium"
+                  className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-6 py-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-4 font-semibold text-lg"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <User className="w-5 h-5" />
+                  <User className="w-6 h-6" />
                   My Account
                 </a>
                 <a 
                   href="/wallet" 
-                  className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-4 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-3 font-medium"
+                  className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-6 py-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-4 font-semibold text-lg"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  💳 Wallet
+                  <span className="text-2xl">💳</span>
+                  Wallet
                 </a>
                 {/* Owner section hidden for now
                 <a 
@@ -402,13 +432,13 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                   toggleLogin();
                   setIsMobileMenuOpen(false);
                 }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold transition-all duration-200 text-left ${
+                className={`w-full flex items-center justify-center gap-4 px-6 py-5 rounded-2xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 ${
                   isLoggedIn 
-                    ? 'bg-red-500 text-white hover:bg-red-600 shadow-md' 
-                    : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md'
+                    ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600' 
+                    : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700'
                 }`}
               >
-                {isLoggedIn ? <LogOut className="w-5 h-5" /> : <LogIn className="w-5 h-5" />}
+                {isLoggedIn ? <LogOut className="w-6 h-6" /> : <LogIn className="w-6 h-6" />}
                 {isLoggedIn ? 'Logout' : 'Login'}
               </button>
             </nav>

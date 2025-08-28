@@ -81,7 +81,7 @@ export default function HomePage() {
   });
 
   if (loading) {
-    return (
+  return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
@@ -102,91 +102,94 @@ export default function HomePage() {
 
       {/* Hero Section - Exciting & Engaging */}
       <div className="relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-24 lg:py-32">
           <div className="text-center">
             {/* Social Proof Badge */}
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3 mb-8 animate-fade-in">
-              <div className="flex -space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full border-2 border-white"></div>
-                <div className="w-8 h-8 bg-gradient-to-r from-pink-400 to-red-500 rounded-full border-2 border-white"></div>
-                <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full border-2 border-white"></div>
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8 animate-fade-in">
+              <div className="flex -space-x-1 sm:-space-x-2">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full border-2 border-white"></div>
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-pink-400 to-red-500 rounded-full border-2 border-white"></div>
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full border-2 border-white"></div>
               </div>
-              <span className="text-white font-semibold">10,000+ Happy Customers</span>
+              <span className="text-white font-semibold text-sm sm:text-base">10,000+ Happy Customers</span>
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                  <Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 fill-current" />
                 ))}
               </div>
             </div>
 
             {/* Main Brand */}
-            <div className="mb-8 animate-slide-in-down">
-              <h1 className="text-6xl sm:text-7xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 mb-6 leading-tight">
-                Happy Hour
-              </h1>
-              <div className="flex items-center justify-center gap-4 mb-4">
-                <div className="w-16 h-1 bg-gradient-to-r from-yellow-400 to-pink-500 rounded-full"></div>
-                <Sparkles className="w-8 h-8 text-yellow-400 animate-spin" />
-                <div className="w-16 h-1 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full"></div>
+                        <div className="mb-6 sm:mb-8 animate-slide-in-down">
+              <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 mb-4 sm:mb-6 leading-tight">
+            Happy Hour
+          </h1>
+              <div className="flex items-center justify-center gap-2 sm:gap-4 mb-4">
+                <div className="w-8 sm:w-16 h-1 bg-gradient-to-r from-yellow-400 to-pink-500 rounded-full"></div>
+                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400 animate-spin" />
+                <div className="w-8 sm:w-16 h-1 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full"></div>
               </div>
             </div>
             
             {/* Compelling Headlines */}
-            <div className="mb-12 animate-slide-in-up">
-              <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+                        <div className="mb-8 sm:mb-12 animate-slide-in-up">
+              <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
                 🚀 <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Instant Deals</span> at Restaurants Near You
               </h2>
-              <p className="text-xl sm:text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed mb-8">
+              <p className="text-lg sm:text-xl md:text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed mb-6 sm:mb-8">
                 Save up to <span className="font-bold text-yellow-400">70% OFF</span> when restaurants are quiet! 
                 <br />
-                <span className="text-lg text-white/80">Real-time deals • Instant savings • No waiting</span>
+                <span className="text-base sm:text-lg text-white/80">Real-time deals • Instant savings • No waiting</span>
               </p>
-            </div>
-            
+          </div>
+
             {/* Live Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12 animate-fade-in">
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all duration-300">
-                <div className="text-3xl font-bold text-yellow-400 mb-2">🔥 247</div>
-                <div className="text-white/80">Live Deals Right Now</div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto mb-8 sm:mb-12 animate-fade-in">
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all duration-300">
+                <div className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-2">🔥 247</div>
+                <div className="text-white/80 text-sm sm:text-base">Live Deals Right Now</div>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all duration-300">
-                <div className="text-3xl font-bold text-green-400 mb-2">⚡ 2.3k</div>
-                <div className="text-white/80">Deals Claimed Today</div>
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all duration-300">
+                <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-2">⚡ 2.3k</div>
+                <div className="text-white/80 text-sm sm:text-base">Deals Claimed Today</div>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all duration-300">
-                <div className="text-3xl font-bold text-pink-400 mb-2">💰 $127</div>
-                <div className="text-white/80">Average Savings</div>
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all duration-300">
+                <div className="text-2xl sm:text-3xl font-bold text-pink-400 mb-2">💰 $127</div>
+                <div className="text-white/80 text-sm sm:text-base">Average Savings</div>
               </div>
             </div>
             
             {/* Search Bar */}
-            <div className="max-w-3xl mx-auto mb-12 animate-scale-in">
+            <div className="max-w-3xl mx-auto mb-8 sm:mb-12 animate-scale-in">
               <div className="relative">
-                <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-white/60 w-6 h-6" />
+                <Search className="absolute left-4 sm:left-6 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5 sm:w-6 sm:h-6" />
                 <input
                   type="text"
                   placeholder="Enter your address or city to find amazing deals..."
-                  className="w-full pl-16 pr-32 py-6 text-xl bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-3xl focus:border-yellow-400 focus:outline-none transition-all duration-300 text-white placeholder-white/60 shadow-2xl"
+                  className="w-full pl-12 sm:pl-16 pr-24 sm:pr-32 py-4 sm:py-6 text-lg sm:text-xl bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl sm:rounded-3xl focus:border-yellow-400 focus:outline-none transition-all duration-300 text-white placeholder-white/60 shadow-2xl"
                 />
-                <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105">
-                  🔍 Find Deals
+                <button className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105">
+                  <span className="hidden sm:inline">🔍 Find Deals</span>
+                  <span className="sm:hidden">🔍</span>
                 </button>
               </div>
             </div>
             
             {/* Primary CTAs */}
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16 animate-fade-in">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-12 sm:mb-16 animate-fade-in">
               <button 
                 onClick={() => window.location.href = '/deals'}
-                className="group bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-12 py-6 rounded-3xl font-black text-2xl hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-2xl hover:shadow-yellow-500/25 hover:scale-105 flex items-center gap-4"
+                className="group bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-8 sm:px-12 py-4 sm:py-6 rounded-2xl sm:rounded-3xl font-black text-lg sm:text-2xl hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-2xl hover:shadow-yellow-500/25 hover:scale-105 flex items-center gap-3 sm:gap-4"
               >
-                <Rocket className="w-8 h-8 group-hover:animate-bounce" />
-                🚀 Browse All Deals
-                <ArrowRight className="w-8 h-8 group-hover:translate-x-2 transition-transform" />
+                <Rocket className="w-6 h-6 sm:w-8 sm:h-8 group-hover:animate-bounce" />
+                <span className="hidden sm:inline">🚀 Browse All Deals</span>
+                <span className="sm:hidden">🚀 Browse Deals</span>
+                <ArrowRight className="w-6 h-6 sm:w-8 sm:h-8 group-hover:translate-x-2 transition-transform" />
               </button>
-              <button className="group bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/20 transition-all duration-300 flex items-center gap-3">
-                <Play className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                📱 Watch Demo
+              <button className="group bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg hover:bg-white/20 transition-all duration-300 flex items-center gap-2 sm:gap-3">
+                <Play className="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-110 transition-transform" />
+                <span className="hidden sm:inline">📱 Watch Demo</span>
+                <span className="sm:hidden">📱 Demo</span>
               </button>
             </div>
           </div>
@@ -209,14 +212,14 @@ export default function HomePage() {
             </div>
             <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
               🔥 <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Hot Deals</span> Near You
-            </h2>
+          </h2>
             <p className="text-xl text-white/80 max-w-3xl mx-auto">
               These deals are <span className="text-yellow-400 font-bold">flying off the shelves</span>! 
               Don't miss out on incredible savings.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredDeals.slice(0, 6).map((deal, index) => (
               <div 
                 key={deal.id} 
@@ -252,7 +255,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Deal Info */}
-                <div className="p-6">
+            <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-yellow-400" />
@@ -461,9 +464,9 @@ export default function HomePage() {
               <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
                 Show your code at the restaurant and enjoy your delicious meal while saving big bucks!
               </p>
-            </div>
-          </div>
-
+                </div>
+              </div>
+              
           {/* CTA Section */}
           <div className="text-center mt-16">
             <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-3xl p-8 shadow-2xl max-w-4xl mx-auto">
@@ -508,7 +511,7 @@ export default function HomePage() {
             </div>
             <h2 className="text-4xl md:text-5xl font-black mb-6">
               🏆 Turn <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">Quiet Hours</span> into <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">Revenue Gold</span>
-            </h2>
+          </h2>
             <p className="text-xl text-white/90 max-w-4xl mx-auto leading-relaxed">
               Join <span className="font-bold text-yellow-300">500+ restaurants</span> already using Happy Hour to fill empty tables and boost revenue during slow periods!
             </p>
@@ -578,7 +581,7 @@ export default function HomePage() {
                 <button className="group bg-white/20 backdrop-blur-sm border-2 border-white/30 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/30 transition-all duration-300 flex items-center gap-3">
                   <Play className="w-5 h-5 group-hover:scale-110 transition-transform" />
                   Watch Success Stories
-                </button>
+          </button>
               </div>
               <p className="text-white/80 mt-6 text-sm">
                 ✨ No setup fees • 🚀 Cancel anytime • 💰 30-day money-back guarantee
