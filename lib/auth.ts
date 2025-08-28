@@ -36,16 +36,32 @@ export const authOptions: any = {
       async authorize(credentials: any) {
         // For demo purposes, allow any login
         if (credentials?.email && typeof credentials.email === 'string') {
+          // Try to find existing user or create a new one
+          let user = await prisma.user.findUnique({
+            where: { email: credentials.email }
+          });
+          
+          if (!user) {
+            user = await prisma.user.create({
+              data: {
+                email: credentials.email,
+                role: 'USER',
+                preferredCities: JSON.stringify([])
+              }
+            });
+          }
+          
           return {
-            id: "demo-user",
-            email: credentials.email,
-            name: "Demo User"
+            id: user.id,
+            email: user.email,
+            name: user.email.split('@')[0]
           }
         }
         return null
       }
     }
-  ]
+  ],
+  secret: process.env.NEXTAUTH_SECRET,
 }
 
 export const { auth, signIn, signOut } = NextAuth(authOptions)
