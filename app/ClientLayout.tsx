@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Heart, Menu, X, LogIn, LogOut, User, MapPin, Crosshair, Search, CreditCard, Building2, Brain } from 'lucide-react';
+import { Moon, Sun, Heart, Menu, X, LogIn, LogOut, User, MapPin, Crosshair, Search, CreditCard, Building2, Brain, Compass } from 'lucide-react';
 import { SessionProvider } from 'next-auth/react';
 
 interface ClientLayoutProps {
@@ -235,7 +235,8 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
               {/* Navigation Links */}
               <div className="flex items-center gap-6">
-                <a href="/explore" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm tracking-wide">
+                <a href="/explore" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm tracking-wide flex items-center gap-2">
+                  <Compass className="w-4 h-4" />
                   Explore
                 </a>
                 <a href="/favorites" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm tracking-wide flex items-center gap-2">
