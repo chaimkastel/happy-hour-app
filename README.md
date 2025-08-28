@@ -4,7 +4,7 @@ A comprehensive Next.js web application that connects customers with local resta
 
 ## 🚀 Live Demo
 
-**Production URL**: https://happy-hour-qz6ifj5jn-chaim-kastels-projects.vercel.app
+**Production URL**: https://www.orderhappyhour.com
 
 ## 📋 Table of Contents
 
@@ -206,6 +206,15 @@ REDIS_URL="redis://localhost:6379"
 ```
 Email: demo@example.com
 Password: demo123
+```
+
+### Admin Access
+**Admin Login URL**: https://www.orderhappyhour.com/admin-access
+
+**Admin Credentials**:
+```
+Username: chaimkastel
+Password: CHAIMrox11!
 ```
 
 ## 🛡 Admin Dashboard
