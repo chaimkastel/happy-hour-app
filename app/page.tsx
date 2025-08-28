@@ -566,7 +566,10 @@ export default function HomePage() {
                 Join the restaurant revolution! Start your free trial today and see the difference in just 24 hours.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button className="group bg-white text-orange-600 px-12 py-6 rounded-3xl font-black text-xl hover:bg-white/90 transition-all duration-300 shadow-2xl hover:shadow-white/25 hover:scale-105 flex items-center gap-3">
+                <button 
+                  onClick={() => window.location.href = '/merchant/signup'}
+                  className="group bg-white text-orange-600 px-12 py-6 rounded-3xl font-black text-xl hover:bg-white/90 transition-all duration-300 shadow-2xl hover:shadow-white/25 hover:scale-105 flex items-center gap-3"
+                >
                   <Rocket className="w-6 h-6 group-hover:animate-bounce" />
                   Start Free Trial
                   <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />

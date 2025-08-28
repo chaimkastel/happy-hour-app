@@ -14,12 +14,14 @@ export const authOptions: any = {
     async session({ session, token }: any) {
       if (token.sub && session.user) {
         (session.user as any).id = token.sub
+        (session.user as any).role = token.role
       }
       return session
     },
     async jwt({ token, user }: any) {
       if (user) {
         token.sub = user.id
+        token.role = user.role
       }
       return token
     },

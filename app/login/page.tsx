@@ -14,7 +14,15 @@ export default function LoginPage() {
 
   // Redirect if already logged in
   if (session) {
-    router.push('/merchant');
+    // Check user role and redirect accordingly
+    const userRole = (session.user as any)?.role;
+    if (userRole === 'ADMIN') {
+      router.push('/admin');
+    } else if (userRole === 'MERCHANT') {
+      router.push('/merchant/dashboard');
+    } else {
+      router.push('/');
+    }
     return null;
   }
 
@@ -30,7 +38,18 @@ export default function LoginPage() {
       });
 
       if (result?.ok) {
-        router.push('/merchant');
+        // Get user info to determine redirect
+        const userResponse = await fetch('/api/auth/session');
+        const userData = await userResponse.json();
+        const userRole = userData?.user?.role;
+        
+        if (userRole === 'ADMIN') {
+          router.push('/admin');
+        } else if (userRole === 'MERCHANT') {
+          router.push('/merchant/dashboard');
+        } else {
+          router.push('/');
+        }
       } else {
         alert('Login failed. Please try again.');
       }
@@ -111,17 +130,28 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-8 pt-6 border-t border-gray-200">
-            <div className="text-center">
-              <p className="text-sm text-gray-600 mb-4">Don't have an account?</p>
-              <button
-                onClick={() => {
-                  setEmail('demo@example.com');
-                  setPassword('demo123');
-                }}
-                className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
-              >
-                Use Demo Credentials
-              </button>
+            <div className="text-center space-y-4">
+              <div>
+                <p className="text-sm text-gray-600 mb-2">Don't have an account?</p>
+                <button
+                  onClick={() => router.push('/merchant/signup')}
+                  className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
+                >
+                  Start Your Free Trial
+                </button>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 mb-2">Want to try the demo?</p>
+                <button
+                  onClick={() => {
+                    setEmail('demo@example.com');
+                    setPassword('demo123');
+                  }}
+                  className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
+                >
+                  Use Demo Credentials
+                </button>
+              </div>
             </div>
           </div>
         </div>
