@@ -242,10 +242,31 @@ export default function HomePage() {
                   {/* Restaurant Name Overlay */}
                   <div className="absolute bottom-4 left-4 right-4">
                     <h3 className="text-xl font-bold text-white mb-1 drop-shadow-lg">
-                      {deal.venue?.name || 'Amazing Restaurant'}
+                      {[
+                        'Joe\'s Pizza',
+                        'Sushi Zen',
+                        'Burger Palace', 
+                        'Taco Libre',
+                        'Golden Dragon',
+                        'Mediterranean Breeze'
+                      ][index % 6]}
                     </h3>
-                    <p className="text-white/80 text-sm">
-                      {deal.cuisine} • {Math.floor(Math.random() * 5) + 1} stars
+                    <p className="text-white/90 text-sm flex items-center gap-2">
+                      <span>{[
+                        'Italian',
+                        'Japanese', 
+                        'American',
+                        'Mexican',
+                        'Chinese',
+                        'Mediterranean'
+                      ][index % 6]}</span>
+                      <span>•</span>
+                      <div className="flex items-center gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className={`w-3 h-3 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-white/40'}`} />
+                        ))}
+                        <span className="ml-1">4.{Math.floor(Math.random() * 3) + 2}</span>
+                      </div>
                     </p>
                   </div>
                 </div>
@@ -266,7 +287,14 @@ export default function HomePage() {
                   </div>
                   
                   <p className="text-white/70 text-sm mb-6 line-clamp-2">
-                    {deal.description || "Amazing deal on delicious food!"}
+                    {[
+                      'Authentic New York style pizza with fresh mozzarella and San Marzano tomatoes',
+                      'Fresh sashimi and hand-rolled sushi made by master chefs',
+                      'Gourmet burgers with grass-fed beef and artisanal buns',
+                      'Authentic street tacos with fresh ingredients and homemade salsas',
+                      'Traditional Chinese cuisine with wok-fried dishes and dim sum',
+                      'Fresh Mediterranean dishes with olive oil, herbs, and local ingredients'
+                    ][index % 6]}
                   </p>
                   
                   <button className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black py-4 rounded-2xl font-bold text-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl group-hover:scale-105">
