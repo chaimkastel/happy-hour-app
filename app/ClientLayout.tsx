@@ -203,14 +203,14 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   return (
     <SessionProvider>
       <div className={`min-h-screen transition-all duration-500 ${isHydrated && isDarkMode ? 'dark' : ''}`}>
-      {/* Sleek Header */}
-      <header className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl sticky top-0 z-50 border-b border-white/10 dark:border-slate-700/20 shadow-lg" role="banner">
+      {/* Ultra-Glassy Header */}
+      <header className="bg-white/20 dark:bg-slate-900/20 backdrop-blur-2xl sticky top-0 z-50 border-b border-white/20 dark:border-slate-700/30 shadow-2xl" role="banner">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2">
           <div className="flex items-center justify-between gap-4">
             {/* Compact Logo */}
             <a href="/" className="flex-shrink-0 group">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-white/20 dark:bg-slate-800/40 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105 border border-white/20 dark:border-slate-600/30">
+                <div className="w-8 h-8 bg-white/30 dark:bg-slate-800/50 backdrop-blur-xl rounded-xl flex items-center justify-center shadow-2xl group-hover:shadow-3xl transition-all duration-300 group-hover:scale-105 border border-white/30 dark:border-slate-600/40">
                   <span className="text-slate-700 dark:text-slate-300 text-lg font-bold">🍺</span>
                 </div>
                 <div className="flex flex-col">
@@ -239,23 +239,23 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
               {/* Sleek Navigation Links */}
               <div className="flex items-center gap-1">
-                <a href="/explore" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/10 dark:hover:bg-slate-800/20 px-4 py-2 rounded-lg transition-all duration-200 font-medium text-sm flex items-center gap-2 group">
+                <a href="/explore" className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/20 dark:hover:bg-slate-800/30 px-4 py-2 rounded-lg transition-all duration-200 font-semibold text-sm flex items-center gap-2 group backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-slate-600/30">
                   <Compass className="w-4 h-4 group-hover:rotate-12 transition-transform duration-200" />
                   Explore
                 </a>
-                <a href="/favorites" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/10 dark:hover:bg-slate-800/20 px-4 py-2 rounded-lg transition-all duration-200 font-medium text-sm flex items-center gap-2 group">
+                <a href="/favorites" className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/20 dark:hover:bg-slate-800/30 px-4 py-2 rounded-lg transition-all duration-200 font-semibold text-sm flex items-center gap-2 group backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-slate-600/30">
                   <Heart className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
                   Favorites
                 </a>
-                <a href="/account" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/10 dark:hover:bg-slate-800/20 px-4 py-2 rounded-lg transition-all duration-200 font-medium text-sm flex items-center gap-2 group">
+                <a href="/account" className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/20 dark:hover:bg-slate-800/30 px-4 py-2 rounded-lg transition-all duration-200 font-semibold text-sm flex items-center gap-2 group backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-slate-600/30">
                   <User className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
                   Account
                 </a>
-                <a href="/wallet" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/10 dark:hover:bg-slate-800/20 px-4 py-2 rounded-lg transition-all duration-200 font-medium text-sm flex items-center gap-2 group">
+                <a href="/wallet" className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/20 dark:hover:bg-slate-800/30 px-4 py-2 rounded-lg transition-all duration-200 font-semibold text-sm flex items-center gap-2 group backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-slate-600/30">
                   <CreditCard className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
                   Wallet
                 </a>
-                <a href="/partner" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/10 dark:hover:bg-slate-800/20 px-4 py-2 rounded-lg transition-all duration-200 font-medium text-sm flex items-center gap-2 group">
+                <a href="/partner" className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/20 dark:hover:bg-slate-800/30 px-4 py-2 rounded-lg transition-all duration-200 font-semibold text-sm flex items-center gap-2 group backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-slate-600/30">
                   <Building2 className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
                   Partner
                 </a>
@@ -362,7 +362,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
               <div className="space-y-1">
                 <a 
                   href="/explore" 
-                  className="block text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 px-4 py-3 rounded-lg hover:bg-white/10 dark:hover:bg-slate-800/20 flex items-center gap-3 font-medium text-sm"
+                  className="block text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 px-4 py-3 rounded-lg hover:bg-white/10 dark:hover:bg-slate-800/20 flex items-center gap-3 font-semibold text-sm"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <Compass className="w-4 h-4" />
@@ -370,7 +370,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                 </a>
                 <a 
                   href="/favorites" 
-                  className="block text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 px-4 py-3 rounded-lg hover:bg-white/10 dark:hover:bg-slate-800/20 flex items-center gap-3 font-medium text-sm"
+                  className="block text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 px-4 py-3 rounded-lg hover:bg-white/10 dark:hover:bg-slate-800/20 flex items-center gap-3 font-semibold text-sm"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <Heart className="w-4 h-4" />
@@ -378,7 +378,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                 </a>
                 <a 
                   href="/account" 
-                  className="block text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 px-4 py-3 rounded-lg hover:bg-white/10 dark:hover:bg-slate-800/20 flex items-center gap-3 font-medium text-sm"
+                  className="block text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 px-4 py-3 rounded-lg hover:bg-white/10 dark:hover:bg-slate-800/20 flex items-center gap-3 font-semibold text-sm"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <User className="w-4 h-4" />
@@ -386,7 +386,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                 </a>
                 <a 
                   href="/wallet" 
-                  className="block text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 px-4 py-3 rounded-lg hover:bg-white/10 dark:hover:bg-slate-800/20 flex items-center gap-3 font-medium text-sm"
+                  className="block text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 px-4 py-3 rounded-lg hover:bg-white/10 dark:hover:bg-slate-800/20 flex items-center gap-3 font-semibold text-sm"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <CreditCard className="w-4 h-4" />
@@ -394,7 +394,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                 </a>
                 <a 
                   href="/partner" 
-                  className="block text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 px-4 py-3 rounded-lg hover:bg-white/10 dark:hover:bg-slate-800/20 flex items-center gap-3 font-medium text-sm"
+                  className="block text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 px-4 py-3 rounded-lg hover:bg-white/10 dark:hover:bg-slate-800/20 flex items-center gap-3 font-semibold text-sm"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <Building2 className="w-4 h-4" />

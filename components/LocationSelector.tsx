@@ -225,7 +225,7 @@ export default function LocationSelector({
               }}
               placeholder={placeholder}
               className={`
-                w-full bg-transparent border-none outline-none text-sm font-medium text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400
+                w-full bg-transparent border-none outline-none text-sm font-semibold text-slate-900 dark:text-slate-100 placeholder-slate-600 dark:placeholder-slate-300
                 ${error ? 'text-red-600 dark:text-red-400' : ''}
               `}
               aria-label="Location input with autocomplete"
@@ -251,10 +251,10 @@ export default function LocationSelector({
         
         <button
           onClick={onMyLocationClick}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex-shrink-0 backdrop-blur-sm border ${
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex-shrink-0 backdrop-blur-sm border ${
             isResolvingLocation 
               ? 'bg-slate-200/50 text-slate-600 cursor-not-allowed border-slate-300/50' 
-              : 'bg-white/20 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:bg-white/30 dark:hover:bg-slate-800/60 border-white/30 dark:border-slate-600/40 hover:shadow-lg hover:scale-105'
+              : 'bg-white/30 dark:bg-slate-800/60 text-slate-800 dark:text-slate-200 hover:bg-white/40 dark:hover:bg-slate-800/70 border-white/40 dark:border-slate-600/50 hover:shadow-lg hover:scale-105'
           }`}
           title="Use my location"
           aria-label="Use my current location"

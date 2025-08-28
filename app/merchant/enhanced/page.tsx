@@ -425,7 +425,7 @@ export default function EnhancedMerchantDashboard() {
                           Deactivate
                         </button>
                         <a
-                          href={`/redeem/${deal.id}`}
+                          href={`/deal/${deal.id}/view`}
                           target="_blank"
                           className="btn bg-blue-600 hover:bg-blue-700 text-sm"
                         >

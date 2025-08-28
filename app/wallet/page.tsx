@@ -400,7 +400,7 @@ export default function WalletPage() {
                     {redemption.status === 'ACTIVE' && !isExpired && (
                       <div className="mt-4 pt-4 border-t border-gray-200">
                         <Link 
-                          href={`/redeem/${redemption.deal.id}`}
+                          href={`/deal/${redemption.deal.id}/view`}
                           className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                         >
                           <Tag className="w-4 h-4 mr-2" />

@@ -31,7 +31,7 @@ export default function DealBottomSheet({ open, onClose, deal }:{ open:boolean; 
                 ) : null}
               </div>
               {deal.isActive && (
-                <Link href={`/redeem/${deal.id}`} className="btn">Get QR</Link>
+                <Link href={`/deal/${deal.id}/view`} className="btn">View Deal</Link>
               )}
             </div>
             {deal.description && <p className="text-white/70 mt-3">{deal.description}</p>}

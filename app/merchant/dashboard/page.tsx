@@ -643,7 +643,7 @@ export default function EnhancedMerchantDashboard() {
                           Deactivate
                         </button>
                         <a
-                          href={`/redeem/${deal.id || 'unknown'}`}
+                          href={`/deal/${deal.id || 'unknown'}/view`}
                           target="_blank"
                           className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors duration-200 text-center"
                         >

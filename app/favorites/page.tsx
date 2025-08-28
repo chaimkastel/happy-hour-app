@@ -222,7 +222,7 @@ export default function FavoritesPage() {
 
                       <div className="space-y-3">
                         <a
-                          href={`/redeem/${deal.id}`}
+                          href={`/deal/${deal.id}/view`}
                           className="block w-full bg-pink-600 text-white text-center py-2 px-4 rounded-xl text-sm font-medium hover:bg-pink-700 transition-colors duration-200"
                         >
                           Redeem Deal

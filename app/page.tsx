@@ -182,13 +182,13 @@ export default function HomePage() {
             {/* Search Bar */}
             <div className="max-w-3xl mx-auto mb-8 sm:mb-12 animate-scale-in">
               <div className="relative">
-                <Search className="absolute left-4 sm:left-6 top-1/2 transform -translate-y-1/2 text-white/70 w-5 h-5 sm:w-6 sm:h-6" />
+                <Search className="absolute left-4 sm:left-6 top-1/2 transform -translate-y-1/2 text-slate-600 dark:text-slate-300 w-5 h-5 sm:w-6 sm:h-6" />
                 <input
                   type="text"
                   placeholder="Enter your address or city to find amazing deals..."
-                  className="w-full pl-12 sm:pl-16 pr-24 sm:pr-32 py-4 sm:py-6 text-lg sm:text-xl bg-white/20 dark:bg-slate-800/40 backdrop-blur-xl border-2 border-white/30 dark:border-slate-600/40 rounded-2xl sm:rounded-3xl focus:border-slate-400 dark:focus:border-slate-500 focus:outline-none transition-all duration-300 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 shadow-2xl"
+                  className="w-full pl-12 sm:pl-16 pr-24 sm:pr-32 py-4 sm:py-6 text-lg sm:text-xl bg-white/30 dark:bg-slate-800/60 backdrop-blur-xl border-2 border-white/40 dark:border-slate-600/50 rounded-2xl sm:rounded-3xl focus:border-white/60 dark:focus:border-slate-500 focus:outline-none transition-all duration-300 text-slate-900 dark:text-slate-100 placeholder-slate-600 dark:placeholder-slate-300 shadow-2xl font-medium"
                 />
-                <button className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-white/20 dark:bg-slate-800/40 backdrop-blur-sm text-slate-700 dark:text-slate-300 px-4 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-lg hover:bg-white/30 dark:hover:bg-slate-800/60 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 border border-white/30 dark:border-slate-600/40">
+                <button className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-white/30 dark:bg-slate-800/60 backdrop-blur-sm text-slate-800 dark:text-slate-200 px-4 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-lg hover:bg-white/40 dark:hover:bg-slate-800/70 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 border border-white/40 dark:border-slate-600/50">
                   <span className="hidden sm:inline">Find Deals</span>
                   <span className="sm:hidden">Search</span>
                 </button>
@@ -199,7 +199,7 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-12 sm:mb-16 animate-fade-in">
               <button 
                 onClick={() => router.push('/explore')}
-                className="group bg-white/20 dark:bg-slate-800/40 backdrop-blur-sm text-slate-700 dark:text-slate-300 px-8 sm:px-12 py-4 sm:py-6 rounded-2xl sm:rounded-3xl font-black text-lg sm:text-2xl hover:bg-white/30 dark:hover:bg-slate-800/60 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 flex items-center gap-3 sm:gap-4 border border-white/30 dark:border-slate-600/40"
+                className="group bg-white/30 dark:bg-slate-800/60 backdrop-blur-sm text-slate-800 dark:text-slate-200 px-8 sm:px-12 py-4 sm:py-6 rounded-2xl sm:rounded-3xl font-black text-lg sm:text-2xl hover:bg-white/40 dark:hover:bg-slate-800/70 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 flex items-center gap-3 sm:gap-4 border border-white/40 dark:border-slate-600/50"
               >
                 <Rocket className="w-6 h-6 sm:w-8 sm:h-8 group-hover:animate-bounce" />
                 <span className="hidden sm:inline">Explore Deals</span>
