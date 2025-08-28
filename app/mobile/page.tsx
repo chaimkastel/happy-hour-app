@@ -62,11 +62,53 @@ export default function MobileHomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [deals, setDeals] = useState<Deal[]>([]);
+  const [filteredDeals, setFilteredDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState('near-me');
+  const [activeTab, setActiveTab] = useState('explore');
 
   useEffect(() => {
     fetchDeals();
   }, []);
+
+  useEffect(() => {
+    filterDeals();
+  }, [deals, searchQuery, activeFilter]);
+
+  const filterDeals = () => {
+    let filtered = [...deals];
+
+    // Search filter
+    if (searchQuery) {
+      filtered = filtered.filter(deal =>
+        deal.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        deal.venue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        deal.cuisine.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Quick action filters
+    switch (activeFilter) {
+      case 'near-me':
+        // Sort by distance (mock data)
+        filtered = filtered.sort((a, b) => Math.random() - 0.5);
+        break;
+      case 'open-now':
+        // Filter for open restaurants (mock data)
+        filtered = filtered.filter(() => Math.random() > 0.3);
+        break;
+      case 'top-rated':
+        // Sort by rating (mock data)
+        filtered = filtered.sort((a, b) => Math.random() - 0.5);
+        break;
+      case 'best-deals':
+        // Sort by discount
+        filtered = filtered.sort((a, b) => b.discount - a.discount);
+        break;
+    }
+
+    setFilteredDeals(filtered);
+  };
 
   const fetchDeals = async () => {
     try {
@@ -94,25 +136,25 @@ export default function MobileHomePage() {
   };
 
   const quickActions = [
-    { id: 'near-me', icon: <MapPin className="w-5 h-5" />, label: 'Near Me', isActive: true },
-    { id: 'open-now', icon: <Clock className="w-5 h-5" />, label: 'Open Now', isActive: false },
-    { id: 'top-rated', icon: <Star className="w-5 h-5" />, label: 'Top Rated', isActive: false },
-    { id: 'best-deals', icon: <Gift className="w-5 h-5" />, label: 'Best Deals', isActive: false },
+    { id: 'near-me', icon: <MapPin className="w-5 h-5" />, label: 'Near Me', isActive: activeFilter === 'near-me' },
+    { id: 'open-now', icon: <Clock className="w-5 h-5" />, label: 'Open Now', isActive: activeFilter === 'open-now' },
+    { id: 'top-rated', icon: <Star className="w-5 h-5" />, label: 'Top Rated', isActive: activeFilter === 'top-rated' },
+    { id: 'best-deals', icon: <Gift className="w-5 h-5" />, label: 'Best Deals', isActive: activeFilter === 'best-deals' },
   ];
 
   const bottomNavItems = [
-    { id: 'explore', label: 'Explore', icon: <Grid className="w-6 h-6" />, isActive: true, onClick: () => {} },
-    { id: 'map', label: 'Map', icon: <MapPin className="w-6 h-6" />, isActive: false, onClick: () => {} },
-    { id: 'favorites', label: 'Favorites', icon: <Heart className="w-6 h-6" />, isActive: false, onClick: () => {} },
-    { id: 'profile', label: 'Profile', icon: <Users className="w-6 h-6" />, isActive: false, onClick: () => {} },
+    { id: 'explore', label: 'Explore', icon: <Grid className="w-6 h-6" />, isActive: activeTab === 'explore', onClick: () => setActiveTab('explore') },
+    { id: 'map', label: 'Map', icon: <MapPin className="w-6 h-6" />, isActive: activeTab === 'map', onClick: () => setActiveTab('map') },
+    { id: 'favorites', label: 'Favorites', icon: <Heart className="w-6 h-6" />, isActive: activeTab === 'favorites', onClick: () => setActiveTab('favorites') },
+    { id: 'profile', label: 'Profile', icon: <Users className="w-6 h-6" />, isActive: activeTab === 'profile', onClick: () => setActiveTab('profile') },
   ];
 
   const sideMenuItems = [
-    { id: 'account', label: 'My Account', icon: <Users className="w-5 h-5" />, onClick: () => {} },
-    { id: 'favorites', label: 'Favorites', icon: <Heart className="w-5 h-5" />, onClick: () => {} },
-    { id: 'wallet', label: 'Wallet', icon: <CreditCard className="w-5 h-5" />, onClick: () => {} },
-    { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" />, onClick: () => {} },
-    { id: 'notifications', label: 'Notifications', icon: <Bell className="w-5 h-5" />, onClick: () => {} },
+    { id: 'account', label: 'My Account', icon: <Users className="w-5 h-5" />, onClick: () => window.location.href = '/account' },
+    { id: 'favorites', label: 'Favorites', icon: <Heart className="w-5 h-5" />, onClick: () => window.location.href = '/favorites' },
+    { id: 'wallet', label: 'Wallet', icon: <CreditCard className="w-5 h-5" />, onClick: () => window.location.href = '/wallet' },
+    { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" />, onClick: () => window.location.href = '/settings' },
+    { id: 'notifications', label: 'Notifications', icon: <Bell className="w-5 h-5" />, onClick: () => alert('Notifications feature coming soon!') },
   ];
 
   if (loading) {
@@ -137,12 +179,12 @@ export default function MobileHomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Premium Header */}
-      <PremiumHeader
-        title="HappyHour"
-        subtitle="Discover amazing deals near you"
-        onMenuClick={() => setShowMobileMenu(true)}
-        onNotificationClick={() => {}}
-      />
+              <PremiumHeader
+          title="HappyHour"
+          subtitle="Discover amazing deals near you"
+          onMenuClick={() => setShowMobileMenu(true)}
+          onNotificationClick={() => alert('Notifications feature coming soon!')}
+        />
 
       {/* Premium Search Bar */}
       <div className="px-4 py-4">
@@ -162,45 +204,120 @@ export default function MobileHomePage() {
               icon={action.icon}
               label={action.label}
               isActive={action.isActive}
-              onClick={() => {}}
+              onClick={() => setActiveFilter(action.id)}
             />
           ))}
         </div>
       </div>
 
-      {/* Premium Deals List */}
+      {/* Tab Content */}
       <div className="px-4 pb-24">
-        <motion.div 
-          className="space-y-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          {deals.map((deal, index) => (
-            <motion.div
-              key={deal.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <PremiumDealCard
-                deal={{
-                  id: deal.id,
-                  title: deal.title,
-                  venue: { name: deal.venue.name },
-                  discount: deal.discount,
-                  cuisine: deal.cuisine,
-                  distance: 0.5,
-                  rating: 4.8,
-                  isOpen: true,
-                  isFavorite: false
-                }}
-                onFavorite={(id) => console.log('Favorite:', id)}
-                onClick={(id) => console.log('Click:', id)}
-              />
-            </motion.div>
-          ))}
-        </motion.div>
+        {activeTab === 'explore' && (
+          <motion.div 
+            className="space-y-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            {filteredDeals.length > 0 ? (
+              filteredDeals.map((deal, index) => (
+                <motion.div
+                  key={deal.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                >
+                  <PremiumDealCard
+                    deal={{
+                      id: deal.id,
+                      title: deal.title,
+                      venue: { name: deal.venue.name },
+                      discount: deal.discount,
+                      cuisine: deal.cuisine,
+                      distance: 0.5,
+                      rating: 4.8,
+                      isOpen: true,
+                      isFavorite: false
+                    }}
+                    onFavorite={(id) => {
+                      console.log('Toggle favorite for deal:', id);
+                    }}
+                    onClick={(id) => {
+                      window.location.href = `/deal/${id}`;
+                    }}
+                  />
+                </motion.div>
+              ))
+            ) : (
+              <motion.div
+                className="text-center py-12"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No deals found</h3>
+                <p className="text-gray-600">Try adjusting your search or filters</p>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+
+        {activeTab === 'map' && (
+          <motion.div
+            className="text-center py-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MapPin className="w-8 h-8 text-blue-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Map View</h3>
+            <p className="text-gray-600 mb-4">Interactive map coming soon!</p>
+            <Button onClick={() => setActiveTab('explore')} variant="primary" size="md">
+              Back to Explore
+            </Button>
+          </motion.div>
+        )}
+
+        {activeTab === 'favorites' && (
+          <motion.div
+            className="text-center py-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Heart className="w-8 h-8 text-red-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Your Favorites</h3>
+            <p className="text-gray-600 mb-4">Save deals you love to see them here</p>
+            <Button onClick={() => setActiveTab('explore')} variant="primary" size="md">
+              Browse Deals
+            </Button>
+          </motion.div>
+        )}
+
+        {activeTab === 'profile' && (
+          <motion.div
+            className="text-center py-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="w-8 h-8 text-gray-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Profile</h3>
+            <p className="text-gray-600 mb-4">Manage your account and preferences</p>
+            <Button onClick={() => window.location.href = '/account'} variant="primary" size="md">
+              Go to Account
+            </Button>
+          </motion.div>
+        )}
       </div>
 
       {/* Premium Bottom Navigation */}
