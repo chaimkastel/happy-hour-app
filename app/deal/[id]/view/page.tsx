@@ -20,12 +20,12 @@ import {
   CheckCircle,
   QrCode
 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
-import { Modal } from '@/components/ui/Modal'
-import ClaimButton from '@/components/ClaimButton'
-import MapMini from '@/components/MapMini'
+import { Button } from '../../../../components/ui/Button'
+import { Card } from '../../../../components/ui/Card'
+import { Badge } from '../../../../components/ui/Badge'
+import { Modal } from '../../../../components/ui/Modal'
+import ClaimButton from '../../../../components/ClaimButton'
+import MapMini from '../../../../components/MapMini'
 import Link from 'next/link'
 
 interface Deal {

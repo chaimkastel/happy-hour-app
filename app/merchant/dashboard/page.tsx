@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Plus, Building2, Tag, MapPin, Clock, Star, Users, Zap, DollarSign, Timer, TrendingUp, BarChart3, Activity, Settings, Bell } from 'lucide-react';
-import AIAnalytics from '@/components/AIAnalytics';
+import AIAnalytics from '../../../components/AIAnalytics';
 
 interface Restaurant {
   id: string;
