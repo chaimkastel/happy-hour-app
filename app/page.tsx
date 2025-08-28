@@ -225,9 +225,9 @@ export default function HomePage() {
                 {/* Restaurant Image */}
                 <div className="relative h-56 overflow-hidden">
                   <div 
-                    className="w-full h-full bg-cover bg-center group-hover:scale-110 transition-transform duration-500 bg-gradient-to-br from-yellow-400/20 to-orange-500/20"
+                    className="w-full h-full bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
                     style={{
-                      backgroundImage: `url(https://picsum.photos/800/600?random=${index + 1})`
+                      backgroundImage: `url(https://via.placeholder.com/800x600/FF6B35/FFFFFF?text=Food+${index + 1})`
                     }}
                   ></div>
                   <div className="absolute inset-0 bg-gradient-to-br from-black/30 to-black/50 group-hover:from-black/40 group-hover:to-black/60 transition-all duration-300"></div>
