@@ -211,6 +211,8 @@ Password: demo123
 ### Admin Access
 **Admin Login URL**: https://www.orderhappyhour.com/admin-access
 
+**Database**: Connected to Supabase PostgreSQL
+
 **Admin Credentials**:
 ```
 Username: chaimkastel
