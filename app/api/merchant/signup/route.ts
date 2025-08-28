@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
         address,
         latitude,
         longitude,
-        businessType: [cuisine],
+        businessType: JSON.stringify([cuisine]),
         priceTier: 'MODERATE',
         hours: JSON.stringify({
           monday: { open: '11:00', close: '22:00' },
