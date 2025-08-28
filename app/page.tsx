@@ -571,10 +571,7 @@ export default function HomePage() {
                   Start Free Trial
                   <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
                 </button>
-                <button className="group bg-white/20 backdrop-blur-sm border-2 border-white/30 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/30 transition-all duration-300 flex items-center gap-3">
-                  <Play className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  Watch Success Stories
-          </button>
+
               </div>
               <p className="text-white/80 mt-6 text-sm">
                 ✨ No setup fees • 🚀 Cancel anytime • 💰 30-day money-back guarantee
@@ -585,4 +582,4 @@ export default function HomePage() {
       </div>
     </div>
   );
-}// Force deployment Thu Aug 28 01:24:27 EDT 2025
+}

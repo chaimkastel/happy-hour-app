@@ -170,18 +170,7 @@ export async function POST(request: NextRequest) {
         status: isActive ? 'LIVE' : 'DRAFT',
         // Store additional deal type data in tags for now
         // In a real app, you'd add these fields to the schema
-        metadata: JSON.stringify({
-          dealType,
-          flashDuration,
-          scheduleDays,
-          scheduleFrequency,
-          scheduleEndDate,
-          recurringPattern,
-          recurringInterval,
-          recurringEndDate,
-          images: images || [],
-          terms
-        })
+        // Note: metadata field doesn't exist in current schema, storing in tags instead
       }
     });
 

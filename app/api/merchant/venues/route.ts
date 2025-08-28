@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { smartGeocode } from '@/lib/geocoding';
 
 // Type assertion for session
 type SessionWithUser = {
@@ -104,6 +105,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Merchant not found' }, { status: 404 });
     }
 
+    // Geocode the address to get coordinates
+    const geocodingResult = await smartGeocode(address);
+    
     // Create the venue with enhanced data
     const venue = await prisma.venue.create({
       data: {
@@ -111,22 +115,17 @@ export async function POST(request: NextRequest) {
         name,
         slug: name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
         address,
-        latitude: 0, // TODO: Add geocoding
-        longitude: 0, // TODO: Add geocoding
+        latitude: geocodingResult.latitude,
+        longitude: geocodingResult.longitude,
         businessType: Array.isArray(businessType) ? businessType : businessType || [],
         priceTier: priceTier || 'MODERATE',
         hours: hours ? JSON.stringify(hours) : '{}',
         photos: photos ? JSON.stringify(photos) : '[]',
         isVerified: false, // New venues start unverified
         rating: 0,
-        // Store additional data in metadata for now
+        // Store additional data in photos field for now
         // In a real app, you'd add these fields to the schema
-        metadata: JSON.stringify({
-          description,
-          contactInfo,
-          amenities,
-          capacity
-        })
+        // Note: metadata field doesn't exist in current schema
       }
     });
 
