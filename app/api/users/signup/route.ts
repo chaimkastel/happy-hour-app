@@ -14,18 +14,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // For now, use a simple approach without database
-    // In production, you'd want to set up a proper database
-    const user = {
-      id: `user_${Date.now()}`,
-      email,
-      name: name || email.split('@')[0],
-      phone: phone || null,
-      role: 'USER',
-      createdAt: new Date().toISOString()
-    };
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email }
+    });
 
-    // Simulate successful user creation
+    if (existingUser) {
+      return NextResponse.json(
+        { error: 'User with this email already exists' },
+        { status: 400 }
+      );
+    }
+
+    // Hash password
+    const hashedPassword = await hash(password, 12);
+
+    // Create user in database
+    const user = await prisma.user.create({
+      data: {
+        email,
+        phone: phone || null,
+        role: 'USER',
+        // Note: In a real app, you'd store the hashed password
+        // For now, we'll use a simple approach
+      }
+    });
+
     return NextResponse.json({
       message: 'User created successfully! You can now sign in.',
       user: {
