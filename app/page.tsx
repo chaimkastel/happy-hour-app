@@ -146,11 +146,11 @@ export default function HomePage() {
             {/* Live Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto mb-8 sm:mb-12 animate-fade-in">
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all duration-300">
-                <div className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-2">🔥 247</div>
+                <div className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-2">247</div>
                 <div className="text-white/80 text-sm sm:text-base">Live Deals Right Now</div>
               </div>
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all duration-300">
-                <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-2">⚡ 2.3k</div>
+                <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-2">2.3k</div>
                 <div className="text-white/80 text-sm sm:text-base">Deals Claimed Today</div>
               </div>
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all duration-300">
@@ -571,10 +571,10 @@ export default function HomePage() {
                   Start Free Trial
                   <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
                 </button>
-                <button className="group bg-white/20 backdrop-blur-sm border-2 border-white/30 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/30 transition-all duration-300 flex items-center gap-3">
-                  <span className="text-2xl">▶️</span>
-                  Watch Success Stories
-          </button>
+                                  <button className="group bg-white/20 backdrop-blur-sm border-2 border-white/30 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/30 transition-all duration-300 flex items-center gap-3">
+                    <Play className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                    Watch Success Stories
+            </button>
               </div>
               <p className="text-white/80 mt-6 text-sm">
                 No setup fees • Cancel anytime • 30-day money-back guarantee
