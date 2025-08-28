@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { MapPin, Clock, Users, Filter, Grid, List, Search, Star, TrendingUp, Zap, Heart, ArrowRight, Shield, Award, Globe, Smartphone, CreditCard, Timer, CheckCircle, Sparkles, Flame, Gift, Target, Rocket, Crown, Diamond } from 'lucide-react';
+import { FireIcon, StarIcon, HeartIcon, GiftIcon, CrownIcon, DiamondIcon, RocketIcon, TargetIcon, SparklesIcon, ZapIcon, TrendingUpIcon, TimerIcon, CheckCircleIcon, AwardIcon, ShieldIcon, GlobeIcon, SmartphoneIcon, CreditCardIcon } from '../components/CustomIcons';
 import DealCard from '../components/DealCard';
 import MapWithClusters from '../components/MapWithClusters';
 import SortFilterBar from '../components/SortFilterBar';
@@ -38,9 +39,21 @@ export default function HomePage() {
     minDiscount: 0,
     openNow: false
   });
+  const [isMobile, setIsMobile] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   useEffect(() => {
     fetchDeals();
+    
+    // Detect mobile device
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   const fetchDeals = async () => {
@@ -92,6 +105,174 @@ export default function HomePage() {
     );
   }
 
+  // Mobile-optimized layout
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+        {/* Mobile Header */}
+        <div className="sticky top-0 z-50 bg-white/10 backdrop-blur-md border-b border-white/20">
+          <div className="px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+                  <FireIcon className="w-5 h-5 text-white" />
+                </div>
+                <h1 className="text-white font-bold text-lg">HappyHour</h1>
+              </div>
+              <button 
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="p-2 rounded-lg bg-white/10 text-white"
+              >
+                <Grid className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Search Bar */}
+        <div className="px-4 py-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search restaurants, cuisines..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
+            />
+          </div>
+        </div>
+
+        {/* Mobile Quick Actions */}
+        <div className="px-4 pb-4">
+          <div className="flex space-x-3 overflow-x-auto pb-2">
+            <button className="flex-shrink-0 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-medium">
+              <MapPin className="w-4 h-4 inline mr-1" />
+              Near Me
+            </button>
+            <button className="flex-shrink-0 bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-medium border border-white/20">
+              <Clock className="w-4 h-4 inline mr-1" />
+              Open Now
+            </button>
+            <button className="flex-shrink-0 bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-medium border border-white/20">
+              <Star className="w-4 h-4 inline mr-1" />
+              Top Rated
+            </button>
+            <button className="flex-shrink-0 bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-medium border border-white/20">
+              <Gift className="w-4 h-4 inline mr-1" />
+              Best Deals
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Deals List */}
+        <div className="px-4 pb-20">
+          <div className="space-y-3">
+            {deals.map((deal) => (
+              <div key={deal.id} className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <h3 className="text-white font-semibold text-lg mb-1">{deal.title}</h3>
+                    <p className="text-gray-300 text-sm mb-2">{deal.venue.name}</p>
+                    <div className="flex items-center space-x-2">
+                      <span className="bg-yellow-400/20 text-yellow-300 px-2 py-1 rounded-full text-xs font-medium">
+                        {deal.discount}% OFF
+                      </span>
+                      <span className="bg-white/10 text-gray-300 px-2 py-1 rounded-full text-xs">
+                        {deal.cuisine}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="ml-3">
+                    <button className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                      <ArrowRight className="w-5 h-5 text-white" />
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-sm text-gray-300">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center">
+                      <MapPin className="w-4 h-4 mr-1" />
+                      <span>0.5 mi</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Clock className="w-4 h-4 mr-1" />
+                      <span>Open</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <Star className="w-4 h-4 mr-1 text-yellow-400" />
+                    <span>4.8</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Mobile Bottom Navigation */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white/10 backdrop-blur-md border-t border-white/20">
+          <div className="flex items-center justify-around py-2">
+            <button className="flex flex-col items-center py-2 px-3 text-yellow-400">
+              <Grid className="w-6 h-6 mb-1" />
+              <span className="text-xs font-medium">Explore</span>
+            </button>
+            <button className="flex flex-col items-center py-2 px-3 text-gray-300">
+              <MapPin className="w-6 h-6 mb-1" />
+              <span className="text-xs">Map</span>
+            </button>
+            <button className="flex flex-col items-center py-2 px-3 text-gray-300">
+              <Heart className="w-6 h-6 mb-1" />
+              <span className="text-xs">Favorites</span>
+            </button>
+            <button className="flex flex-col items-center py-2 px-3 text-gray-300">
+              <Users className="w-6 h-6 mb-1" />
+              <span className="text-xs">Profile</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu Overlay */}
+        {showMobileMenu && (
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">
+            <div className="absolute top-0 right-0 w-80 h-full bg-white/10 backdrop-blur-md border-l border-white/20">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-white text-xl font-bold">Menu</h2>
+                  <button 
+                    onClick={() => setShowMobileMenu(false)}
+                    className="p-2 rounded-lg bg-white/10 text-white"
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/10">
+                    <Users className="w-5 h-5 inline mr-3" />
+                    My Account
+                  </button>
+                  <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/10">
+                    <Heart className="w-5 h-5 inline mr-3" />
+                    Favorites
+                  </button>
+                  <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/10">
+                    <CreditCard className="w-5 h-5 inline mr-3" />
+                    Wallet
+                  </button>
+                  <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/10">
+                    <Shield className="w-5 h-5 inline mr-3" />
+                    Settings
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Desktop layout (existing)
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 dark:from-slate-900 dark:via-purple-900 dark:to-indigo-900">
       {/* Animated Background Elements */}

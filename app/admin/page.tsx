@@ -71,12 +71,16 @@ interface MerchantApplication {
 }
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'merchants' | 'deals' | 'dealReview' | 'settings' | 'safety' | 'analytics' | 'applications'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'merchants' | 'deals' | 'dealReview' | 'settings' | 'safety' | 'analytics' | 'applications' | 'monitoring' | 'health'>('overview');
   const [users, setUsers] = useState<User[]>([]);
   const [merchants, setMerchants] = useState<Merchant[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [pendingDeals, setPendingDeals] = useState<Deal[]>([]);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
+  const [healthData, setHealthData] = useState<any>(null);
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
+  const [monitoringData, setMonitoringData] = useState<any>(null);
+  const [autoRefresh, setAutoRefresh] = useState(true);
   const [merchantApplications, setMerchantApplications] = useState<MerchantApplication[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -262,8 +266,31 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (activeTab === 'dealReview') {
       fetchPendingDeals();
+    } else if (activeTab === 'health') {
+      fetchHealthData();
+    } else if (activeTab === 'analytics') {
+      fetchAnalyticsData();
+    } else if (activeTab === 'monitoring') {
+      fetchMonitoringData();
     }
   }, [activeTab]);
+
+  // Auto-refresh for monitoring tabs
+  useEffect(() => {
+    if (!autoRefresh) return;
+
+    const interval = setInterval(() => {
+      if (activeTab === 'health') {
+        fetchHealthData();
+      } else if (activeTab === 'monitoring') {
+        fetchMonitoringData();
+      } else if (activeTab === 'analytics') {
+        fetchAnalyticsData();
+      }
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [activeTab, autoRefresh]);
 
   const stats = {
     totalUsers: users.length,
@@ -383,6 +410,42 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error fetching pending deals:', error);
+    }
+  };
+
+  const fetchHealthData = async () => {
+    try {
+      const response = await fetch('/api/admin/health');
+      if (response.ok) {
+        const data = await response.json();
+        setHealthData(data);
+      }
+    } catch (error) {
+      console.error('Error fetching health data:', error);
+    }
+  };
+
+  const fetchAnalyticsData = async () => {
+    try {
+      const response = await fetch('/api/admin/analytics');
+      if (response.ok) {
+        const data = await response.json();
+        setAnalyticsData(data);
+      }
+    } catch (error) {
+      console.error('Error fetching analytics data:', error);
+    }
+  };
+
+  const fetchMonitoringData = async () => {
+    try {
+      const response = await fetch('/api/admin/monitoring');
+      if (response.ok) {
+        const data = await response.json();
+        setMonitoringData(data);
+      }
+    } catch (error) {
+      console.error('Error fetching monitoring data:', error);
     }
   };
 
@@ -522,17 +585,41 @@ export default function AdminDashboard() {
                 <CreditCard className="w-5 h-5" />
                 Deals ({stats.totalDeals})
               </button>
-              <button
-                onClick={() => setActiveTab('dealReview')}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                  activeTab === 'dealReview'
-                    ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300'
-                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
-                }`}
-              >
-                <FileText className="w-5 h-5" />
-                Deal Review
-              </button>
+                      <button
+          onClick={() => setActiveTab('dealReview')}
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+            activeTab === 'dealReview'
+              ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300'
+              : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+          }`}
+        >
+          <FileText className="w-5 h-5" />
+          Deal Review
+        </button>
+        
+        <button
+          onClick={() => setActiveTab('monitoring')}
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+            activeTab === 'monitoring'
+              ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
+              : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+          }`}
+        >
+          <Activity className="w-5 h-5" />
+          Real-time Monitoring
+        </button>
+        
+        <button
+          onClick={() => setActiveTab('health')}
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+            activeTab === 'health'
+              ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
+              : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+          }`}
+        >
+          <Server className="w-5 h-5" />
+          System Health
+        </button>
               <button
                 onClick={() => setActiveTab('safety')}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
