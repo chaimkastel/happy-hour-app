@@ -1214,9 +1214,22 @@ export default function AdminDashboard() {
 
             {activeTab === 'analytics' && (
               <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">System Analytics</h2>
-                  <p className="text-slate-600 dark:text-slate-400">Real-time system performance and metrics</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-semibold text-slate-900 dark:text-white">System Analytics</h2>
+                    <p className="text-slate-600 dark:text-slate-400">Real-time system performance and metrics</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      fetchAnalyticsData();
+                      fetchHealthData();
+                      fetchMonitoringData();
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <RefreshCw className="w-4 h-4 inline mr-2" />
+                    Refresh
+                  </button>
                 </div>
 
                 {/* System Metrics */}
@@ -1376,6 +1389,205 @@ export default function AdminDashboard() {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* System Health Tab */}
+      {activeTab === 'health' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">System Health</h2>
+              <p className="text-slate-600 dark:text-slate-400">Database and system health monitoring</p>
+            </div>
+            <button
+              onClick={fetchHealthData}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <RefreshCw className="w-4 h-4 inline mr-2" />
+              Check Health
+            </button>
+          </div>
+
+          {healthData ? (
+            <div className="space-y-6">
+              {/* Overall Status */}
+              <div className={`p-6 rounded-lg border-2 ${
+                healthData.overall?.status === 'healthy' 
+                  ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-700'
+                  : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-700'
+              }`}>
+                <div className="flex items-center">
+                  {healthData.overall?.status === 'healthy' ? (
+                    <CheckCircle className="w-8 h-8 text-green-600 mr-3" />
+                  ) : (
+                    <AlertCircle className="w-8 h-8 text-red-600 mr-3" />
+                  )}
+                  <div>
+                    <h3 className="text-lg font-semibold">
+                      {healthData.overall?.status === 'healthy' ? 'System Healthy' : 'System Issues Detected'}
+                    </h3>
+                    <p className="text-sm opacity-75">{healthData.overall?.message}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Database Status */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                  <h3 className="text-lg font-semibold mb-4">Database Status</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span>Status:</span>
+                      <span className={`font-medium ${
+                        healthData.database?.status === 'healthy' ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {healthData.database?.status}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Response Time:</span>
+                      <span>{healthData.database?.responseTime}ms</span>
+                    </div>
+                    {healthData.database?.error && (
+                      <div className="text-red-600 text-sm">
+                        Error: {healthData.database.error}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                  <h3 className="text-lg font-semibold mb-4">Database Stats</h3>
+                  {healthData.database?.stats ? (
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Users:</span>
+                        <span>{healthData.database.stats.users}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Merchants:</span>
+                        <span>{healthData.database.stats.merchants}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Venues:</span>
+                        <span>{healthData.database.stats.venues}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Deals:</span>
+                        <span>{healthData.database.stats.deals}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">No data available</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading health data...</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Real-time Monitoring Tab */}
+      {activeTab === 'monitoring' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Real-time Monitoring</h2>
+              <p className="text-slate-600 dark:text-slate-400">Live system performance and endpoint monitoring</p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={autoRefresh}
+                  onChange={(e) => setAutoRefresh(e.target.checked)}
+                  className="mr-2"
+                />
+                <span className="text-sm">Auto-refresh</span>
+              </label>
+              <button
+                onClick={fetchMonitoringData}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <RefreshCw className="w-4 h-4 inline mr-2" />
+                Refresh
+              </button>
+            </div>
+          </div>
+
+          {monitoringData ? (
+            <div className="space-y-6">
+              {/* Overall Health */}
+              <div className={`p-6 rounded-lg border-2 ${
+                monitoringData.overallHealth === 'healthy' 
+                  ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-700'
+                  : 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-700'
+              }`}>
+                <div className="flex items-center">
+                  {monitoringData.overallHealth === 'healthy' ? (
+                    <CheckCircle className="w-8 h-8 text-green-600 mr-3" />
+                  ) : (
+                    <AlertTriangle className="w-8 h-8 text-yellow-600 mr-3" />
+                  )}
+                  <div>
+                    <h3 className="text-lg font-semibold">
+                      {monitoringData.overallHealth === 'healthy' ? 'All Systems Operational' : 'System Degraded'}
+                    </h3>
+                    <p className="text-sm opacity-75">
+                      {monitoringData.summary?.healthyTests} of {monitoringData.summary?.totalTests} tests passing
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Test Results */}
+              <div className="grid grid-cols-1 gap-4">
+                <h3 className="text-lg font-semibold">Endpoint Tests</h3>
+                {monitoringData.tests?.map((test: any, index: number) => (
+                  <div key={index} className={`p-4 rounded-lg border ${
+                    test.status === 'healthy' 
+                      ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-700'
+                      : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-700'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        {test.status === 'healthy' ? (
+                          <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+                        ) : (
+                          <AlertCircle className="w-5 h-5 text-red-600 mr-3" />
+                        )}
+                        <div>
+                          <h4 className="font-medium">{test.name}</h4>
+                          {test.error && (
+                            <p className="text-sm text-red-600">{test.error}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-medium">
+                          {test.responseTime}ms
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {test.critical ? 'Critical' : 'Standard'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading monitoring data...</p>
+            </div>
+          )}
         </div>
       )}
     </div>
