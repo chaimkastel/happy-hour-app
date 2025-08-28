@@ -12,7 +12,7 @@ export const authOptions: any = {
   },
   callbacks: {
     async session({ session, token }: any) {
-      if (token.sub && session.user) {
+      if (token && typeof token.sub === 'string' && session.user) {
         (session.user as any).id = token.sub
         (session.user as any).role = token.role
       }
