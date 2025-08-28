@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, Building2, CreditCard, BarChart3, Settings, Shield, Eye, EyeOff, Plus, Edit, Trash2, Search, Filter, Download, Upload, AlertTriangle, CheckCircle, Clock, TrendingUp, DollarSign, MapPin, Star, Heart, MessageSquare, Power, Lock, Unlock, Globe, Database, Server, Activity, Zap, AlertCircle, Ban, UserCheck, UserX, Pause, Play, RefreshCw, Bell, BellOff, FileText, ThumbsUp, ThumbsDown, Mail, Phone, Calendar } from 'lucide-react';
+import { Users, Building2, CreditCard, BarChart3, Settings, Shield, Eye, EyeOff, Plus, Edit, Trash2, Search, Filter, Download, Upload, AlertTriangle, CheckCircle, Clock, TrendingUp, DollarSign, MapPin, Star, Heart, MessageSquare, Power, Lock, Unlock, Globe, Database, Server, Activity, Zap, AlertCircle, Ban, UserCheck, UserX, Pause, Play, RefreshCw, Bell, BellOff, FileText, ThumbsUp, ThumbsDown, Mail, Phone, Calendar, X } from 'lucide-react';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 
 interface User {
@@ -128,139 +128,61 @@ export default function AdminDashboard() {
     checkAdminAuth();
   }, []);
 
-  // Mock data for demonstration
+  // Fetch real data from APIs
   useEffect(() => {
-    setUsers([
-      {
-        id: '1',
-        email: 'john@example.com',
-        name: 'John Doe',
-        role: 'USER',
-        createdAt: '2024-01-15',
-        lastLogin: '2024-01-20',
-        isActive: true,
-        dealsCount: 0
-      },
-      {
-        id: '2',
-        email: 'jane@restaurant.com',
-        name: 'Jane Smith',
-        role: 'MERCHANT',
-        createdAt: '2024-01-10',
-        lastLogin: '2024-01-19',
-        isActive: true,
-        dealsCount: 5,
-        venuesCount: 2
-      }
-    ]);
-
-    setMerchants([
-      {
-        id: '1',
-        email: 'jane@restaurant.com',
-        businessName: 'Jane\'s Italian Bistro',
-        contactName: 'Jane Smith',
-        phone: '+1-555-0123',
-        address: '123 Main St, New York, NY',
-        subscription: 'PREMIUM',
-        isActive: true,
-        createdAt: '2024-01-10',
-        dealsCount: 5,
-        venuesCount: 2,
-        totalRevenue: 2500
-      },
-      {
-        id: '2',
-        email: 'mike@pizza.com',
-        businessName: 'Mike\'s Pizza Palace',
-        contactName: 'Mike Johnson',
-        phone: '+1-555-0456',
-        address: '456 Oak Ave, New York, NY',
-        subscription: 'BASIC',
-        isActive: true,
-        createdAt: '2024-01-12',
-        dealsCount: 3,
-        venuesCount: 1,
-        totalRevenue: 1200
-      }
-    ]);
-
-    setDeals([
-      {
-        id: '1',
-        title: 'Happy Hour Special',
-        description: '50% off all drinks during happy hour',
-        percentOff: 50,
-        status: 'LIVE',
-        startAt: '2024-01-20T17:00:00Z',
-        endAt: '2024-01-20T19:00:00Z',
-        maxRedemptions: 100,
-        redeemedCount: 23,
-        venue: {
-          name: 'Jane\'s Italian Bistro',
-          businessType: 'Italian'
-        },
-        merchant: {
-          businessName: 'Jane\'s Italian Bistro',
-          email: 'jane@restaurant.com'
-        }
-      }
-    ]);
-
-    setMerchantApplications([
-      {
-        id: '1',
-        businessName: 'Golden Dragon Restaurant',
-        contactName: 'David Chen',
-        email: 'david@goldendragon.com',
-        phone: '+1-555-0123',
-        address: '123 Main St, Chinatown, NY 10013',
-        businessType: 'Chinese Restaurant',
-        description: 'Authentic Chinese cuisine with over 20 years of experience. We specialize in traditional dishes and modern fusion.',
-        submittedAt: '2024-01-20T10:30:00Z',
-        status: 'PENDING',
-        documents: {
-          businessLicense: 'BL-2024-001',
-          taxId: 'TAX-123456789',
-          insurance: 'INS-2024-001'
-        }
-      },
-      {
-        id: '2',
-        businessName: 'Bella Vista Cafe',
-        contactName: 'Maria Rodriguez',
-        email: 'maria@bellavista.com',
-        phone: '+1-555-0456',
-        address: '456 Oak Ave, Little Italy, NY 10012',
-        businessType: 'Italian Cafe',
-        description: 'Cozy Italian cafe serving fresh pasta, pizza, and authentic Italian coffee. Family-owned for 15 years.',
-        submittedAt: '2024-01-19T14:20:00Z',
-        status: 'PENDING',
-        documents: {
-          businessLicense: 'BL-2024-002',
-          taxId: 'TAX-987654321',
-          insurance: 'INS-2024-002'
-        }
-      },
-      {
-        id: '3',
-        businessName: 'Spice Garden Indian',
-        contactName: 'Raj Patel',
-        email: 'raj@spicegarden.com',
-        phone: '+1-555-0789',
-        address: '789 Broadway, Midtown, NY 10001',
-        businessType: 'Indian Restaurant',
-        description: 'Traditional Indian cuisine with vegetarian and non-vegetarian options. Award-winning chef with 25 years experience.',
-        submittedAt: '2024-01-18T09:15:00Z',
-        status: 'PENDING',
-        documents: {
-          businessLicense: 'BL-2024-003',
-          taxId: 'TAX-456789123',
-          insurance: 'INS-2024-003'
-        }
-      }
-    ]);
+    fetchUsers();
+    fetchMerchants();
+    fetchDeals();
+    fetchApplications();
   }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('/api/admin/users');
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data.users);
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  const fetchMerchants = async () => {
+    try {
+      const response = await fetch('/api/admin/merchants');
+      if (response.ok) {
+        const data = await response.json();
+        setMerchants(data.merchants);
+      }
+    } catch (error) {
+      console.error('Error fetching merchants:', error);
+    }
+  };
+
+  const fetchDeals = async () => {
+    try {
+      const response = await fetch('/api/admin/deals');
+      if (response.ok) {
+        const data = await response.json();
+        setDeals(data.deals);
+      }
+    } catch (error) {
+      console.error('Error fetching deals:', error);
+    }
+  };
+
+  const fetchApplications = async () => {
+    try {
+      const response = await fetch('/api/admin/applications');
+      if (response.ok) {
+        const data = await response.json();
+        setMerchantApplications(data.applications);
+      }
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+    }
+  };
 
   // Fetch pending deals when dealReview tab is active
   useEffect(() => {
@@ -304,35 +226,78 @@ export default function AdminDashboard() {
   const handleCreateUser = async (userData: Partial<User>) => {
     setLoading(true);
     try {
-      // API call to create user
-      console.log('Creating user:', userData);
-      // Add to local state
-      const newUser: User = {
-        id: Date.now().toString(),
-        email: userData.email || '',
-        name: userData.name || '',
-        role: userData.role || 'USER',
-        createdAt: new Date().toISOString().split('T')[0],
-        isActive: true
-      };
-      setUsers([...users, newUser]);
-      setShowCreateModal(false);
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: userData.email,
+          phone: userData.phone,
+          role: userData.role
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(data.message);
+        await fetchUsers(); // Refresh users list
+        setShowCreateModal(false);
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error}`);
+      }
     } catch (error) {
       console.error('Error creating user:', error);
+      alert('An error occurred while creating the user');
     } finally {
       setLoading(false);
     }
   };
 
   const handleToggleUserStatus = async (userId: string) => {
-    setUsers(users.map(user => 
-      user.id === userId ? { ...user, isActive: !user.isActive } : user
-    ));
+    try {
+      const user = users.find(u => u.id === userId);
+      if (!user) return;
+
+      const response = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          isActive: !user.isActive
+        })
+      });
+
+      if (response.ok) {
+        await fetchUsers(); // Refresh users list
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error updating user:', error);
+      alert('An error occurred while updating the user');
+    }
   };
 
   const handleDeleteUser = async (userId: string) => {
     if (confirm('Are you sure you want to delete this user?')) {
-      setUsers(users.filter(user => user.id !== userId));
+      try {
+        const response = await fetch(`/api/admin/users?userId=${userId}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          alert(data.message);
+          await fetchUsers(); // Refresh users list
+        } else {
+          const error = await response.json();
+          alert(`Error: ${error.error}`);
+        }
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        alert('An error occurred while deleting the user');
+      }
     }
   };
 
@@ -476,6 +441,32 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleApplicationApproval = async (applicationId: string, status: 'APPROVED' | 'REJECTED', adminNotes?: string) => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/admin/applications', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ applicationId, status, adminNotes })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(data.message);
+        // Refresh applications
+        await fetchApplications();
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error updating application:', error);
+      alert('An error occurred while updating the application');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-100 dark:bg-slate-900">
@@ -573,6 +564,17 @@ export default function AdminDashboard() {
               >
                 <Building2 className="w-5 h-5" />
                 Merchants ({stats.totalMerchants})
+              </button>
+              <button
+                onClick={() => setActiveTab('applications')}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                  activeTab === 'applications'
+                    ? 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                }`}
+              >
+                <FileText className="w-5 h-5" />
+                Applications ({merchantApplications.filter(app => app.status === 'PENDING').length})
               </button>
               <button
                 onClick={() => setActiveTab('deals')}
@@ -893,6 +895,99 @@ export default function AdminDashboard() {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'applications' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Merchant Applications</h2>
+                    <p className="text-slate-600 dark:text-slate-400">Review and approve new merchant applications</p>
+                  </div>
+                  <button
+                    onClick={fetchApplications}
+                    className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                  >
+                    <RefreshCw className="w-4 h-4 inline mr-2" />
+                    Refresh
+                  </button>
+                </div>
+
+                {/* Applications Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {merchantApplications.map((application) => (
+                    <div key={application.id} className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{application.businessName}</h3>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">{application.contactName}</p>
+                        </div>
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          application.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                          application.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {application.status}
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                          <Mail className="w-4 h-4" />
+                          {application.email}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                          <Phone className="w-4 h-4" />
+                          {application.phone}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                          <MapPin className="w-4 h-4" />
+                          {application.address}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                          <Building2 className="w-4 h-4" />
+                          {application.businessType}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                          <Calendar className="w-4 h-4" />
+                          Applied: {new Date(application.submittedAt).toLocaleDateString()}
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">
+                        {application.description}
+                      </p>
+
+                      {application.status === 'PENDING' && (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleApplicationApproval(application.id, 'APPROVED')}
+                            className="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => handleApplicationApproval(application.id, 'REJECTED')}
+                            className="flex-1 bg-red-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                          >
+                            <X className="w-4 h-4" />
+                            Reject
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {merchantApplications.length === 0 && (
+                  <div className="text-center py-12">
+                    <FileText className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No Applications</h3>
+                    <p className="text-slate-600 dark:text-slate-400">No merchant applications to review at this time.</p>
+                  </div>
+                )}
               </div>
             )}
 

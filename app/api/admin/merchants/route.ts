@@ -3,35 +3,64 @@ import { prisma } from '../../../../lib/db';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get all merchants
-    const merchants = await prisma.user.findMany({
-      where: {
-        role: 'MERCHANT'
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get('status');
+    const kycStatus = searchParams.get('kycStatus');
+    
+    let whereClause: any = {};
+    if (kycStatus) {
+      whereClause.kycStatus = kycStatus;
+    }
+
+    const merchants = await prisma.merchant.findMany({
+      where: whereClause,
+      include: {
+        user: true,
+        venues: {
+          include: {
+            deals: true
+          }
+        },
+        subscription: true
       },
       orderBy: {
         createdAt: 'desc'
       }
     });
 
-    // Transform the data to match the expected format
+    // Transform the data for admin display
     const transformedMerchants = merchants.map(merchant => ({
       id: merchant.id,
-      email: merchant.email,
-      businessName: 'Unnamed Business', // Will be updated when Merchant model is properly linked
-      contactName: 'Unknown',
-      phone: merchant.phone || '',
-      address: '',
-      subscription: 'BASIC', // Default subscription
-      isActive: true,
-      createdAt: merchant.createdAt.toISOString().split('T')[0],
-      dealsCount: 0, // Will be calculated separately
-      venuesCount: 0, // Will be calculated separately
-      totalRevenue: 0 // Calculate based on actual data
+      email: merchant.user.email,
+      businessName: merchant.businessName,
+      contactName: merchant.user.email.split('@')[0], // Fallback since we don't have contactName in User model
+      phone: merchant.user.phone,
+      address: merchant.venues[0]?.address || 'Not provided',
+      subscription: merchant.subscription?.plan || 'FREE',
+      isActive: merchant.kycStatus === 'APPROVED',
+      createdAt: merchant.createdAt,
+      updatedAt: merchant.updatedAt,
+      kycStatus: merchant.kycStatus,
+      dealsCount: merchant.venues.reduce((total, venue) => total + venue.deals.length, 0),
+      venuesCount: merchant.venues.length,
+      totalRevenue: 0, // You might want to calculate this from actual transactions
+      venues: merchant.venues.map(venue => ({
+        id: venue.id,
+        name: venue.name,
+        address: venue.address,
+        businessType: venue.businessType,
+        rating: venue.rating,
+        isVerified: venue.isVerified,
+        dealsCount: venue.deals.length
+      }))
     }));
 
-    return NextResponse.json({ merchants: transformedMerchants });
+    return NextResponse.json({
+      merchants: transformedMerchants,
+      total: transformedMerchants.length
+    });
   } catch (error) {
-    console.error('Error fetching merchants:', error);
+    console.error('Error fetching admin merchants:', error);
     return NextResponse.json(
       { error: 'Failed to fetch merchants' },
       { status: 500 }
@@ -39,24 +68,51 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function PUT(request: NextRequest) {
   try {
-    const { email, name, businessName, phone, address } = await request.json();
+    const body = await request.json();
+    const { merchantId, kycStatus, adminNotes } = body;
 
-    // Create new merchant
-    const merchant = await prisma.user.create({
+    if (!merchantId || !kycStatus) {
+      return NextResponse.json(
+        { error: 'Merchant ID and KYC status are required' },
+        { status: 400 }
+      );
+    }
+
+    // Update the merchant KYC status
+    const updatedMerchant = await prisma.merchant.update({
+      where: { id: merchantId },
       data: {
-        email,
-        role: 'MERCHANT',
-        phone,
+        kycStatus: kycStatus,
+        updatedAt: new Date()
       },
+      include: {
+        user: true,
+        venues: true
+      }
     });
 
-    return NextResponse.json({ merchant });
+    // Log the admin action
+    console.log(`Admin action: Merchant ${merchantId} KYC status changed to ${kycStatus}`, {
+      adminNotes,
+      timestamp: new Date().toISOString()
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: `Merchant ${kycStatus.toLowerCase()} successfully`,
+      merchant: {
+        id: updatedMerchant.id,
+        businessName: updatedMerchant.businessName,
+        kycStatus: updatedMerchant.kycStatus,
+        email: updatedMerchant.user.email
+      }
+    });
   } catch (error) {
-    console.error('Error creating merchant:', error);
+    console.error('Error updating merchant:', error);
     return NextResponse.json(
-      { error: 'Failed to create merchant' },
+      { error: 'Failed to update merchant' },
       { status: 500 }
     );
   }
