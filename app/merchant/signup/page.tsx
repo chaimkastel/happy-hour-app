@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Building2, CheckCircle, Star, Users, TrendingUp, Shield, Zap } from 'lucide-react';
+import { ArrowRight, Building2, CheckCircle, Star, Users, TrendingUp, Shield, Zap, Crown } from 'lucide-react';
 
 export default function MerchantSignupPage() {
   const [formData, setFormData] = useState({
