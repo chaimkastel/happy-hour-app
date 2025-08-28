@@ -154,7 +154,7 @@ export default function HomePage() {
                 <div className="text-white/80 text-sm sm:text-base">Deals Claimed Today</div>
               </div>
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all duration-300">
-                <div className="text-2xl sm:text-3xl font-bold text-pink-400 mb-2">💰 $127</div>
+                <div className="text-2xl sm:text-3xl font-bold text-pink-400 mb-2">$127</div>
                 <div className="text-white/80 text-sm sm:text-base">Average Savings</div>
               </div>
             </div>
@@ -169,8 +169,8 @@ export default function HomePage() {
                   className="w-full pl-12 sm:pl-16 pr-24 sm:pr-32 py-4 sm:py-6 text-lg sm:text-xl bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl sm:rounded-3xl focus:border-yellow-400 focus:outline-none transition-all duration-300 text-white placeholder-white/60 shadow-2xl"
                 />
                 <button className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105">
-                  <span className="hidden sm:inline">🔍 Find Deals</span>
-                  <span className="sm:hidden">🔍</span>
+                  <span className="hidden sm:inline">Find Deals</span>
+                  <span className="sm:hidden">Search</span>
                 </button>
               </div>
             </div>
@@ -182,8 +182,8 @@ export default function HomePage() {
                 className="group bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-8 sm:px-12 py-4 sm:py-6 rounded-2xl sm:rounded-3xl font-black text-lg sm:text-2xl hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-2xl hover:shadow-yellow-500/25 hover:scale-105 flex items-center gap-3 sm:gap-4"
               >
                 <Rocket className="w-6 h-6 sm:w-8 sm:h-8 group-hover:animate-bounce" />
-                <span className="hidden sm:inline">🚀 Explore Deals</span>
-                <span className="sm:hidden">🚀 Explore</span>
+                <span className="hidden sm:inline">Explore Deals</span>
+                <span className="sm:hidden">Explore</span>
                 <ArrowRight className="w-6 h-6 sm:w-8 sm:h-8 group-hover:translate-x-2 transition-transform" />
               </button>
 
