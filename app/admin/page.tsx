@@ -89,6 +89,10 @@ export default function AdminDashboard() {
   const [selectedApplication, setSelectedApplication] = useState<MerchantApplication | null>(null);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showUserDetailsModal, setShowUserDetailsModal] = useState(false);
+  const [userDetails, setUserDetails] = useState<any>(null);
+  const [passwordData, setPasswordData] = useState({ newPassword: '', confirmPassword: '', adminPassword: '' });
   
   // Website Safety Controls
   const [websiteStatus, setWebsiteStatus] = useState<'online' | 'maintenance' | 'emergency'>('online');
@@ -467,6 +471,69 @@ export default function AdminDashboard() {
     }
   };
 
+  const handlePasswordChange = async () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      alert('Password must be at least 6 characters long');
+      return;
+    }
+
+    if (!selectedUser) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch('/api/admin/passwords', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: selectedUser.id,
+          newPassword: passwordData.newPassword,
+          adminPassword: passwordData.adminPassword
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(data.message);
+        setShowPasswordModal(false);
+        setPasswordData({ newPassword: '', confirmPassword: '', adminPassword: '' });
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error changing password:', error);
+      alert('An error occurred while changing the password');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewUserDetails = async (userId: string) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/admin/users/${userId}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setUserDetails(data.user);
+        setShowUserDetailsModal(true);
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      alert('An error occurred while fetching user details');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-100 dark:bg-slate-900">
@@ -774,17 +841,30 @@ export default function AdminDashboard() {
                           <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">User</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Role</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Last Login</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Contributions</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Joined</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                        {users.map((user) => (
-                          <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
+                        {users
+                          .filter(user => 
+                            searchQuery === '' || 
+                            user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            user.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            (user.merchant?.businessName && user.merchant.businessName.toLowerCase().includes(searchQuery.toLowerCase()))
+                          )
+                          .map((user) => (
+                          <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer" onClick={() => handleViewUserDetails(user.id)}>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div>
-                                <div className="text-sm font-medium text-slate-900 dark:text-white">{user.name}</div>
+                                <div className="text-sm font-medium text-slate-900 dark:text-white">
+                                  {user.merchant?.businessName || user.email.split('@')[0]}
+                                </div>
                                 <div className="text-sm text-slate-500 dark:text-slate-400">{user.email}</div>
+                                {user.phone && (
+                                  <div className="text-xs text-slate-400">{user.phone}</div>
+                                )}
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -802,27 +882,78 @@ export default function AdminDashboard() {
                               }`}>
                                 {user.isActive ? 'Active' : 'Inactive'}
                               </span>
+                              {user.merchant?.kycStatus && (
+                                <div className="mt-1">
+                                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                    user.merchant.kycStatus === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                                    user.merchant.kycStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-red-100 text-red-800'
+                                  }`}>
+                                    {user.merchant.kycStatus}
+                                  </span>
+                                </div>
+                              )}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                              {user.lastLogin || 'Never'}
+                              <div className="space-y-1">
+                                <div>Deals: {user.dealsCount || 0}</div>
+                                <div>Venues: {user.venuesCount || 0}</div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                              {new Date(user.createdAt).toLocaleDateString()}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                               <div className="flex items-center gap-2">
                                 <button
-                                  onClick={() => setSelectedUser(user)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedUser(user);
+                                    setShowUserDetailsModal(true);
+                                  }}
                                   className="text-indigo-600 hover:text-indigo-900"
+                                  title="View Details"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedUser(user);
+                                    setShowPasswordModal(true);
+                                  }}
+                                  className="text-blue-600 hover:text-blue-900"
+                                  title="Change Password"
+                                >
+                                  <Lock className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedUser(user);
+                                  }}
+                                  className="text-yellow-600 hover:text-yellow-900"
+                                  title="Edit User"
                                 >
                                   <Edit className="w-4 h-4" />
                                 </button>
                                 <button
-                                  onClick={() => handleToggleUserStatus(user.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleUserStatus(user.id);
+                                  }}
                                   className={`${user.isActive ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}
+                                  title={user.isActive ? 'Deactivate' : 'Activate'}
                                 >
                                   {user.isActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                 </button>
                                 <button
-                                  onClick={() => handleDeleteUser(user.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteUser(user.id);
+                                  }}
                                   className="text-red-600 hover:text-red-900"
+                                  title="Delete User"
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </button>
@@ -1483,6 +1614,212 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Password Change Modal */}
+      {showPasswordModal && selectedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+              Change Password for {selectedUser.email}
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Admin Password</label>
+                <input
+                  type="password"
+                  value={passwordData.adminPassword}
+                  onChange={(e) => setPasswordData({...passwordData, adminPassword: e.target.value})}
+                  required
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="Enter your admin password"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">New Password</label>
+                <input
+                  type="password"
+                  value={passwordData.newPassword}
+                  onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                  required
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="Enter new password"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Confirm Password</label>
+                <input
+                  type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                  required
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="Confirm new password"
+                />
+              </div>
+              <div className="flex items-center gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPasswordModal(false);
+                    setPasswordData({ newPassword: '', confirmPassword: '', adminPassword: '' });
+                  }}
+                  className="flex-1 px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handlePasswordChange}
+                  disabled={loading}
+                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  {loading ? 'Changing...' : 'Change Password'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* User Details Modal */}
+      {showUserDetailsModal && userDetails && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
+                User Details: {userDetails.email}
+              </h3>
+              <button
+                onClick={() => setShowUserDetailsModal(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* User Information */}
+              <div className="space-y-4">
+                <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-4">
+                  <h4 className="font-semibold text-slate-900 dark:text-white mb-3">Account Information</h4>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">Email:</span> {userDetails.email}</div>
+                    <div><span className="font-medium">Phone:</span> {userDetails.phone || 'Not provided'}</div>
+                    <div><span className="font-medium">Role:</span> 
+                      <span className={`ml-2 px-2 py-1 text-xs rounded-full ${
+                        userDetails.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
+                        userDetails.role === 'MERCHANT' ? 'bg-blue-100 text-blue-800' :
+                        'bg-green-100 text-green-800'
+                      }`}>
+                        {userDetails.role}
+                      </span>
+                    </div>
+                    <div><span className="font-medium">Joined:</span> {new Date(userDetails.createdAt).toLocaleDateString()}</div>
+                    <div><span className="font-medium">Last Updated:</span> {new Date(userDetails.updatedAt).toLocaleDateString()}</div>
+                  </div>
+                </div>
+
+                {/* Merchant Information */}
+                {userDetails.merchant && (
+                  <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-4">
+                    <h4 className="font-semibold text-slate-900 dark:text-white mb-3">Business Information</h4>
+                    <div className="space-y-2 text-sm">
+                      <div><span className="font-medium">Business Name:</span> {userDetails.merchant.businessName}</div>
+                      <div><span className="font-medium">KYC Status:</span> 
+                        <span className={`ml-2 px-2 py-1 text-xs rounded-full ${
+                          userDetails.merchant.kycStatus === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                          userDetails.merchant.kycStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {userDetails.merchant.kycStatus}
+                        </span>
+                      </div>
+                      <div><span className="font-medium">Subscription:</span> {userDetails.merchant.subscription}</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Contributions */}
+                <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-4">
+                  <h4 className="font-semibold text-slate-900 dark:text-white mb-3">Contributions</h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">{userDetails.contributions.totalDeals}</div>
+                      <div className="text-slate-600 dark:text-slate-400">Total Deals</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">{userDetails.contributions.activeDeals}</div>
+                      <div className="text-slate-600 dark:text-slate-400">Active Deals</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-600">{userDetails.contributions.totalRedemptions}</div>
+                      <div className="text-slate-600 dark:text-slate-400">Redemptions</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-orange-600">{userDetails.contributions.venuesCount}</div>
+                      <div className="text-slate-600 dark:text-slate-400">Venues</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Activity */}
+              <div className="space-y-4">
+                <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-4">
+                  <h4 className="font-semibold text-slate-900 dark:text-white mb-3">Recent Activity</h4>
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                    {userDetails.recentActivity.length > 0 ? (
+                      userDetails.recentActivity.map((activity: any, index: number) => (
+                        <div key={index} className="flex items-start gap-3 p-2 bg-white dark:bg-slate-600 rounded">
+                          <div className={`w-2 h-2 rounded-full mt-2 ${
+                            activity.type === 'deal_created' ? 'bg-blue-500' : 'bg-green-500'
+                          }`}></div>
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">
+                              {activity.description}
+                            </div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">
+                              {new Date(activity.timestamp).toLocaleString()}
+                            </div>
+                            {activity.details && (
+                              <div className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                                {activity.details.venueName && `Venue: ${activity.details.venueName}`}
+                                {activity.details.percentOff && ` • ${activity.details.percentOff}% off`}
+                                {activity.details.redeemerEmail && ` • Redeemed by: ${activity.details.redeemerEmail}`}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center text-slate-500 dark:text-slate-400 py-4">
+                        No recent activity
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Venues */}
+                {userDetails.merchant?.venues && userDetails.merchant.venues.length > 0 && (
+                  <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-4">
+                    <h4 className="font-semibold text-slate-900 dark:text-white mb-3">Venues</h4>
+                    <div className="space-y-3 max-h-48 overflow-y-auto">
+                      {userDetails.merchant.venues.map((venue: any) => (
+                        <div key={venue.id} className="p-3 bg-white dark:bg-slate-600 rounded">
+                          <div className="font-medium text-slate-900 dark:text-white">{venue.name}</div>
+                          <div className="text-sm text-slate-600 dark:text-slate-400">{venue.address}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            {venue.dealsCount} deals • Rating: {venue.rating || 'N/A'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
