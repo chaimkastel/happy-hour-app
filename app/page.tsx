@@ -245,7 +245,7 @@ export default function HomePage() {
                       {deal.venue?.name || 'Amazing Restaurant'}
                     </h3>
                     <p className="text-white/80 text-sm">
-                      {deal.cuisine} • {Math.floor(Math.random() * 5) + 1}⭐
+                      {deal.cuisine} • {Math.floor(Math.random() * 5) + 1} stars
                     </p>
                   </div>
                 </div>
@@ -572,7 +572,7 @@ export default function HomePage() {
                   <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
                 </button>
                                   <button className="group bg-white/20 backdrop-blur-sm border-2 border-white/30 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/30 transition-all duration-300 flex items-center gap-3">
-                    <Play className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                    <span className="text-2xl">▶️</span>
                     Watch Success Stories
             </button>
               </div>
