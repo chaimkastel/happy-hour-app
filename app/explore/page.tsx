@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Head from 'next/head';
 import { MapPin, Clock, Users, Filter, Grid, List, Search, Star, TrendingUp, Zap, Heart, ArrowRight, Play, Shield, Award, Globe, Smartphone, CreditCard, Timer, CheckCircle, Sparkles, X, ChevronDown, Loader2, Flame, Gift, Target, Rocket, Crown, Diamond, Brain, Lightbulb, Sparkle, Wand2, SlidersHorizontal } from 'lucide-react';
 import DealCard from '../../components/DealCard';
@@ -44,6 +45,7 @@ interface Filters {
 }
 
 export default function ExplorePage() {
+  const router = useRouter();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -675,7 +677,7 @@ export default function ExplorePage() {
                   {/* AI Score Badge */}
                   {deal.score && deal.score > 50 && (
                     <div className="absolute top-3 left-3">
-                      <span className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
+                      <span className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
                         <Brain className="w-3 h-3" />
                         {Math.round(deal.score)}%
                       </span>
@@ -728,7 +730,10 @@ export default function ExplorePage() {
                     {deal.description || "Amazing deal available now!"}
                   </p>
                   
-                  <button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg group-hover:scale-105 transform">
+                  <button 
+                    onClick={() => router.push(`/deal/${deal.id}/view`)}
+                    className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3 rounded-xl font-semibold hover:from-orange-700 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg group-hover:scale-105 transform"
+                  >
                     View Deal
                   </button>
                 </div>
@@ -762,7 +767,7 @@ export default function ExplorePage() {
                 fetchInitialDeals();
                 setAiResponse(null);
               }}
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
+              className="bg-gradient-to-r from-orange-600 to-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-orange-700 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg"
               aria-label="Clear search and show all available deals"
             >
               Show All Deals
