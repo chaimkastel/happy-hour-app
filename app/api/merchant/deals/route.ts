@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
         minSpend: minOrderAmount || null,
         inPersonOnly: true,
         tags: JSON.stringify([dealType, applicableItems].filter(Boolean)),
-        status: isActive ? 'LIVE' : 'DRAFT',
+        status: 'PENDING_APPROVAL', // All deals require admin approval
         // Store additional deal type data in tags for now
         // In a real app, you'd add these fields to the schema
         // Note: metadata field doesn't exist in current schema, storing in tags instead
@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ 
       deal,
-      message: 'Deal created successfully!'
+      message: 'Deal submitted for approval! Our team will review it within 24 hours and notify you once it\'s live.'
     }, { status: 201 });
   } catch (error) {
     console.error('Error creating deal:', error);
