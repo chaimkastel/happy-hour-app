@@ -373,6 +373,7 @@ export default function PartnerPage() {
                     Tell us about your restaurant
                   </label>
                   <textarea
+                    name="description"
                     rows={4}
                     className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
                     placeholder="What makes your restaurant special? What kind of deals would you like to offer?"
