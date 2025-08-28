@@ -20,6 +20,7 @@ model User {
   merchant        Merchant?
   redemptions     Redemption[]
   walletCard      WalletCard?
+  adminAuditLogs  AdminAuditLog[] @relation("AdminAuditLogs")
 
   @@map("users")
 }
@@ -193,5 +194,37 @@ model AuditLog {
   @@index([merchantId, entityType, createdAt])
   @@index([entityType, entityId])
   @@map("audit_logs")
+}
+
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  action     String
+  details    String
+  targetType String?
+  targetId   String?
+  ipAddress  String
+  userAgent  String
+  createdAt  DateTime @default(now())
+  admin      User     @relation("AdminAuditLogs", fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId, createdAt])
+  @@index([action, createdAt])
+  @@map("admin_audit_logs")
+}
+
+model AdminNotification {
+  id        String   @id @default(cuid())
+  type      String   // 'user_signup', 'merchant_application', 'deal_created', 'system_alert'
+  title     String
+  message   String
+  priority  String   @default("medium") // 'low', 'medium', 'high', 'urgent'
+  data      String   @default("{}")
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([type, createdAt])
+  @@index([read, createdAt])
+  @@map("admin_notifications")
 }
 // Force deployment with PostgreSQL schema - Thu Aug 28 12:45:10 EDT 2025

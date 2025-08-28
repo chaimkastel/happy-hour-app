@@ -100,7 +100,18 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 dark:from-slate-900 dark:via-purple-900 dark:to-indigo-900">
+    <div className="min-h-screen relative">
+      {/* Hero Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: 'url(/images/hero-food-deals.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      ></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/80 via-blue-900/80 to-indigo-900/80 dark:from-slate-900/80 dark:via-purple-900/80 dark:to-indigo-900/80"></div>
+      
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-yellow-400/20 to-orange-500/20 rounded-full blur-3xl animate-pulse"></div>

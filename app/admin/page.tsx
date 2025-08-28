@@ -93,6 +93,9 @@ export default function AdminDashboard() {
   const [showUserDetailsModal, setShowUserDetailsModal] = useState(false);
   const [userDetails, setUserDetails] = useState<any>(null);
   const [passwordData, setPasswordData] = useState({ newPassword: '', confirmPassword: '', adminPassword: '' });
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
   
   // Website Safety Controls
   const [websiteStatus, setWebsiteStatus] = useState<'online' | 'maintenance' | 'emergency'>('online');
@@ -138,7 +141,22 @@ export default function AdminDashboard() {
     fetchMerchants();
     fetchDeals();
     fetchApplications();
+    fetchNotifications();
   }, []);
+
+  // Fetch notifications
+  const fetchNotifications = async () => {
+    try {
+      const response = await fetch('/api/admin/notifications');
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data.notifications || []);
+        setUnreadNotifications(data.unreadCount || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -576,6 +594,85 @@ export default function AdminDashboard() {
               <p className="text-slate-600 dark:text-slate-400">Manage users, merchants, and platform settings</p>
             </div>
             <div className="flex items-center gap-4">
+              {/* Notifications Bell */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="relative p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                >
+                  <Bell className="w-5 h-5" />
+                  {unreadNotifications > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                    </span>
+                  )}
+                </button>
+                
+                {/* Notifications Dropdown */}
+                {showNotifications && (
+                  <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-50">
+                    <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-slate-900 dark:text-white">Notifications</h3>
+                        <button
+                          onClick={() => {
+                            // Mark all as read
+                            fetch('/api/admin/notifications', { method: 'PUT', body: JSON.stringify({ read: true }) });
+                            setUnreadNotifications(0);
+                          }}
+                          className="text-sm text-blue-600 hover:text-blue-800"
+                        >
+                          Mark all read
+                        </button>
+                      </div>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="p-4 text-center text-slate-500 dark:text-slate-400">
+                          No notifications
+                        </div>
+                      ) : (
+                        notifications.slice(0, 10).map((notification) => (
+                          <div
+                            key={notification.id}
+                            className={`p-4 border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer ${
+                              !notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                            }`}
+                            onClick={() => {
+                              // Mark as read
+                              fetch('/api/admin/notifications', { 
+                                method: 'PUT', 
+                                body: JSON.stringify({ id: notification.id, read: true }) 
+                              });
+                              setUnreadNotifications(Math.max(0, unreadNotifications - 1));
+                            }}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className={`w-2 h-2 rounded-full mt-2 ${
+                                notification.priority === 'urgent' ? 'bg-red-500' :
+                                notification.priority === 'high' ? 'bg-orange-500' :
+                                notification.priority === 'medium' ? 'bg-blue-500' : 'bg-gray-500'
+                              }`}></div>
+                              <div className="flex-1">
+                                <p className="font-medium text-slate-900 dark:text-white text-sm">
+                                  {notification.title}
+                                </p>
+                                <p className="text-slate-600 dark:text-slate-400 text-xs mt-1">
+                                  {notification.message}
+                                </p>
+                                <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">
+                                  {new Date(notification.createdAt).toLocaleString()}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+              
               <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                 <Shield className="w-4 h-4" />
                 Admin Access

@@ -35,8 +35,22 @@ export async function POST(request: NextRequest) {
         email,
         phone: phone || null,
         role: 'USER',
-        // Note: In a real app, you'd store the hashed password
-        // For now, we'll use a simple approach
+        password: hashedPassword
+      }
+    });
+
+    // Create admin notification for new user signup
+    await prisma.adminNotification.create({
+      data: {
+        type: 'user_signup',
+        title: 'New User Registration',
+        message: `New user registered: ${email}`,
+        priority: 'medium',
+        data: JSON.stringify({
+          userId: user.id,
+          email: user.email,
+          timestamp: new Date().toISOString()
+        })
       }
     });
 

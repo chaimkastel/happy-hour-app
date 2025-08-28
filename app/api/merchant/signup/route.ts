@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { smartGeocode } from '@/lib/geocoding';
+import { hash } from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,13 +38,15 @@ export async function POST(request: NextRequest) {
       longitude = geocodeResult.longitude;
     }
 
+    // Hash password
+    const hashedPassword = await hash(password, 12);
+
     // Create user account
     const user = await prisma.user.create({
       data: {
         email,
         role: 'MERCHANT',
-        // Note: In production, you'd hash the password
-        // For demo purposes, we'll store it as-is
+        password: hashedPassword
       }
     });
 
@@ -91,6 +94,23 @@ export async function POST(request: NextRequest) {
         photos: JSON.stringify([]),
         isVerified: false,
         rating: 0,
+      }
+    });
+
+    // Create admin notification for new merchant application
+    await prisma.adminNotification.create({
+      data: {
+        type: 'merchant_application',
+        title: 'New Merchant Application',
+        message: `New merchant application: ${businessName} (${email})`,
+        priority: 'high',
+        data: JSON.stringify({
+          merchantId: merchant.id,
+          businessName: merchant.businessName,
+          email: user.email,
+          kycStatus: merchant.kycStatus,
+          timestamp: new Date().toISOString()
+        })
       }
     });
 
