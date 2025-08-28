@@ -235,7 +235,17 @@ export default function HomePage() {
                     ][index % 6]}
                     alt={`${deal.venue?.name || 'Restaurant'} food`}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    loading="lazy"
+                    onLoad={() => console.log('Image loaded successfully')}
+                    onError={(e) => {
+                      console.log('Image failed to load:', e.currentTarget.src);
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling.style.display = 'block';
+                    }}
                   />
+                  <div className="w-full h-full bg-gradient-to-br from-yellow-400/20 to-orange-500/20 hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-pink-500/30"></div>
+                  </div>
                   <div className="absolute inset-0 bg-gradient-to-br from-black/30 to-black/50 group-hover:from-black/40 group-hover:to-black/60 transition-all duration-300"></div>
                   
                   {/* Hot Badge */}
