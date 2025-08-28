@@ -52,12 +52,19 @@ export async function POST(request: NextRequest) {
       data: {
         userId: user.id,
         businessName,
-        contactName: ownerName,
-        email,
-        phone,
-        isVerified: false, // New merchants start unverified
-        subscriptionStatus: 'TRIAL', // Start with free trial
-        trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+        kycStatus: 'PENDING', // New merchants start with pending KYC
+      }
+    });
+
+    // Create subscription for trial
+    const subscription = await prisma.subscription.create({
+      data: {
+        merchantId: merchant.id,
+        plan: 'TRIAL',
+        status: 'ACTIVE',
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+        trialStartedAt: new Date(),
       }
     });
 
@@ -98,8 +105,13 @@ export async function POST(request: NextRequest) {
       merchant: {
         id: merchant.id,
         businessName: merchant.businessName,
-        subscriptionStatus: merchant.subscriptionStatus,
-        trialEndsAt: merchant.trialEndsAt
+        kycStatus: merchant.kycStatus
+      },
+      subscription: {
+        id: subscription.id,
+        plan: subscription.plan,
+        status: subscription.status,
+        currentPeriodEnd: subscription.currentPeriodEnd
       },
       venue: {
         id: venue.id,
