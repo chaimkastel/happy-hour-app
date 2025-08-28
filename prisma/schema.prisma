@@ -19,6 +19,7 @@ model User {
   merchant        Merchant?
   redemptions     Redemption[]
   walletCard      WalletCard?
+  errorLogs       ErrorLog[]
 
   @@map("users")
 }
@@ -192,4 +193,27 @@ model AuditLog {
   @@index([merchantId, entityType, createdAt])
   @@index([entityType, entityId])
   @@map("audit_logs")
+}
+
+model ErrorLog {
+  id        String   @id
+  level     String   // 'error', 'warning', 'info'
+  message   String
+  stack     String?
+  context   String?  // JSON string
+  userId    String?
+  sessionId String?
+  url       String?
+  userAgent String?
+  resolved  Boolean  @default(false)
+  tags      String   @default("[]") // JSON array of tags
+  createdAt DateTime
+  updatedAt DateTime @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([level, createdAt])
+  @@index([resolved, createdAt])
+  @@index([userId])
+  @@map("error_logs")
 }
