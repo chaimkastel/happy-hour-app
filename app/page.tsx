@@ -547,7 +547,7 @@ export default function HomePage() {
                   <Zap className="w-12 h-12 text-white" />
                 </div>
                 <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                  ⚡
+                  3
                 </div>
               </div>
               <h3 className="text-2xl font-bold mb-4">Instant Activation</h3>
