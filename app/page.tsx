@@ -107,17 +107,16 @@ export default function HomePage() {
         style={{
           backgroundImage: 'url(/images/hero-food-deals.png)',
           backgroundSize: 'cover',
-          backgroundPosition: 'center'
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
         }}
       ></div>
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/80 via-blue-900/80 to-indigo-900/80 dark:from-slate-900/80 dark:via-purple-900/80 dark:to-indigo-900/80"></div>
       
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-yellow-400/20 to-orange-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-pink-400/20 to-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-cyan-400/10 to-blue-500/10 rounded-full blur-3xl animate-pulse delay-500"></div>
-      </div>
+      {/* Warm overlay to enhance the food image */}
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 via-amber-500/15 to-yellow-500/20"></div>
+      
+      {/* Subtle dark overlay for text readability */}
+      <div className="absolute inset-0 bg-black/15"></div>
 
       {/* Hero Section - Exciting & Engaging */}
       <div className="relative overflow-hidden">
@@ -140,54 +139,54 @@ export default function HomePage() {
 
             {/* Main Brand */}
                         <div className="mb-6 sm:mb-8 animate-slide-in-down">
-              <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 mb-4 sm:mb-6 leading-tight">
+              <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-400 to-red-400 mb-4 sm:mb-6 leading-tight drop-shadow-2xl">
             Happy Hour
           </h1>
               <div className="flex items-center justify-center gap-2 sm:gap-4 mb-4">
-                <div className="w-8 sm:w-16 h-1 bg-gradient-to-r from-yellow-400 to-pink-500 rounded-full"></div>
-                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400 animate-spin" />
-                <div className="w-8 sm:w-16 h-1 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full"></div>
+                <div className="w-8 sm:w-16 h-1 bg-gradient-to-r from-yellow-300 to-orange-400 rounded-full"></div>
+                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-300 animate-spin drop-shadow-lg" />
+                <div className="w-8 sm:w-16 h-1 bg-gradient-to-r from-orange-400 to-red-400 rounded-full"></div>
               </div>
             </div>
             
             {/* Compelling Headlines */}
                         <div className="mb-8 sm:mb-12 animate-slide-in-up">
-              <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Instant Deals</span> at Restaurants Near You
+              <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight drop-shadow-2xl">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-400 drop-shadow-2xl">Instant Deals</span> at Restaurants Near You
               </h2>
-              <p className="text-lg sm:text-xl md:text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed mb-6 sm:mb-8">
-                Save up to <span className="font-bold text-yellow-400">70% OFF</span> when restaurants are quiet! 
+              <p className="text-lg sm:text-xl md:text-2xl text-white max-w-4xl mx-auto leading-relaxed mb-6 sm:mb-8 drop-shadow-lg">
+                Save up to <span className="font-bold text-yellow-300 drop-shadow-lg">70% OFF</span> when restaurants are quiet! 
                 <br />
-                <span className="text-base sm:text-lg text-white/80">Real-time deals • Instant savings • No waiting</span>
+                <span className="text-base sm:text-lg text-white/95 drop-shadow-md">Real-time deals • Instant savings • No waiting</span>
               </p>
           </div>
 
             {/* Live Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto mb-8 sm:mb-12 animate-fade-in">
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all duration-300">
-                <div className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-2">1,247</div>
-                <div className="text-white/80 text-sm sm:text-base">Live Deals Right Now</div>
+              <div className="bg-white/15 backdrop-blur-sm border border-white/30 rounded-2xl p-4 sm:p-6 hover:bg-white/25 transition-all duration-300 shadow-lg">
+                <div className="text-2xl sm:text-3xl font-bold text-yellow-300 mb-2 drop-shadow-lg">1,247</div>
+                <div className="text-white/90 text-sm sm:text-base">Live Deals Right Now</div>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all duration-300">
-                <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-2">12.3k</div>
-                <div className="text-white/80 text-sm sm:text-base">Deals Claimed Today</div>
+              <div className="bg-white/15 backdrop-blur-sm border border-white/30 rounded-2xl p-4 sm:p-6 hover:bg-white/25 transition-all duration-300 shadow-lg">
+                <div className="text-2xl sm:text-3xl font-bold text-orange-300 mb-2 drop-shadow-lg">12.3k</div>
+                <div className="text-white/90 text-sm sm:text-base">Deals Claimed Today</div>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all duration-300">
-                <div className="text-2xl sm:text-3xl font-bold text-pink-400 mb-2">$47</div>
-                <div className="text-white/80 text-sm sm:text-base">Average Savings</div>
+              <div className="bg-white/15 backdrop-blur-sm border border-white/30 rounded-2xl p-4 sm:p-6 hover:bg-white/25 transition-all duration-300 shadow-lg">
+                <div className="text-2xl sm:text-3xl font-bold text-red-300 mb-2 drop-shadow-lg">$47</div>
+                <div className="text-white/90 text-sm sm:text-base">Average Savings</div>
               </div>
             </div>
             
             {/* Search Bar */}
             <div className="max-w-3xl mx-auto mb-8 sm:mb-12 animate-scale-in">
               <div className="relative">
-                <Search className="absolute left-4 sm:left-6 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5 sm:w-6 sm:h-6" />
+                <Search className="absolute left-4 sm:left-6 top-1/2 transform -translate-y-1/2 text-white/70 w-5 h-5 sm:w-6 sm:h-6" />
                 <input
                   type="text"
                   placeholder="Enter your address or city to find amazing deals..."
-                  className="w-full pl-12 sm:pl-16 pr-24 sm:pr-32 py-4 sm:py-6 text-lg sm:text-xl bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl sm:rounded-3xl focus:border-yellow-400 focus:outline-none transition-all duration-300 text-white placeholder-white/60 shadow-2xl"
+                  className="w-full pl-12 sm:pl-16 pr-24 sm:pr-32 py-4 sm:py-6 text-lg sm:text-xl bg-white/15 backdrop-blur-sm border-2 border-white/40 rounded-2xl sm:rounded-3xl focus:border-yellow-300 focus:outline-none transition-all duration-300 text-white placeholder-white/70 shadow-2xl"
                 />
-                <button className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105">
+                <button className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-yellow-300 to-orange-400 text-white px-4 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-lg hover:from-yellow-400 hover:to-orange-500 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105">
                   <span className="hidden sm:inline">Find Deals</span>
                   <span className="sm:hidden">Search</span>
                 </button>
@@ -198,7 +197,7 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-12 sm:mb-16 animate-fade-in">
               <button 
                 onClick={() => window.location.href = '/explore'}
-                className="group bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-8 sm:px-12 py-4 sm:py-6 rounded-2xl sm:rounded-3xl font-black text-lg sm:text-2xl hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-2xl hover:shadow-yellow-500/25 hover:scale-105 flex items-center gap-3 sm:gap-4"
+                className="group bg-gradient-to-r from-yellow-300 to-orange-400 text-white px-8 sm:px-12 py-4 sm:py-6 rounded-2xl sm:rounded-3xl font-black text-lg sm:text-2xl hover:from-yellow-400 hover:to-orange-500 transition-all duration-300 shadow-2xl hover:shadow-yellow-300/25 hover:scale-105 flex items-center gap-3 sm:gap-4"
               >
                 <Rocket className="w-6 h-6 sm:w-8 sm:h-8 group-hover:animate-bounce" />
                 <span className="hidden sm:inline">Explore Deals</span>
@@ -212,24 +211,24 @@ export default function HomePage() {
       </div>
 
       {/* Live Deals Preview - Exciting */}
-      <div className="py-20 bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 relative overflow-hidden">
+      <div className="py-20 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 relative overflow-hidden">
         {/* Background Effects */}
         <div className="absolute inset-0">
-          <div className="absolute top-20 left-20 w-32 h-32 bg-yellow-400/10 rounded-full blur-2xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-40 h-40 bg-pink-400/10 rounded-full blur-2xl animate-pulse delay-1000"></div>
+          <div className="absolute top-20 left-20 w-32 h-32 bg-orange-400/15 rounded-full blur-2xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-20 w-40 h-40 bg-amber-400/15 rounded-full blur-2xl animate-pulse delay-1000"></div>
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-yellow-400/20 backdrop-blur-sm border border-yellow-400/30 rounded-full px-6 py-3 mb-6">
-              <Flame className="w-5 h-5 text-yellow-400 animate-pulse" />
-              <span className="text-yellow-400 font-bold">LIVE NOW</span>
+            <div className="inline-flex items-center gap-2 bg-orange-400/20 backdrop-blur-sm border border-orange-400/30 rounded-full px-6 py-3 mb-6">
+              <Flame className="w-5 h-5 text-orange-500 animate-pulse" />
+              <span className="text-orange-600 font-bold">LIVE NOW</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Hot Deals</span> Near You
+            <h2 className="text-4xl md:text-5xl font-black text-slate-800 mb-6">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500">Hot Deals</span> Near You
           </h2>
-            <p className="text-xl text-white/80 max-w-3xl mx-auto">
-              These deals are <span className="text-yellow-400 font-bold">flying off the shelves</span>! 
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+              These deals are <span className="text-orange-500 font-bold">flying off the shelves</span>! 
               Don't miss out on incredible savings.
           </p>
         </div>
@@ -253,14 +252,14 @@ export default function HomePage() {
                   
                   {/* Hot Badge */}
                   <div className="absolute top-4 left-4">
-                    <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg">
+                    <span className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg">
                       <Flame className="w-4 h-4 animate-pulse" />
                       {deal.discount}% OFF
                     </span>
                   </div>
 
                   {/* Favorite Button */}
-                  <button className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm text-white hover:text-red-400 transition-colors p-3 rounded-full shadow-lg hover:bg-white/30">
+                  <button className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm text-white hover:text-orange-400 transition-colors p-3 rounded-full shadow-lg hover:bg-white/30">
                     <Heart className="w-5 h-5" />
                   </button>
 
