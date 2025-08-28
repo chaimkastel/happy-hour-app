@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Heart, Menu, X, LogIn, LogOut, User, MapPin, Crosshair, Search } from 'lucide-react';
+import { Moon, Sun, Heart, Menu, X, LogIn, LogOut, User, MapPin, Crosshair, Search, CreditCard, Building2, Brain } from 'lucide-react';
 import { SessionProvider } from 'next-auth/react';
 
 interface ClientLayoutProps {
@@ -196,16 +196,16 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
     <SessionProvider>
       <div className={`min-h-screen transition-all duration-500 ${isHydrated && isDarkMode ? 'dark' : ''}`}>
       {/* Header */}
-      <header className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl sticky top-0 z-50 border-b border-slate-200/60 dark:border-slate-700/60 shadow-sm">
+      <header className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl sticky top-0 z-50 border-b border-slate-200/60 dark:border-slate-700/60 shadow-sm" role="banner">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between gap-4">
             {/* Logo */}
-            <a href="/" className="flex-shrink-0 text-2xl sm:text-3xl font-black tracking-tight hover:scale-105 transition-all duration-300 text-slate-900 dark:text-white">
+            <a href="/" className="flex-shrink-0 text-2xl sm:text-3xl font-black tracking-tight hover:scale-102 transition-all duration-300 text-slate-900 dark:text-white">
               🍺 Happy Hour
             </a>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-8">
+            <nav className="hidden lg:flex items-center gap-8" role="navigation" aria-label="Main navigation">
               {/* Enhanced Location Control */}
               <div className="relative">
                 <div className="flex items-center gap-2 bg-white/90 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70 rounded-2xl px-4 py-2.5 shadow-sm hover:shadow-md transition-all duration-200">
@@ -224,6 +224,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                         : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-md'
                     }`}
                     title="Use my location"
+                    aria-label="Use my current location"
                     disabled={isResolvingLocation}
                   >
                     <Crosshair className="w-3.5 h-3.5" />
@@ -234,25 +235,25 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
               {/* Navigation Links */}
               <div className="flex items-center gap-6">
-                <a href="/explore" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 font-medium text-sm tracking-wide">
+                <a href="/explore" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm tracking-wide">
                   Explore
                 </a>
-                <a href="/favorites" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 font-medium text-sm tracking-wide flex items-center gap-2">
+                <a href="/favorites" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm tracking-wide flex items-center gap-2">
                   <Heart className="w-4 h-4" />
                   Favorites
                 </a>
-                        <a href="/account" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 font-medium text-sm tracking-wide flex items-center gap-2">
-          <User className="w-4 h-4" />
-          My Account
-        </a>
-        <a href="/wallet" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 font-medium text-sm tracking-wide flex items-center gap-2">
-          💳 Wallet
-        </a>
-        {/* Owner section hidden for now
-        <a href="/owner" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 font-medium text-sm tracking-wide flex items-center gap-2">
-          🏢 Owner
-        </a>
-        */}
+                <a href="/account" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm tracking-wide flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  My Account
+                </a>
+                <a href="/wallet" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm tracking-wide flex items-center gap-2">
+                  <CreditCard className="w-4 h-4" />
+                  Wallet
+                </a>
+                <a href="/partner" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm tracking-wide flex items-center gap-2">
+                  <Building2 className="w-4 h-4" />
+                  Partner
+                </a>
               </div>
 
               {/* Action Buttons */}
@@ -306,6 +307,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                   onClick={toggleDarkMode}
                   className="p-2.5 rounded-xl transition-all duration-200 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400"
                   title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                  aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                 >
                   {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                 </button>
@@ -405,7 +407,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                   className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-6 py-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-4 font-semibold text-lg"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <span className="text-2xl">🧠</span>
+                  <Brain className="w-6 h-6" />
                   Explore & Search
                 </a>
                 <a 
@@ -429,7 +431,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                   className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-6 py-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-4 font-semibold text-lg"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <span className="text-2xl">💳</span>
+                  <CreditCard className="w-6 h-6" />
                   Wallet
                 </a>
                 {/* Owner section hidden for now
@@ -464,7 +466,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       </header>
 
       {/* Main Content */}
-      <main className="w-full">{children}</main>
+      <main className="w-full" role="main">{children}</main>
 
       {/* Merchant Section - Hidden for now
       <div className="bg-gradient-to-r from-slate-50/80 to-indigo-50/80 dark:from-slate-900/50 dark:to-indigo-900/50 py-24">
@@ -482,7 +484,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       */}
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-slate-900 py-16 border-t border-slate-200/50 dark:border-slate-700/50">
+      <footer className="bg-white dark:bg-slate-900 py-16 border-t border-slate-200/50 dark:border-slate-700/50" role="contentinfo">
         <div className="max-w-7xl mx-auto px-6 text-center text-sm text-slate-500 dark:text-slate-400 font-medium">
           © 2025 Happy Hour - Making restaurant deals beautiful and profitable! 🍕✨
         </div>
