@@ -383,7 +383,7 @@ export const AvatarGroup = React.forwardRef<HTMLDivElement, AvatarGroupProps>(
           <div key={index} className={avatarClasses}>
             {React.isValidElement(child) && React.cloneElement(child, {
               size,
-              ...child.props,
+              ...(child.props as any),
             })}
           </div>
         ))}

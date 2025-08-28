@@ -56,13 +56,13 @@ const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
     const [isMounted, setIsMounted] = React.useState(false);
     const tooltipRef = React.useRef<HTMLDivElement>(null);
     const triggerRef = React.useRef<HTMLDivElement>(null);
-    const timeoutRef = React.useRef<NodeJS.Timeout>();
+    const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
     // Show tooltip with delay
     const showTooltip = () => {
       if (disabled) return;
       
-      clearTimeout(timeoutRef.current);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
         setIsVisible(true);
         setIsMounted(true);
@@ -71,7 +71,7 @@ const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
 
     // Hide tooltip immediately
     const hideTooltip = () => {
-      clearTimeout(timeoutRef.current);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       setIsVisible(false);
       setTimeout(() => setIsMounted(false), 300); // Wait for exit animation
     };
@@ -125,7 +125,7 @@ const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
     // Cleanup timeout on unmount
     React.useEffect(() => {
       return () => {
-        clearTimeout(timeoutRef.current);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
       };
     }, []);
 
