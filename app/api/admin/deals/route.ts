@@ -42,12 +42,21 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Deal ID and status are required' }, { status: 400 });
     }
 
+    // First get the current deal to access its tags
+    const currentDeal = await prisma.deal.findUnique({
+      where: { id: dealId }
+    });
+
+    if (!currentDeal) {
+      return NextResponse.json({ error: 'Deal not found' }, { status: 404 });
+    }
+
     const deal = await prisma.deal.update({
       where: { id: dealId },
       data: { 
         status,
         // Store admin notes in tags for now (in a real app, add adminNotes field to schema)
-        tags: adminNotes ? JSON.stringify([...JSON.parse(deal.tags || '[]'), `admin_notes:${adminNotes}`]) : undefined
+        tags: adminNotes ? JSON.stringify([...JSON.parse(currentDeal.tags || '[]'), `admin_notes:${adminNotes}`]) : currentDeal.tags
       },
       include: {
         venue: {
