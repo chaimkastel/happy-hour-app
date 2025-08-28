@@ -408,7 +408,7 @@ export default function HomePage() {
               <span className="text-emerald-500 font-bold">SUPER SIMPLE</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-6">
-              🚀 How <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-600">Happy Hour</span> Works
+              How <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-600">Happy Hour</span> Works
             </h2>
             <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
               Get amazing deals in just <span className="font-bold text-emerald-500">3 simple steps</span>! 
@@ -426,7 +426,7 @@ export default function HomePage() {
                   1
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">🔍 Find Amazing Deals</h3>
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Find Amazing Deals</h3>
               <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
                 Browse real-time deals from restaurants near you. Our smart algorithm shows you the best offers first!
               </p>
@@ -441,7 +441,7 @@ export default function HomePage() {
                   2
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">⚡ Claim & Save</h3>
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Claim & Save</h3>
               <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
                 Tap to claim your deal instantly! Get your unique code and start saving money right away.
               </p>
@@ -456,7 +456,7 @@ export default function HomePage() {
                   3
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">🎉 Enjoy & Save</h3>
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Enjoy & Save</h3>
               <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
                 Show your code at the restaurant and enjoy your delicious meal while saving big bucks!
               </p>
