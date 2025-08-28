@@ -193,3 +193,4 @@ model AuditLog {
   @@index([entityType, entityId])
   @@map("audit_logs")
 }
+// Force deployment with PostgreSQL schema - Thu Aug 28 12:45:10 EDT 2025
