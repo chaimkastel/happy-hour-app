@@ -15,6 +15,9 @@ export function parseGooglePlaceResult(place: GooglePlaceResult): AddressData {
       acc.street2 = component.long_name;
     } else if (types.includes('locality')) {
       acc.city = component.long_name;
+    } else if (types.includes('sublocality') || types.includes('sublocality_level_1')) {
+      // Handle neighborhoods/suburbs
+      acc.neighborhood = component.long_name;
     } else if (types.includes('administrative_area_level_1')) {
       acc.state = component.short_name;
     } else if (types.includes('postal_code')) {
@@ -31,12 +34,15 @@ export function parseGooglePlaceResult(place: GooglePlaceResult): AddressData {
     .filter(Boolean)
     .join(' ');
 
+  // For neighborhood searches, use neighborhood as city if no city is available
+  const city = components.city || components.neighborhood || '';
+
   return {
     formatted: place.formatted_address,
     components: {
       street1: street1 || '',
       street2: components.street2 || undefined,
-      city: components.city || '',
+      city: city,
       state: components.state || '',
       postalCode: components.postalCode || '',
       country: components.country || 'US'
@@ -50,29 +56,44 @@ export function parseGooglePlaceResult(place: GooglePlaceResult): AddressData {
 }
 
 /**
- * Validate address data completeness
+ * Validate address data completeness - flexible for neighborhoods
  */
 export function validateAddressData(address: AddressData): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
   
-  if (!address.components.street1.trim()) {
-    errors.push('Street address is required');
-  }
+  // For neighborhood/city searches, we only need city and coordinates
+  const hasCity = address.components.city.trim();
+  const hasCoordinates = address.coordinates.lat && address.coordinates.lng;
   
-  if (!address.components.city.trim()) {
-    errors.push('City is required');
-  }
+  // If it's a neighborhood search (no street address), be more flexible
+  const isNeighborhoodSearch = !address.components.street1.trim();
   
-  if (!address.components.state.trim()) {
-    errors.push('State is required');
-  }
-  
-  if (!address.components.postalCode.trim()) {
-    errors.push('Postal code is required');
-  }
-  
-  if (!address.coordinates.lat || !address.coordinates.lng) {
-    errors.push('Valid coordinates are required');
+  if (isNeighborhoodSearch) {
+    // For neighborhoods, we only need city and coordinates
+    if (!hasCity) {
+      errors.push('City or neighborhood is required');
+    }
+    
+    if (!hasCoordinates) {
+      errors.push('Valid coordinates are required');
+    }
+  } else {
+    // For full addresses, require more fields
+    if (!address.components.street1.trim()) {
+      errors.push('Street address is required');
+    }
+    
+    if (!hasCity) {
+      errors.push('City is required');
+    }
+    
+    if (!address.components.state.trim()) {
+      errors.push('State is required');
+    }
+    
+    if (!hasCoordinates) {
+      errors.push('Valid coordinates are required');
+    }
   }
   
   return {

@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       // Use Nominatim OpenStreetMap API as fallback
       try {
         const nominatimResponse = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1&countrycodes=us`,
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=8&addressdetails=1&countrycodes=us&featuretype=settlement,suburb,neighbourhood`,
           {
             headers: {
               'User-Agent': 'HappyHour/1.0',
@@ -28,18 +28,31 @@ export async function GET(request: NextRequest) {
         
         if (nominatimResponse.ok) {
           const nominatimData = await nominatimResponse.json();
-          const predictions = nominatimData.map((item: any, index: number) => ({
-            place_id: `nominatim_${index}`,
-            description: item.display_name,
-            structured_formatting: {
-              main_text: item.address?.suburb || item.address?.city || item.address?.town || item.address?.village || item.display_name.split(',')[0],
-              secondary_text: [
-                item.address?.city || item.address?.town,
-                item.address?.state,
-                item.address?.country
-              ].filter(Boolean).join(', ')
-            }
-          }));
+          const predictions = nominatimData.map((item: any, index: number) => {
+            // Prioritize neighborhood/suburb over city for main_text
+            const mainText = item.address?.suburb || 
+                           item.address?.neighbourhood || 
+                           item.address?.city_district ||
+                           item.address?.city || 
+                           item.address?.town || 
+                           item.address?.village || 
+                           item.display_name.split(',')[0];
+            
+            // Build secondary text with city, state
+            const secondaryParts = [
+              item.address?.city || item.address?.town,
+              item.address?.state
+            ].filter(Boolean);
+            
+            return {
+              place_id: `nominatim_${index}`,
+              description: item.display_name,
+              structured_formatting: {
+                main_text: mainText,
+                secondary_text: secondaryParts.join(', ')
+              }
+            };
+          });
           
           return NextResponse.json({
             predictions,
