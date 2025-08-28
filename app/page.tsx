@@ -102,16 +102,46 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-indigo-900 dark:to-purple-900">
-      {/* Header */}
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-br from-primary-600 via-accent-600 to-secondary-600 overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="absolute inset-0" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+        }}></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <div className="text-center text-white">
+            <h1 className="text-5xl md:text-7xl font-black mb-6 hero-text-shadow">
+              Happy Hour
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-white/90">
+              Restaurants flip the switch when they're quiet. You get instant deals nearby.
+            </p>
+            
+            {/* Hero Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mb-12">
+              <div className="text-center">
+                <div className="text-4xl font-bold mb-2">1,200+</div>
+                <div className="text-white/80">Active Deals</div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-bold mb-2">50%</div>
+                <div className="text-white/80">Average Savings</div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-bold mb-2">24/7</div>
+                <div className="text-white/80">Deal Updates</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-6xl font-bold text-slate-900 dark:text-slate-100 mb-4">
-            Happy Hour
-          </h1>
-          <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-400 mb-8 max-w-3xl mx-auto">
-            Restaurants flip the switch when they're quiet. You get instant deals nearby.
-          </p>
           
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto mb-8">
@@ -185,6 +215,105 @@ export default function HomePage() {
             </p>
           </div>
         )}
+      </div>
+
+      {/* Merchant Presentation Section */}
+      <div className="bg-gradient-to-r from-primary-600 to-accent-600 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center text-white mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              For Restaurants
+            </h2>
+            <p className="text-xl md:text-2xl max-w-3xl mx-auto text-white/90">
+              Turn quiet hours into revenue opportunities. Attract customers when you need them most.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <div className="text-center text-white">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl">📊</span>
+              </div>
+              <h3 className="text-2xl font-bold mb-4">Smart Analytics</h3>
+              <p className="text-white/80">
+                Track performance, understand customer patterns, and optimize your deals with real-time insights.
+              </p>
+            </div>
+            
+            <div className="text-center text-white">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl">⚡</span>
+              </div>
+              <h3 className="text-2xl font-bold mb-4">Instant Activation</h3>
+              <p className="text-white/80">
+                Create and activate deals in seconds. No complicated setup, just simple tools that work.
+              </p>
+            </div>
+            
+            <div className="text-center text-white">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl">💰</span>
+              </div>
+              <h3 className="text-2xl font-bold mb-4">Boost Revenue</h3>
+              <p className="text-white/80">
+                Fill empty tables during slow periods and turn quiet hours into profitable opportunities.
+              </p>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <button className="bg-white text-primary-600 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/90 transition-colors shadow-lg">
+              Start Your Free Trial
+            </button>
+            <p className="text-white/80 mt-4">No setup fees • Cancel anytime</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Features Section */}
+      <div className="py-20 bg-neutral-50 dark:bg-neutral-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-slate-100 mb-6">
+              How It Works
+            </h2>
+            <p className="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto">
+              Simple steps to start saving and earning with Happy Hour
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            <div className="text-center">
+              <div className="w-20 h-20 bg-primary-100 dark:bg-primary-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl">🔍</span>
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4">1. Discover</h3>
+              <p className="text-slate-600 dark:text-slate-400">
+                Browse nearby deals or search for specific restaurants and cuisines you love.
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-20 h-20 bg-accent-100 dark:bg-accent-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl">📱</span>
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4">2. Claim</h3>
+              <p className="text-slate-600 dark:text-slate-400">
+                Tap to claim your deal and get a unique code to show at the restaurant.
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-20 h-20 bg-secondary-100 dark:bg-secondary-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl">🍽️</span>
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4">3. Enjoy</h3>
+              <p className="text-slate-600 dark:text-slate-400">
+                Show your code at the restaurant and enjoy your meal with instant savings.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
