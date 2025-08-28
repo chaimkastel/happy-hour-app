@@ -129,7 +129,9 @@ export default function CreateDealPage() {
       if (response.ok) {
         router.push('/merchant/deals');
       } else {
-        alert('Failed to create deal. Please try again.');
+        const error = await response.json();
+        console.error('Deal creation error:', error);
+        alert(`Error: ${error.error || error.message || 'Failed to create deal'}`);
       }
     } catch (error) {
       console.error('Error creating deal:', error);

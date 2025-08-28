@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
         address,
         latitude: geocodingResult.latitude,
         longitude: geocodingResult.longitude,
-        businessType: Array.isArray(businessType) ? businessType : businessType || [],
+        businessType: JSON.stringify(Array.isArray(businessType) ? businessType : businessType || []),
         priceTier: priceTier || 'MODERATE',
         hours: hours ? JSON.stringify(hours) : '{}',
         photos: photos ? JSON.stringify(photos) : '[]',

@@ -152,7 +152,8 @@ export default function NewVenuePage() {
         router.push('/merchant/venues');
       } else {
         const error = await response.json();
-        alert(`Error: ${error.message}`);
+        console.error('Venue creation error:', error);
+        alert(`Error: ${error.error || error.message || 'Failed to create venue'}`);
       }
     } catch (error) {
       console.error('Error creating venue:', error);

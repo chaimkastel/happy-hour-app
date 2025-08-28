@@ -257,17 +257,50 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
               {/* Action Buttons */}
               <div className="flex items-center gap-3">
-                <button
-                  onClick={toggleLogin}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 text-sm ${
-                    isLoggedIn 
-                      ? 'bg-red-500 text-white hover:bg-red-600 shadow-md hover:shadow-lg' 
-                      : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg'
-                  }`}
-                >
-                  {isLoggedIn ? <LogOut className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
-                  {isLoggedIn ? 'Logout' : 'Login'}
-                </button>
+                {!isLoggedIn ? (
+                  <div className="relative group">
+                    <button
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 text-sm bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg"
+                    >
+                      <LogIn className="w-4 h-4" />
+                      Login
+                    </button>
+                    
+                    {/* Login Dropdown */}
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      <div className="py-2">
+                        <a
+                          href="/login"
+                          className="flex items-center gap-3 px-4 py-3 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                        >
+                          <User className="w-4 h-4" />
+                          <div>
+                            <div className="font-medium">Customer Login</div>
+                            <div className="text-xs text-slate-500">Find great deals</div>
+                          </div>
+                        </a>
+                        <a
+                          href="/merchant/login"
+                          className="flex items-center gap-3 px-4 py-3 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                        >
+                          <User className="w-4 h-4" />
+                          <div>
+                            <div className="font-medium">Merchant Login</div>
+                            <div className="text-xs text-slate-500">Manage your business</div>
+                          </div>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={toggleLogin}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 text-sm bg-red-500 text-white hover:bg-red-600 shadow-md hover:shadow-lg"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                )}
 
                 <button
                   onClick={toggleDarkMode}
