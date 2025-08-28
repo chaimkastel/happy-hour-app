@@ -205,8 +205,8 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       <div className={`min-h-screen transition-all duration-500 ${isHydrated && isDarkMode ? 'dark' : ''}`}>
       {/* Ultra-Glassy Header */}
       <header className="bg-white/20 dark:bg-slate-900/20 backdrop-blur-2xl sticky top-0 z-50 border-b border-white/20 dark:border-slate-700/30 shadow-2xl" role="banner">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2">
-          <div className="flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+          <div className="flex items-center justify-between gap-6">
             {/* Compact Logo */}
             <a href="/" className="flex-shrink-0 group">
               <div className="flex items-center gap-3">
@@ -225,9 +225,9 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
             </a>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-6" role="navigation" aria-label="Main navigation">
+            <nav className="hidden lg:flex items-center gap-8" role="navigation" aria-label="Main navigation">
               {/* Compact Location Control */}
-              <div className="relative">
+              <div className="relative flex-shrink-0">
                 <LocationSelector
                   value={locationQuery}
                   onChange={handleLocationChange}
@@ -238,7 +238,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
               </div>
 
               {/* Sleek Navigation Links */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 <a href="/explore" className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/20 dark:hover:bg-slate-800/30 px-4 py-2 rounded-lg transition-all duration-200 font-semibold text-sm flex items-center gap-2 group backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-slate-600/30">
                   <Compass className="w-4 h-4 group-hover:rotate-12 transition-transform duration-200" />
                   Explore
@@ -262,7 +262,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
               </div>
 
               {/* Modern Action Buttons */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4 flex-shrink-0">
                 {!isLoggedIn ? (
                   <div className="relative group">
                     <button
