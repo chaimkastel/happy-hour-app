@@ -5,6 +5,7 @@ import { MapPin, Clock, Users, Filter, Grid, List, Search, Star, TrendingUp, Zap
 import DealCard from '../components/DealCard';
 import MapWithClusters from '../components/MapWithClusters';
 import SortFilterBar from '../components/SortFilterBar';
+import SmartSearch from '../components/SmartSearch';
 
 interface Deal {
   id: string;
@@ -106,25 +107,25 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Side - Content */}
             <div className="text-center lg:text-left">
-              {/* Social Proof Badge */}
+            {/* Social Proof Badge */}
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-6 animate-fade-in">
                 <div className="flex -space-x-1">
                   <div className="w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full border-2 border-white"></div>
                   <div className="w-6 h-6 bg-gradient-to-r from-pink-400 to-red-500 rounded-full border-2 border-white"></div>
                   <div className="w-6 h-6 bg-gradient-to-r from-green-400 to-blue-500 rounded-full border-2 border-white"></div>
-                </div>
-                <span className="text-white font-semibold text-sm">10,000+ Happy Customers</span>
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3 h-3 text-yellow-400 fill-current" />
-                  ))}
-                </div>
               </div>
+                <span className="text-white font-semibold text-sm">10,000+ Happy Customers</span>
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-3 h-3 text-yellow-400 fill-current" />
+                ))}
+              </div>
+            </div>
 
               {/* Main Headline */}
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 mb-6 leading-tight">
-                Happy Hour
-              </h1>
+            Happy Hour
+          </h1>
               
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-6 leading-tight">
                 🚀 <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Instant Deals</span> at Restaurants Near You
@@ -135,19 +136,12 @@ export default function HomePage() {
                 Real-time deals • Instant savings • No waiting
               </p>
 
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
-                <button 
-                  onClick={() => window.location.href = '/explore'}
-                  className="group bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-8 py-4 rounded-2xl font-black text-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-2xl hover:shadow-yellow-500/25 hover:scale-105 flex items-center gap-3 justify-center"
-                >
-                  <Rocket className="w-6 h-6 group-hover:animate-bounce" />
-                  🚀 Explore Deals
-                  <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
-                </button>
-              </div>
+                            {/* Smart Search */}
+              <div className="mb-8">
+                <SmartSearch />
+          </div>
 
-              {/* Live Stats */}
+            {/* Live Stats */}
               <div className="grid grid-cols-3 gap-4 max-w-md mx-auto lg:mx-0">
                 <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 text-center">
                   <div className="text-2xl font-bold text-yellow-400 mb-1">🔥 247</div>
@@ -156,14 +150,14 @@ export default function HomePage() {
                 <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 text-center">
                   <div className="text-2xl font-bold text-green-400 mb-1">⚡ 2.3k</div>
                   <div className="text-white/80 text-xs">Claimed Today</div>
-                </div>
+              </div>
                 <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 text-center">
                   <div className="text-2xl font-bold text-pink-400 mb-1">💰 $127</div>
                   <div className="text-white/80 text-xs">Avg Savings</div>
-                </div>
+              </div>
               </div>
             </div>
-
+            
             {/* Right Side - Cute Map Design */}
             <div className="relative">
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl p-8 shadow-2xl">
@@ -262,7 +256,7 @@ export default function HomePage() {
                   </div>
 
                   <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                    <div className="relative">
+              <div className="relative">
                       {/* Cute restaurant building */}
                       <div className="w-6 h-6 bg-yellow-400 rounded-sm shadow-lg border-2 border-white relative">
                         <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-yellow-600 rounded-full"></div>
@@ -272,9 +266,9 @@ export default function HomePage() {
                       <div className="absolute -top-10 -left-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse border-2 border-white">
                         🍰 70% OFF
                       </div>
-                    </div>
-                  </div>
-
+              </div>
+            </div>
+            
                   {/* Additional cute elements */}
                   <div className="absolute top-4 right-4 w-3 h-3 bg-pink-300 rounded-full animate-bounce shadow-sm"></div>
                   <div className="absolute bottom-4 left-4 w-2 h-2 bg-blue-300 rounded-full animate-bounce delay-1000 shadow-sm"></div>

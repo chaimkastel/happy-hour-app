@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, Building2, CreditCard, BarChart3, Settings, Shield, Eye, EyeOff, Plus, Edit, Trash2, Search, Filter, Download, Upload, AlertTriangle, CheckCircle, Clock, TrendingUp, DollarSign, MapPin, Star, Heart, MessageSquare } from 'lucide-react';
+import { Users, Building2, CreditCard, BarChart3, Settings, Shield, Eye, EyeOff, Plus, Edit, Trash2, Search, Filter, Download, Upload, AlertTriangle, CheckCircle, Clock, TrendingUp, DollarSign, MapPin, Star, Heart, MessageSquare, Power, Lock, Unlock, Globe, Database, Server, Activity, Zap, AlertCircle, Ban, UserCheck, UserX, Pause, Play, RefreshCw, Bell, BellOff, FileText, ThumbsUp, ThumbsDown, Mail, Phone, Calendar } from 'lucide-react';
+import AddressAutocomplete from '@/components/AddressAutocomplete';
 
 interface User {
   id: string;
@@ -50,17 +51,57 @@ interface Deal {
   };
 }
 
+interface MerchantApplication {
+  id: string;
+  businessName: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  address: string;
+  businessType: string;
+  description: string;
+  submittedAt: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  documents?: {
+    businessLicense?: string;
+    taxId?: string;
+    insurance?: string;
+  };
+  notes?: string;
+}
+
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'merchants' | 'deals' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'merchants' | 'deals' | 'settings' | 'safety' | 'analytics' | 'applications'>('overview');
   const [users, setUsers] = useState<User[]>([]);
   const [merchants, setMerchants] = useState<Merchant[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
+  const [merchantApplications, setMerchantApplications] = useState<MerchantApplication[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedApplication, setSelectedApplication] = useState<MerchantApplication | null>(null);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
+  
+  // Website Safety Controls
+  const [websiteStatus, setWebsiteStatus] = useState<'online' | 'maintenance' | 'emergency'>('online');
+  const [maintenanceMessage, setMaintenanceMessage] = useState('We are currently performing scheduled maintenance. We will be back online shortly.');
+  const [emergencyMode, setEmergencyMode] = useState(false);
+  const [userRegistrationEnabled, setUserRegistrationEnabled] = useState(true);
+  const [merchantOnboardingEnabled, setMerchantOnboardingEnabled] = useState(true);
+  const [dealCreationEnabled, setDealCreationEnabled] = useState(true);
+  const [systemAlerts, setSystemAlerts] = useState<string[]>([]);
+  const [securityLevel, setSecurityLevel] = useState<'normal' | 'high' | 'maximum'>('normal');
+  
+  // Analytics
+  const [systemMetrics, setSystemMetrics] = useState({
+    activeUsers: 1247,
+    serverLoad: 23,
+    responseTime: 145,
+    errorRate: 0.2,
+    uptime: 99.9
+  });
 
   // Check admin authentication
   useEffect(() => {
@@ -156,6 +197,60 @@ export default function AdminDashboard() {
         }
       }
     ]);
+
+    setMerchantApplications([
+      {
+        id: '1',
+        businessName: 'Golden Dragon Restaurant',
+        contactName: 'David Chen',
+        email: 'david@goldendragon.com',
+        phone: '+1-555-0123',
+        address: '123 Main St, Chinatown, NY 10013',
+        businessType: 'Chinese Restaurant',
+        description: 'Authentic Chinese cuisine with over 20 years of experience. We specialize in traditional dishes and modern fusion.',
+        submittedAt: '2024-01-20T10:30:00Z',
+        status: 'PENDING',
+        documents: {
+          businessLicense: 'BL-2024-001',
+          taxId: 'TAX-123456789',
+          insurance: 'INS-2024-001'
+        }
+      },
+      {
+        id: '2',
+        businessName: 'Bella Vista Cafe',
+        contactName: 'Maria Rodriguez',
+        email: 'maria@bellavista.com',
+        phone: '+1-555-0456',
+        address: '456 Oak Ave, Little Italy, NY 10012',
+        businessType: 'Italian Cafe',
+        description: 'Cozy Italian cafe serving fresh pasta, pizza, and authentic Italian coffee. Family-owned for 15 years.',
+        submittedAt: '2024-01-19T14:20:00Z',
+        status: 'PENDING',
+        documents: {
+          businessLicense: 'BL-2024-002',
+          taxId: 'TAX-987654321',
+          insurance: 'INS-2024-002'
+        }
+      },
+      {
+        id: '3',
+        businessName: 'Spice Garden Indian',
+        contactName: 'Raj Patel',
+        email: 'raj@spicegarden.com',
+        phone: '+1-555-0789',
+        address: '789 Broadway, Midtown, NY 10001',
+        businessType: 'Indian Restaurant',
+        description: 'Traditional Indian cuisine with vegetarian and non-vegetarian options. Award-winning chef with 25 years experience.',
+        submittedAt: '2024-01-18T09:15:00Z',
+        status: 'PENDING',
+        documents: {
+          businessLicense: 'BL-2024-003',
+          taxId: 'TAX-456789123',
+          insurance: 'INS-2024-003'
+        }
+      }
+    ]);
   }, []);
 
   const stats = {
@@ -200,6 +295,70 @@ export default function AdminDashboard() {
     if (confirm('Are you sure you want to delete this user?')) {
       setUsers(users.filter(user => user.id !== userId));
     }
+  };
+
+  // Safety Control Functions
+  const handleWebsiteStatusChange = async (status: 'online' | 'maintenance' | 'emergency') => {
+    setLoading(true);
+    try {
+      // API call to update website status
+      console.log('Updating website status to:', status);
+      setWebsiteStatus(status);
+      
+      if (status === 'emergency') {
+        setEmergencyMode(true);
+        setSystemAlerts(prev => [...prev, `Emergency mode activated at ${new Date().toLocaleString()}`]);
+      } else if (status === 'maintenance') {
+        setSystemAlerts(prev => [...prev, `Maintenance mode activated at ${new Date().toLocaleString()}`]);
+      } else {
+        setEmergencyMode(false);
+        setSystemAlerts(prev => [...prev, `Website restored to online at ${new Date().toLocaleString()}`]);
+      }
+    } catch (error) {
+      console.error('Error updating website status:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSecurityLevelChange = async (level: 'normal' | 'high' | 'maximum') => {
+    setLoading(true);
+    try {
+      console.log('Updating security level to:', level);
+      setSecurityLevel(level);
+      setSystemAlerts(prev => [...prev, `Security level changed to ${level.toUpperCase()} at ${new Date().toLocaleString()}`]);
+    } catch (error) {
+      console.error('Error updating security level:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleFeature = async (feature: string, enabled: boolean) => {
+    setLoading(true);
+    try {
+      console.log(`Toggling ${feature} to:`, enabled);
+      switch (feature) {
+        case 'userRegistration':
+          setUserRegistrationEnabled(enabled);
+          break;
+        case 'merchantOnboarding':
+          setMerchantOnboardingEnabled(enabled);
+          break;
+        case 'dealCreation':
+          setDealCreationEnabled(enabled);
+          break;
+      }
+      setSystemAlerts(prev => [...prev, `${feature} ${enabled ? 'enabled' : 'disabled'} at ${new Date().toLocaleString()}`]);
+    } catch (error) {
+      console.error(`Error toggling ${feature}:`, error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clearSystemAlerts = () => {
+    setSystemAlerts([]);
   };
 
   if (authLoading) {
@@ -296,6 +455,28 @@ export default function AdminDashboard() {
               >
                 <CreditCard className="w-5 h-5" />
                 Deals ({stats.totalDeals})
+              </button>
+              <button
+                onClick={() => setActiveTab('safety')}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                  activeTab === 'safety'
+                    ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                }`}
+              >
+                <Shield className="w-5 h-5" />
+                Safety Controls
+              </button>
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                  activeTab === 'analytics'
+                    ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                }`}
+              >
+                <Activity className="w-5 h-5" />
+                Analytics
               </button>
               <button
                 onClick={() => setActiveTab('settings')}
@@ -618,6 +799,307 @@ export default function AdminDashboard() {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'safety' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Safety Controls</h2>
+                  <p className="text-slate-600 dark:text-slate-400">Emergency controls and website safety management</p>
+                </div>
+
+                {/* Website Status Control */}
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className={`w-3 h-3 rounded-full ${
+                      websiteStatus === 'online' ? 'bg-green-500' :
+                      websiteStatus === 'maintenance' ? 'bg-yellow-500' :
+                      'bg-red-500'
+                    }`}></div>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Website Status</h3>
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      websiteStatus === 'online' ? 'bg-green-100 text-green-800' :
+                      websiteStatus === 'maintenance' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {websiteStatus.toUpperCase()}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <button
+                      onClick={() => handleWebsiteStatusChange('online')}
+                      disabled={loading}
+                      className={`p-4 rounded-xl border-2 transition-all ${
+                        websiteStatus === 'online'
+                          ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                          : 'border-slate-200 dark:border-slate-700 hover:border-green-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <div className="text-left">
+                          <div className="font-semibold text-slate-900 dark:text-white">Online</div>
+                          <div className="text-sm text-slate-600 dark:text-slate-400">Normal operation</div>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => handleWebsiteStatusChange('maintenance')}
+                      disabled={loading}
+                      className={`p-4 rounded-xl border-2 transition-all ${
+                        websiteStatus === 'maintenance'
+                          ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
+                          : 'border-slate-200 dark:border-slate-700 hover:border-yellow-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                        <div className="text-left">
+                          <div className="font-semibold text-slate-900 dark:text-white">Maintenance</div>
+                          <div className="text-sm text-slate-600 dark:text-slate-400">Scheduled maintenance</div>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => handleWebsiteStatusChange('emergency')}
+                      disabled={loading}
+                      className={`p-4 rounded-xl border-2 transition-all ${
+                        websiteStatus === 'emergency'
+                          ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
+                          : 'border-slate-200 dark:border-slate-700 hover:border-red-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <div className="text-left">
+                          <div className="font-semibold text-slate-900 dark:text-white">Emergency</div>
+                          <div className="text-sm text-slate-600 dark:text-slate-400">Emergency shutdown</div>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+
+                  {websiteStatus === 'maintenance' && (
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Maintenance Message
+                      </label>
+                      <textarea
+                        value={maintenanceMessage}
+                        onChange={(e) => setMaintenanceMessage(e.target.value)}
+                        rows={3}
+                        className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Enter maintenance message..."
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Security Level Control */}
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Security Level</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button
+                      onClick={() => handleSecurityLevelChange('normal')}
+                      disabled={loading}
+                      className={`p-4 rounded-xl border-2 transition-all ${
+                        securityLevel === 'normal'
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                          : 'border-slate-200 dark:border-slate-700 hover:border-blue-300'
+                      }`}
+                    >
+                      <div className="text-center">
+                        <Shield className="w-8 h-8 mx-auto mb-2 text-blue-500" />
+                        <div className="font-semibold text-slate-900 dark:text-white">Normal</div>
+                        <div className="text-sm text-slate-600 dark:text-slate-400">Standard security</div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => handleSecurityLevelChange('high')}
+                      disabled={loading}
+                      className={`p-4 rounded-xl border-2 transition-all ${
+                        securityLevel === 'high'
+                          ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20'
+                          : 'border-slate-200 dark:border-slate-700 hover:border-orange-300'
+                      }`}
+                    >
+                      <div className="text-center">
+                        <Lock className="w-8 h-8 mx-auto mb-2 text-orange-500" />
+                        <div className="font-semibold text-slate-900 dark:text-white">High</div>
+                        <div className="text-sm text-slate-600 dark:text-slate-400">Enhanced security</div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => handleSecurityLevelChange('maximum')}
+                      disabled={loading}
+                      className={`p-4 rounded-xl border-2 transition-all ${
+                        securityLevel === 'maximum'
+                          ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
+                          : 'border-slate-200 dark:border-slate-700 hover:border-red-300'
+                      }`}
+                    >
+                      <div className="text-center">
+                        <Ban className="w-8 h-8 mx-auto mb-2 text-red-500" />
+                        <div className="font-semibold text-slate-900 dark:text-white">Maximum</div>
+                        <div className="text-sm text-slate-600 dark:text-slate-400">Lockdown mode</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Feature Toggles */}
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Feature Controls</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-medium text-slate-900 dark:text-white">User Registration</h4>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Allow new users to register</p>
+                      </div>
+                      <button
+                        onClick={() => handleToggleFeature('userRegistration', !userRegistrationEnabled)}
+                        disabled={loading}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          userRegistrationEnabled ? 'bg-green-600' : 'bg-slate-200 dark:bg-slate-700'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            userRegistrationEnabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-medium text-slate-900 dark:text-white">Merchant Onboarding</h4>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Allow new merchants to join</p>
+                      </div>
+                      <button
+                        onClick={() => handleToggleFeature('merchantOnboarding', !merchantOnboardingEnabled)}
+                        disabled={loading}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          merchantOnboardingEnabled ? 'bg-green-600' : 'bg-slate-200 dark:bg-slate-700'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            merchantOnboardingEnabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-medium text-slate-900 dark:text-white">Deal Creation</h4>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Allow merchants to create deals</p>
+                      </div>
+                      <button
+                        onClick={() => handleToggleFeature('dealCreation', !dealCreationEnabled)}
+                        disabled={loading}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          dealCreationEnabled ? 'bg-green-600' : 'bg-slate-200 dark:bg-slate-700'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            dealCreationEnabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* System Alerts */}
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">System Alerts</h3>
+                    <button
+                      onClick={clearSystemAlerts}
+                      className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {systemAlerts.length === 0 ? (
+                      <p className="text-sm text-slate-500 dark:text-slate-400">No system alerts</p>
+                    ) : (
+                      systemAlerts.map((alert, index) => (
+                        <div key={index} className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                          <AlertCircle className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                          <p className="text-sm text-slate-700 dark:text-slate-300">{alert}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'analytics' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">System Analytics</h2>
+                  <p className="text-slate-600 dark:text-slate-400">Real-time system performance and metrics</p>
+                </div>
+
+                {/* System Metrics */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Active Users</p>
+                        <p className="text-2xl font-bold text-slate-900 dark:text-white">{systemMetrics.activeUsers.toLocaleString()}</p>
+                      </div>
+                      <Users className="w-8 h-8 text-green-600" />
+                    </div>
+                  </div>
+                  <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Server Load</p>
+                        <p className="text-2xl font-bold text-slate-900 dark:text-white">{systemMetrics.serverLoad}%</p>
+                      </div>
+                      <Server className="w-8 h-8 text-blue-600" />
+                    </div>
+                  </div>
+                  <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Response Time</p>
+                        <p className="text-2xl font-bold text-slate-900 dark:text-white">{systemMetrics.responseTime}ms</p>
+                      </div>
+                      <Zap className="w-8 h-8 text-yellow-600" />
+                    </div>
+                  </div>
+                  <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Uptime</p>
+                        <p className="text-2xl font-bold text-slate-900 dark:text-white">{systemMetrics.uptime}%</p>
+                      </div>
+                      <Activity className="w-8 h-8 text-emerald-600" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Performance Chart Placeholder */}
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Performance Overview</h3>
+                  <div className="h-64 bg-slate-50 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+                    <p className="text-slate-500 dark:text-slate-400">Performance chart would be displayed here</p>
                   </div>
                 </div>
               </div>

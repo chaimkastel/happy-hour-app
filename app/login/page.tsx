@@ -70,7 +70,7 @@ export default function LoginPage() {
               <Building2 className="w-8 h-8 text-indigo-600" />
             </div>
             <h1 className="text-3xl font-black text-gray-900 mb-2">Welcome Back</h1>
-            <p className="text-gray-600">Sign in to your merchant dashboard</p>
+            <p className="text-gray-600">Sign in to your account</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -123,16 +123,19 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-500">
-              Demo Mode: Use any email and password to sign in
-            </p>
-          </div>
-
           <div className="mt-8 pt-6 border-t border-gray-200">
             <div className="text-center space-y-4">
               <div>
                 <p className="text-sm text-gray-600 mb-2">Don't have an account?</p>
+                <button
+                  onClick={() => router.push('/signup')}
+                  className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
+                >
+                  Create Account
+                </button>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 mb-2">Are you a restaurant owner?</p>
                 <button
                   onClick={() => router.push('/merchant/signup')}
                   className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
