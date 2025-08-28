@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { CheckCircle, ArrowLeft, MapPin, Tag, Clock, Star } from 'lucide-react';
 // confetti removed for optimization
 
@@ -23,6 +24,7 @@ interface Deal {
 }
 
 export default function RedeemPage({ params }: { params: { id: string } }) {
+  const router = useRouter();
   const [deal, setDeal] = useState<Deal | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -105,7 +107,7 @@ export default function RedeemPage({ params }: { params: { id: string } }) {
           <h3 className="text-2xl font-semibold mb-2 text-slate-800 dark:text-slate-200">Error</h3>
           <p className="text-slate-600 dark:text-slate-400 mb-6">{error}</p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => router.refresh()}
             className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-semibold hover:bg-blue-700 transition-colors duration-200"
           >
             Try Again

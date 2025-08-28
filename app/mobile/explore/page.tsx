@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   Search, 
   MapPin, 
@@ -31,6 +32,7 @@ interface Deal {
 }
 
 export default function MobileExplorePage() {
+  const router = useRouter();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -57,7 +59,7 @@ export default function MobileExplorePage() {
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
-      window.location.href = `/explore?q=${encodeURIComponent(searchQuery)}`;
+      router.push(`/explore?q=${encodeURIComponent(searchQuery)}`);
     }
   };
 

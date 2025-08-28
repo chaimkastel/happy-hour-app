@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   Heart, 
   MapPin, 
@@ -30,6 +31,7 @@ interface FavoriteDeal {
 }
 
 export default function MobileFavoritesPage() {
+  const router = useRouter();
   const [favorites, setFavorites] = useState<FavoriteDeal[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -164,7 +166,7 @@ export default function MobileFavoritesPage() {
             </p>
             {!searchQuery && (
               <button 
-                onClick={() => window.location.href = '/explore'}
+                onClick={() => router.push('/explore')}
                 className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-6 py-3 rounded-xl font-bold hover:from-yellow-500 hover:to-orange-600 transition-all duration-300"
               >
                 Explore Deals

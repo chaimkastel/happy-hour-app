@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Users, Building2, CreditCard, BarChart3, Settings, Shield, Eye, EyeOff, Plus, Edit, Trash2, Search, Filter, Download, Upload, AlertTriangle, CheckCircle, Clock, TrendingUp, DollarSign, MapPin, Star, Heart, MessageSquare, Power, Lock, Unlock, Globe, Database, Server, Activity, Zap, AlertCircle, Ban, UserCheck, UserX, Pause, Play, RefreshCw, Bell, BellOff, FileText, ThumbsUp, ThumbsDown, Mail, Phone, Calendar, X } from 'lucide-react';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 
@@ -71,6 +72,7 @@ interface MerchantApplication {
 }
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'merchants' | 'deals' | 'dealReview' | 'settings' | 'safety' | 'analytics' | 'applications' | 'monitoring' | 'health'>('overview');
   const [users, setUsers] = useState<User[]>([]);
   const [merchants, setMerchants] = useState<Merchant[]>([]);
@@ -127,7 +129,7 @@ export default function AdminDashboard() {
         
         if (!isAuthenticated) {
           // Redirect to admin access page
-          window.location.href = '/admin-access';
+          router.push('/admin-access');
         }
       }
     };
@@ -573,7 +575,7 @@ export default function AdminDashboard() {
             You need to log in with admin credentials to access this dashboard.
           </p>
           <button
-            onClick={() => window.location.href = '/admin-access'}
+            onClick={() => router.push('/admin-access')}
             className="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
           >
             Go to Admin Login
@@ -680,7 +682,7 @@ export default function AdminDashboard() {
               <button 
                 onClick={() => {
                   localStorage.removeItem('admin-authenticated');
-                  window.location.href = '/admin-access';
+                  router.push('/admin-access');
                 }}
                 className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
               >
