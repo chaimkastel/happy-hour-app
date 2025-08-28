@@ -2,14 +2,15 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Shield, Lock, Eye, EyeOff, ArrowRight, AlertTriangle, CheckCircle, Crown, Settings, Users, Store, BarChart3 } from 'lucide-react';
+import { Shield, Lock, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 
 export default function AdminAccessPage() {
-  const router = useRouter();
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,71 +18,91 @@ export default function AdminAccessPage() {
     setError('');
 
     try {
-      // Check admin password
-      const response = await fetch('/api/admin/verify-access', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ password }),
-      });
-
-      if (response.ok) {
-        // Store admin session
+      // Check admin credentials
+      if (username === 'chaimkastel' && password === 'CHAIMrox11!') {
+        // Set admin authentication flag
         localStorage.setItem('admin-authenticated', 'true');
+        // Redirect to admin dashboard
         router.push('/admin');
       } else {
-        setError('Invalid admin password');
+        setError('Invalid admin credentials. Access denied.');
       }
     } catch (error) {
-      setError('Error verifying access. Please try again.');
+      console.error('Admin access error:', error);
+      setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-red-500/10 to-orange-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-yellow-500/5 to-red-500/5 rounded-full blur-3xl animate-pulse delay-500"></div>
+    <div className="min-h-screen bg-gradient-to-br from-red-900 via-gray-900 to-black flex items-center justify-center p-4">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-20 left-20 w-32 h-32 bg-red-500 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-20 w-40 h-40 bg-gray-500 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-red-400 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="relative w-full max-w-md">
-        {/* Security Badge */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-red-500 to-orange-500 rounded-full mb-6 shadow-2xl">
-            <Shield className="w-10 h-10 text-white" />
+      <div className="relative z-10 max-w-md w-full">
+        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl shadow-2xl p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-red-500/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Shield className="w-10 h-10 text-red-400" />
+            </div>
+            <h1 className="text-3xl font-black text-white mb-2">Admin Access</h1>
+            <p className="text-white/80">Restricted area - Authorized personnel only</p>
           </div>
-          <h1 className="text-3xl font-black text-white mb-2">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-500">Admin</span> Access
-          </h1>
-          <p className="text-white/70">Enter admin password to access management panel</p>
-        </div>
 
-        {/* Admin Access Form */}
-        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl p-8 shadow-2xl">
+          {/* Security Warning */}
+          <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="text-red-400 font-semibold text-sm mb-1">Security Notice</h3>
+                <p className="text-white/70 text-xs">
+                  This area is restricted to authorized administrators only. All access attempts are logged and monitored.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-bold text-white/90 mb-3">
+              <label htmlFor="username" className="block text-sm font-semibold text-white/90 mb-2">
+                Admin Username
+              </label>
+              <input
+                id="username"
+                type="text"
+                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/30 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-white placeholder-white/60 transition-all duration-300"
+                placeholder="Enter admin username"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-semibold text-white/90 mb-2">
                 Admin Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
                 <input
+                  id="password"
                   type={showPassword ? 'text' : 'password'}
+                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-12 py-4 bg-white/10 backdrop-blur-sm border border-white/30 rounded-2xl focus:ring-2 focus:ring-red-400 focus:border-red-400 text-white placeholder-white/60 transition-all duration-300"
+                  className="w-full px-4 py-3 pr-12 bg-white/10 backdrop-blur-sm border border-white/30 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-white placeholder-white/60 transition-all duration-300"
                   placeholder="Enter admin password"
-                  required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-white/60 hover:text-white transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -89,64 +110,42 @@ export default function AdminAccessPage() {
             </div>
 
             {error && (
-              <div className="flex items-center gap-3 p-4 bg-red-500/20 border border-red-500/30 rounded-xl">
-                <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
-                <span className="text-red-300 text-sm">{error}</span>
+              <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-xl">
+                <p className="text-red-400 text-sm">{error}</p>
               </div>
             )}
 
             <button
               type="submit"
-              disabled={loading || !password}
-              className="w-full bg-gradient-to-r from-red-500 to-orange-500 text-white py-4 rounded-2xl font-bold text-lg hover:from-red-600 hover:to-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white py-3 px-6 rounded-xl font-semibold hover:from-red-700 hover:to-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-300"
             >
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                  Verifying...
+                  Verifying Access...
                 </>
               ) : (
                 <>
-                  <Shield className="w-5 h-5" />
-                  Access Admin Panel
-                  <ArrowRight className="w-5 h-5" />
+                  <Lock className="w-5 h-5" />
+                  Access Admin Dashboard
                 </>
               )}
             </button>
           </form>
-        </div>
 
-        {/* Admin Features Preview */}
-        <div className="mt-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <Crown className="w-5 h-5 text-yellow-400" />
-            Admin Features
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 text-white/80">
-              <Users className="w-4 h-4 text-blue-400" />
-              <span className="text-sm">User Management</span>
-            </div>
-            <div className="flex items-center gap-3 text-white/80">
-              <Store className="w-4 h-4 text-green-400" />
-              <span className="text-sm">Merchant Control</span>
-            </div>
-            <div className="flex items-center gap-3 text-white/80">
-              <BarChart3 className="w-4 h-4 text-purple-400" />
-              <span className="text-sm">Analytics</span>
-            </div>
-            <div className="flex items-center gap-3 text-white/80">
-              <Settings className="w-4 h-4 text-orange-400" />
-              <span className="text-sm">System Settings</span>
-            </div>
+          {/* Footer */}
+          <div className="mt-8 pt-6 border-t border-white/20 text-center">
+            <p className="text-white/60 text-xs">
+              Unauthorized access is prohibited and may result in legal action.
+            </p>
+            <button
+              onClick={() => router.push('/')}
+              className="mt-4 text-white/80 hover:text-white text-sm transition-colors"
+            >
+              ← Back to Homepage
+            </button>
           </div>
-        </div>
-
-        {/* Security Notice */}
-        <div className="mt-6 text-center">
-          <p className="text-white/50 text-sm">
-            🔒 This is a secure admin area. All access is logged and monitored.
-          </p>
         </div>
       </div>
     </div>

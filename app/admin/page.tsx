@@ -399,7 +399,13 @@ export default function AdminDashboard() {
                 <Shield className="w-4 h-4" />
                 Admin Access
               </div>
-              <button className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+              <button 
+                onClick={() => {
+                  localStorage.removeItem('admin-authenticated');
+                  window.location.href = '/admin-access';
+                }}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+              >
                 Logout
               </button>
             </div>
