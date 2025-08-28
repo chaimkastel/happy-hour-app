@@ -17,32 +17,66 @@ export async function GET(request: NextRequest) {
       console.log('Google Places API key not configured, using Nominatim fallback');
       // Use Nominatim OpenStreetMap API as fallback
       try {
-        const nominatimResponse = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=8&addressdetails=1&countrycodes=us&featuretype=settlement,suburb,neighbourhood`,
-          {
-            headers: {
-              'User-Agent': 'HappyHour/1.0',
-            },
-          }
-        );
+        // Try multiple searches to get better neighborhood results
+        const searchQueries = [
+          `${query} neighborhood`,
+          `${query} suburb`,
+          `${query} district`,
+          query
+        ];
         
-        if (nominatimResponse.ok) {
-          const nominatimData = await nominatimResponse.json();
-          const predictions = nominatimData.map((item: any, index: number) => {
-            // Prioritize neighborhood/suburb over city for main_text
+        let allResults: any[] = [];
+        
+        for (const searchQuery of searchQueries) {
+          try {
+            const nominatimResponse = await fetch(
+              `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=3&addressdetails=1&countrycodes=us&featuretype=settlement,suburb,neighbourhood`,
+              {
+                headers: {
+                  'User-Agent': 'HappyHour/1.0',
+                },
+              }
+            );
+            
+            if (nominatimResponse.ok) {
+              const data = await nominatimResponse.json();
+              allResults = allResults.concat(data);
+            }
+          } catch (error) {
+            console.error('Nominatim search error:', error);
+          }
+        }
+        
+        // Remove duplicates and limit results
+        const uniqueResults = allResults.filter((item, index, self) => 
+          index === self.findIndex(t => t.place_id === item.place_id)
+        ).slice(0, 8);
+        
+        if (uniqueResults.length > 0) {
+          const predictions = uniqueResults.map((item: any, index: number) => {
+            // Strongly prioritize neighborhood/suburb over city for main_text
             const mainText = item.address?.suburb || 
                            item.address?.neighbourhood || 
                            item.address?.city_district ||
-                           item.address?.city || 
-                           item.address?.town || 
+                           item.address?.district ||
+                           item.address?.quarter ||
                            item.address?.village || 
+                           item.address?.town || 
+                           item.address?.city || 
                            item.display_name.split(',')[0];
             
-            // Build secondary text with city, state
-            const secondaryParts = [
-              item.address?.city || item.address?.town,
-              item.address?.state
-            ].filter(Boolean);
+            // Build secondary text - only show city if it's different from main text
+            const city = item.address?.city || item.address?.town;
+            const state = item.address?.state;
+            const secondaryParts = [];
+            
+            // Only add city to secondary if it's different from main text
+            if (city && city !== mainText) {
+              secondaryParts.push(city);
+            }
+            if (state) {
+              secondaryParts.push(state);
+            }
             
             return {
               place_id: `nominatim_${index}`,
