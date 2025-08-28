@@ -1,7 +1,48 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MapPin, Clock, Users, Filter, Grid, List, Search, Star, TrendingUp, Zap, Heart, ArrowRight, Shield, Award, Globe, Smartphone, CreditCard, Timer, CheckCircle, Sparkles, Flame, Gift, Target, Rocket, Crown, Diamond } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  MapPin, 
+  Clock, 
+  Users, 
+  Filter, 
+  Grid, 
+  List, 
+  Search, 
+  Star, 
+  TrendingUp, 
+  Zap, 
+  Heart, 
+  ArrowRight, 
+  Shield, 
+  Award, 
+  Globe, 
+  Smartphone, 
+  CreditCard, 
+  Timer, 
+  CheckCircle, 
+  Sparkles, 
+  Flame, 
+  Gift, 
+  Target, 
+  Rocket, 
+  Crown, 
+  Diamond,
+  Bell,
+  Menu,
+  X,
+  ChevronRight
+} from 'lucide-react';
+import { 
+  PremiumSearchBar, 
+  QuickAction, 
+  PremiumDealCard, 
+  PremiumBottomNav, 
+  PremiumHeader, 
+  PremiumSideMenu 
+} from '../components/PremiumComponents';
+import { Button, Card, Badge, Avatar } from '../components/DesignSystem';
 import { FireIcon, StarIcon, HeartIcon, GiftIcon, CrownIcon, DiamondIcon, RocketIcon, TargetIcon, SparklesIcon, ZapIcon, TrendingUpIcon, TimerIcon, CheckCircleIcon, AwardIcon, ShieldIcon, GlobeIcon, SmartphoneIcon, CreditCardIcon } from '../components/CustomIcons';
 import DealCard from '../components/DealCard';
 import MapWithClusters from '../components/MapWithClusters';
@@ -105,8 +146,15 @@ export default function HomePage() {
     );
   }
 
-  // Mobile-optimized layout
+  // Redirect to mobile page
   if (isMobile) {
+    // Import and render mobile page component
+    const MobilePage = require('./mobile/page').default;
+    return <MobilePage />;
+  }
+
+  // Legacy mobile layout (keeping for fallback)
+  if (false && isMobile) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 overflow-x-hidden">
         {/* Mobile Header */}
