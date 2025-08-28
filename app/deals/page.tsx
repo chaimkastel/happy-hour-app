@@ -165,7 +165,7 @@ export default function DealsPage() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Header */}
       <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             {/* Search Bar */}
             <div className="flex-1 max-w-2xl">
@@ -173,25 +173,25 @@ export default function DealsPage() {
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="Search deals, restaurants, or cuisines..."
+                  placeholder="Search restaurants, cuisines, or deals..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-colors"
+                  className="w-full pl-12 pr-4 py-4 text-lg bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-colors"
                 />
               </div>
             </div>
 
             {/* View Toggle & Filters */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors ${
+                className={`flex items-center gap-2 px-4 py-3 rounded-xl font-medium transition-colors ${
                   showFilters || activeFiltersCount > 0
                     ? 'bg-primary-600 text-white'
                     : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'
                 }`}
               >
-                <Filter className="w-4 h-4" />
+                <Filter className="w-5 h-5" />
                 Filters
                 {activeFiltersCount > 0 && (
                   <span className="bg-white text-primary-600 text-xs px-2 py-0.5 rounded-full">
@@ -203,18 +203,18 @@ export default function DealsPage() {
               <div className="flex bg-slate-100 dark:bg-slate-700 rounded-xl p-1">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                     viewMode === 'grid'
                       ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
                   }`}
                 >
                   <Grid className="w-4 h-4" />
-                  <span className="hidden sm:inline">Grid</span>
+                  <span className="hidden sm:inline">List</span>
                 </button>
                 <button
                   onClick={() => setViewMode('map')}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                     viewMode === 'map'
                       ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
@@ -340,39 +340,19 @@ export default function DealsPage() {
               {filteredDeals.map((deal, index) => (
                 <div 
                   key={deal.id} 
-                  className="group bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-200/50 dark:border-slate-700/50 hover:border-primary-300 dark:hover:border-primary-600 transform hover:-translate-y-1"
-                  style={{animationDelay: `${index * 0.05}s`}}
+                  className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 border border-slate-200 dark:border-slate-700"
                 >
-                  {/* Deal Image */}
-                  <div className="relative h-48 bg-gradient-to-br from-primary-100 to-accent-100 dark:from-primary-900/20 dark:to-accent-900/20">
+                  {/* Restaurant Image */}
+                  <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600">
                     <img 
                       src={deal.image} 
                       alt={deal.title}
                       className="w-full h-full object-cover"
                     />
                     
-                    {/* Badges */}
-                    <div className="absolute top-3 left-3 flex flex-col gap-2">
-                      {deal.isHot && (
-                        <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                          🔥 Hot Right Now
-                        </span>
-                      )}
-                      {deal.isEndingSoon && (
-                        <span className="bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                          ⏰ Ending Soon
-                        </span>
-                      )}
-                      {deal.isStaffPick && (
-                        <span className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                          ⭐ Staff Pick
-                        </span>
-                      )}
-                    </div>
-
                     {/* Discount Badge */}
                     <div className="absolute top-3 right-3">
-                      <span className="bg-primary-600 text-white px-3 py-1 rounded-full text-sm font-bold">
+                      <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
                         {deal.discount}% OFF
                       </span>
                     </div>
@@ -383,40 +363,38 @@ export default function DealsPage() {
                     </button>
                   </div>
 
-                  {/* Deal Content */}
+                  {/* Restaurant Info */}
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2 group-hover:text-primary-600 transition-colors">
-                          {deal.title}
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1">
+                          {deal.venue?.name || 'Restaurant Name'}
                         </h3>
-                        <p className="text-slate-600 dark:text-slate-400 text-sm mb-3 line-clamp-2">
-                          {deal.description}
+                        <p className="text-slate-600 dark:text-slate-400 text-sm mb-2">
+                          {deal.cuisine} • {Math.floor(Math.random() * 5) + 1}⭐
                         </p>
                       </div>
                     </div>
                     
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
-                        <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 px-2 py-1 rounded-full text-xs">
-                          {deal.cuisine}
+                        <span className="text-slate-500 text-sm">
+                          {Math.floor(Math.random() * 30) + 10} min
+                        </span>
+                        <span className="text-slate-300">•</span>
+                        <span className="text-slate-500 text-sm">
+                          {Math.floor(Math.random() * 5) + 0.5} mi
                         </span>
                       </div>
                       <div className="flex items-center gap-1 text-slate-500 text-sm">
-                        <MapPin className="w-4 h-4" />
-                        {deal.venue?.name || 'Nearby'}
+                        <Clock className="w-4 h-4" />
+                        {Math.floor(Math.random() * 120) + 30} min left
                       </div>
                     </div>
                     
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1 text-slate-500 text-sm">
-                        <Clock className="w-4 h-4" />
-                        Expires in {Math.floor(Math.random() * 120) + 30} min
-                      </div>
-                      <button className="bg-primary-600 text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-primary-700 transition-colors transform hover:scale-105">
-                        Claim Deal
-                      </button>
-                    </div>
+                    <button className="w-full bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors">
+                      View Deal
+                    </button>
                   </div>
                 </div>
               ))}
