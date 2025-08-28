@@ -62,12 +62,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Building2 className="w-8 h-8 text-indigo-600" />
+            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Building2 className="w-8 h-8 text-orange-600" />
             </div>
             <h1 className="text-3xl font-black text-gray-900 mb-2">Welcome Back</h1>
             <p className="text-gray-600">Sign in to your account</p>
@@ -107,7 +107,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-orange-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -129,7 +129,7 @@ export default function LoginPage() {
                 <p className="text-sm text-gray-600 mb-2">Don't have an account?</p>
                 <button
                   onClick={() => router.push('/signup')}
-                  className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
+                  className="text-orange-600 hover:text-orange-700 font-medium text-sm"
                 >
                   Create Account
                 </button>
@@ -138,7 +138,7 @@ export default function LoginPage() {
                 <p className="text-sm text-gray-600 mb-2">Are you a restaurant owner?</p>
                 <button
                   onClick={() => router.push('/merchant/signup')}
-                  className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
+                  className="text-orange-600 hover:text-orange-700 font-medium text-sm"
                 >
                   Start Your Free Trial
                 </button>
@@ -150,7 +150,7 @@ export default function LoginPage() {
                     setEmail('demo@example.com');
                     setPassword('demo123');
                   }}
-                  className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
+                  className="text-orange-600 hover:text-orange-700 font-medium text-sm"
                 >
                   Use Demo Credentials
                 </button>

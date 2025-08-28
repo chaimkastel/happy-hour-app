@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { MapPin, Clock, Users, Filter, Grid, List, Search, Star, TrendingUp, Zap, Heart, ArrowRight, Shield, Award, Globe, Smartphone, CreditCard, Timer, CheckCircle, Sparkles, Flame, Gift, Target, Rocket, Crown, Diamond } from 'lucide-react';
 import DealCard from '../components/DealCard';
 import MapWithClusters from '../components/MapWithClusters';
@@ -27,6 +28,7 @@ interface Filters {
 }
 
 export default function HomePage() {
+  const router = useRouter();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -196,7 +198,7 @@ export default function HomePage() {
             {/* Primary CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-12 sm:mb-16 animate-fade-in">
               <button 
-                onClick={() => window.location.href = '/explore'}
+                onClick={() => router.push('/explore')}
                 className="group bg-gradient-to-r from-yellow-300 to-orange-400 text-white px-8 sm:px-12 py-4 sm:py-6 rounded-2xl sm:rounded-3xl font-black text-lg sm:text-2xl hover:from-yellow-400 hover:to-orange-500 transition-all duration-300 shadow-2xl hover:shadow-yellow-300/25 hover:scale-105 flex items-center gap-3 sm:gap-4"
               >
                 <Rocket className="w-6 h-6 sm:w-8 sm:h-8 group-hover:animate-bounce" />
@@ -311,8 +313,8 @@ export default function HomePage() {
           {/* View All Deals CTA */}
           <div className="text-center mt-12">
             <button 
-              onClick={() => window.location.href = '/deals'}
-              className="group bg-gradient-to-r from-purple-500 to-pink-500 text-white px-12 py-6 rounded-3xl font-black text-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-2xl hover:shadow-purple-500/25 hover:scale-105 flex items-center gap-4 mx-auto"
+              onClick={() => router.push('/deals')}
+              className="group bg-gradient-to-r from-orange-500 to-red-500 text-white px-12 py-6 rounded-3xl font-black text-xl hover:from-orange-600 hover:to-red-600 transition-all duration-300 shadow-2xl hover:shadow-orange-500/25 hover:scale-105 flex items-center gap-4 mx-auto"
             >
               <Gift className="w-6 h-6 group-hover:animate-bounce" />
               View All Amazing Deals
@@ -505,8 +507,8 @@ export default function HomePage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button 
-                  onClick={() => window.location.href = '/deals'}
-                  className="group bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-10 py-5 rounded-2xl font-bold text-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-3"
+                  onClick={() => router.push('/deals')}
+                  className="group bg-gradient-to-r from-orange-500 to-red-500 text-white px-10 py-5 rounded-2xl font-bold text-xl hover:from-orange-600 hover:to-red-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-3"
                 >
                   <Diamond className="w-6 h-6 group-hover:animate-spin" />
                   Start Saving Now
