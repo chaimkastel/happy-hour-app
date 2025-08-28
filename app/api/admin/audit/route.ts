@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { adminId, action, details, targetType, targetId } = body;
 
-    const auditLog = await prisma.auditLog.create({
+    const auditLog = await prisma.adminAuditLog.create({
       data: {
         adminId,
         action,

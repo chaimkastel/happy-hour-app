@@ -62,7 +62,7 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error('Error updating password:', error);
     return NextResponse.json(
-      { error: `Failed to update password: ${error.message}` },
+      { error: `Failed to update password: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
     );
   }

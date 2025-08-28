@@ -247,7 +247,7 @@ export default function AdminDashboard() {
     avgDealsPerMerchant: merchants.length > 0 ? Math.round(merchants.reduce((sum, m) => sum + m.dealsCount, 0) / merchants.length) : 0
   };
 
-  const handleCreateUser = async (userData: Partial<User>) => {
+  const handleCreateUser = async (userData: { email?: string; phone?: string; role?: string }) => {
     setLoading(true);
     try {
       const response = await fetch('/api/admin/users', {
@@ -255,7 +255,7 @@ export default function AdminDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: userData.email,
-          phone: userData.phone,
+          phone: userData.phone || '',
           role: userData.role
         })
       });
@@ -951,18 +951,18 @@ export default function AdminDashboard() {
                             searchQuery === '' || 
                             user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             user.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            (user.merchant?.businessName && user.merchant.businessName.toLowerCase().includes(searchQuery.toLowerCase()))
+                            ((user as any).merchant?.businessName && (user as any).merchant.businessName.toLowerCase().includes(searchQuery.toLowerCase()))
                           )
                           .map((user) => (
                           <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer" onClick={() => handleViewUserDetails(user.id)}>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div>
                                 <div className="text-sm font-medium text-slate-900 dark:text-white">
-                                  {user.merchant?.businessName || user.email.split('@')[0]}
+                                  {(user as any).merchant?.businessName || user.email.split('@')[0]}
                                 </div>
                                 <div className="text-sm text-slate-500 dark:text-slate-400">{user.email}</div>
-                                {user.phone && (
-                                  <div className="text-xs text-slate-400">{user.phone}</div>
+                                {(user as any).phone && (
+                                  <div className="text-xs text-slate-400">{(user as any).phone}</div>
                                 )}
                               </div>
                             </td>
@@ -981,14 +981,14 @@ export default function AdminDashboard() {
                               }`}>
                                 {user.isActive ? 'Active' : 'Inactive'}
                               </span>
-                              {user.merchant?.kycStatus && (
+                              {(user as any).merchant?.kycStatus && (
                                 <div className="mt-1">
                                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                    user.merchant.kycStatus === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                                    user.merchant.kycStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                                    (user as any).merchant.kycStatus === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                                    (user as any).merchant.kycStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                                     'bg-red-100 text-red-800'
                                   }`}>
-                                    {user.merchant.kycStatus}
+                                    {(user as any).merchant.kycStatus}
                                   </span>
                                 </div>
                               )}
@@ -1662,7 +1662,7 @@ export default function AdminDashboard() {
               const formData = new FormData(e.target as HTMLFormElement);
               handleCreateUser({
                 email: formData.get('email') as string,
-                name: formData.get('name') as string,
+                phone: formData.get('phone') as string,
                 role: formData.get('role') as 'USER' | 'MERCHANT' | 'ADMIN'
               });
             }} className="space-y-4">

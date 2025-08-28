@@ -55,13 +55,13 @@ export default function HomePage() {
         const transformedDeals = dealsData.map((deal: any) => ({
           ...deal,
           discount: deal.percentOff || deal.discount || 0,
-          cuisine: deal.venue?.businessType || deal.cuisine || 'Restaurant',
+          cuisine: (deal.venue as any)?.businessType || deal.cuisine || 'Restaurant',
           venue: {
             latitude: deal.venue?.latitude || 40.7128,
             longitude: deal.venue?.longitude || -74.0060,
             name: deal.venue?.name || 'Restaurant',
             address: deal.venue?.address || '',
-            businessType: deal.venue?.businessType || 'Restaurant'
+            businessType: (deal.venue as any)?.businessType || 'Restaurant'
           }
         }));
         setDeals(transformedDeals);
@@ -271,7 +271,7 @@ export default function HomePage() {
                       {deal.venue?.name || 'Restaurant'}
                     </h3>
                     <p className="text-white/90 text-sm flex items-center gap-2">
-                      <span>{deal.venue?.businessType || 'Restaurant'}</span>
+                      <span>{(deal.venue as any)?.businessType || 'Restaurant'}</span>
                       <span>•</span>
                       <div className="flex items-center gap-1">
                         {[...Array(5)].map((_, i) => (
