@@ -1,0 +1,4 @@
+# Don't ignore anything - we want all files uploaded
+!.env*
+!prisma/dev.db
+!temp_backup/
