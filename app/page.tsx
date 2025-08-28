@@ -57,13 +57,21 @@ export default function HomePage() {
           venue: {
             latitude: deal.venue?.latitude || 40.7128,
             longitude: deal.venue?.longitude || -74.0060,
-            name: deal.venue?.name || 'Restaurant'
+            name: deal.venue?.name || 'Restaurant',
+            address: deal.venue?.address || '',
+            businessType: deal.venue?.businessType || 'Restaurant'
           }
         }));
         setDeals(transformedDeals);
+      } else {
+        console.error('Failed to fetch deals:', response.status);
+        // Set some fallback data if API fails
+        setDeals([]);
       }
     } catch (error) {
       console.error('Error fetching deals:', error);
+      // Set some fallback data if API fails
+      setDeals([]);
     } finally {
       setLoading(false);
     }
@@ -248,24 +256,10 @@ export default function HomePage() {
                   {/* Restaurant Name Overlay */}
                   <div className="absolute bottom-4 left-4 right-4">
                     <h3 className="text-xl font-bold text-white mb-1 drop-shadow-lg">
-                      {[
-                        'Joe\'s Pizza',
-                        'Sushi Zen',
-                        'Burger Palace', 
-                        'Taco Libre',
-                        'Golden Dragon',
-                        'Mediterranean Breeze'
-                      ][index % 6]}
+                      {deal.venue?.name || 'Restaurant'}
                     </h3>
                     <p className="text-white/90 text-sm flex items-center gap-2">
-                      <span>{[
-                        'Italian',
-                        'Japanese', 
-                        'American',
-                        'Mexican',
-                        'Chinese',
-                        'Mediterranean'
-                      ][index % 6]}</span>
+                      <span>{deal.venue?.businessType || 'Restaurant'}</span>
                       <span>•</span>
                       <div className="flex items-center gap-1">
                         {[...Array(5)].map((_, i) => (
@@ -293,14 +287,7 @@ export default function HomePage() {
                   </div>
                   
                   <p className="text-white/70 text-sm mb-6 line-clamp-2">
-                    {[
-                      'Authentic New York style pizza with fresh mozzarella and San Marzano tomatoes',
-                      'Fresh sashimi and hand-rolled sushi made by master chefs',
-                      'Gourmet burgers with grass-fed beef and artisanal buns',
-                      'Authentic street tacos with fresh ingredients and homemade salsas',
-                      'Traditional Chinese cuisine with wok-fried dishes and dim sum',
-                      'Fresh Mediterranean dishes with olive oil, herbs, and local ingredients'
-                    ][index % 6]}
+                    {deal.description || 'Special deal available now!'}
                   </p>
                   
                   <button className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black py-4 rounded-2xl font-bold text-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl group-hover:scale-105">
