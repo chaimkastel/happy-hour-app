@@ -195,33 +195,47 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   return (
     <SessionProvider>
       <div className={`min-h-screen transition-all duration-500 ${isHydrated && isDarkMode ? 'dark' : ''}`}>
-      {/* Header */}
-      <header className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl sticky top-0 z-50 border-b border-slate-200/60 dark:border-slate-700/60 shadow-sm" role="banner">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between gap-4">
-            {/* Logo */}
-            <a href="/" className="flex-shrink-0 text-2xl sm:text-3xl font-black tracking-tight hover:scale-102 transition-all duration-300 text-slate-900 dark:text-white">
-              🍺 Happy Hour
+      {/* Modern Header */}
+      <header className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl sticky top-0 z-50 border-b border-orange-200/30 dark:border-orange-800/30 shadow-lg" role="banner">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+          <div className="flex items-center justify-between gap-6">
+            {/* Modern Logo */}
+            <a href="/" className="flex-shrink-0 group">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                  <span className="text-white text-xl font-bold">🍺</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-2xl sm:text-3xl font-black tracking-tight bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent group-hover:from-orange-500 group-hover:to-red-500 transition-all duration-300">
+                    Happy Hour
+                  </span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium tracking-wider uppercase">
+                    Find Amazing Deals
+                  </span>
+                </div>
+              </div>
             </a>
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-8" role="navigation" aria-label="Main navigation">
-              {/* Enhanced Location Control */}
+              {/* Modern Location Control */}
               <div className="relative">
-                <div className="flex items-center gap-2 bg-white/90 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70 rounded-2xl px-4 py-2.5 shadow-sm hover:shadow-md transition-all duration-200">
-                  <MapPin className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+                <div className="flex items-center gap-3 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border border-orange-200/50 dark:border-orange-700/50 rounded-2xl px-4 py-3 shadow-sm hover:shadow-lg transition-all duration-300">
+                  <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center">
+                    <MapPin className="w-4 h-4 text-white" />
+                  </div>
                   <div className="text-sm">
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Location</p>
+                    <p className="text-xs text-orange-600 dark:text-orange-400 font-medium">Location</p>
                     <p className="font-semibold text-slate-900 dark:text-slate-100">
                       {locationQuery || 'Set your location'}
                     </p>
                   </div>
                   <button
                     onClick={useMyLocation}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-300 ${
                       isResolvingLocation 
                         ? 'bg-slate-200 text-slate-600 cursor-not-allowed' 
-                        : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-md'
+                        : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 hover:shadow-lg hover:scale-105'
                     }`}
                     title="Use my location"
                     aria-label="Use my current location"
@@ -233,36 +247,36 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                 </div>
               </div>
 
-              {/* Navigation Links */}
-              <div className="flex items-center gap-6">
-                <a href="/explore" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm tracking-wide flex items-center gap-2">
-                  <Compass className="w-4 h-4" />
+              {/* Modern Navigation Links */}
+              <div className="flex items-center gap-2">
+                <a href="/explore" className="text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 px-4 py-2.5 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group">
+                  <Compass className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
                   Explore
                 </a>
-                <a href="/favorites" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm tracking-wide flex items-center gap-2">
-                  <Heart className="w-4 h-4" />
+                <a href="/favorites" className="text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 px-4 py-2.5 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group">
+                  <Heart className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                   Favorites
                 </a>
-                <a href="/account" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm tracking-wide flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  My Account
+                <a href="/account" className="text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 px-4 py-2.5 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group">
+                  <User className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                  Account
                 </a>
-                <a href="/wallet" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm tracking-wide flex items-center gap-2">
-                  <CreditCard className="w-4 h-4" />
+                <a href="/wallet" className="text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 px-4 py-2.5 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group">
+                  <CreditCard className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                   Wallet
                 </a>
-                <a href="/partner" className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm tracking-wide flex items-center gap-2">
-                  <Building2 className="w-4 h-4" />
+                <a href="/partner" className="text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 px-4 py-2.5 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group">
+                  <Building2 className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                   Partner
                 </a>
               </div>
 
-              {/* Action Buttons */}
+              {/* Modern Action Buttons */}
               <div className="flex items-center gap-3">
                 {!isLoggedIn ? (
                   <div className="relative group">
                     <button
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 text-sm bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg"
+                      className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 text-sm bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 shadow-lg hover:shadow-xl hover:scale-105"
                     >
                       <LogIn className="w-4 h-4" />
                       Login
@@ -297,7 +311,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                 ) : (
                   <button
                     onClick={toggleLogin}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 text-sm bg-red-500 text-white hover:bg-red-600 shadow-md hover:shadow-lg"
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 text-sm bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 shadow-lg hover:shadow-xl hover:scale-105"
                   >
                     <LogOut className="w-4 h-4" />
                     Logout
@@ -306,7 +320,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
                 <button
                   onClick={toggleDarkMode}
-                  className="p-2.5 rounded-xl transition-all duration-200 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400"
+                  className="p-3 rounded-xl transition-all duration-300 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 text-slate-600 dark:text-slate-400 hover:from-orange-100 hover:to-amber-100 dark:hover:from-orange-900/20 dark:hover:to-amber-900/20 hover:text-orange-600 dark:hover:text-orange-400 hover:scale-105 shadow-sm hover:shadow-md"
                   title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                   aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                 >
@@ -315,21 +329,21 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
               </div>
             </nav>
 
-            {/* Mobile Menu Button */}
-            <div className="lg:hidden flex items-center gap-2">
+            {/* Modern Mobile Menu Button */}
+            <div className="lg:hidden flex items-center gap-3">
               <button
                 onClick={toggleDarkMode}
-                className="p-3 rounded-2xl transition-all duration-200 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105"
+                className="p-3 rounded-xl transition-all duration-300 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 text-slate-600 dark:text-slate-400 hover:from-orange-100 hover:to-amber-100 dark:hover:from-orange-900/20 dark:hover:to-amber-900/20 hover:text-orange-600 dark:hover:text-orange-400 hover:scale-105 shadow-sm hover:shadow-md"
               >
                 {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
               
               <button 
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className={`relative p-4 rounded-2xl transition-all duration-300 font-bold text-sm shadow-lg hover:shadow-xl hover:scale-105 ${
+                className={`relative p-4 rounded-xl transition-all duration-300 font-bold text-sm shadow-lg hover:shadow-xl hover:scale-105 ${
                   isMobileMenuOpen 
                     ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' 
-                    : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700'
+                    : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600'
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -346,17 +360,19 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
           </div>
         </div>
 
-        {/* Mobile Navigation Menu */}
+        {/* Modern Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-slate-200/60 dark:border-slate-700/60">
-            <nav className="px-4 sm:px-6 py-8 space-y-6 bg-white/98 dark:bg-slate-900/98 backdrop-blur-2xl">
-              {/* Mobile Location Control */}
+          <div className="lg:hidden border-t border-orange-200/30 dark:border-orange-800/30">
+            <nav className="px-4 sm:px-6 py-8 space-y-6 bg-gradient-to-br from-orange-50/95 to-amber-50/95 dark:from-orange-900/95 dark:to-amber-900/95 backdrop-blur-2xl">
+              {/* Modern Mobile Location Control */}
               <div className="space-y-3">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                <label className="block text-sm font-medium text-orange-700 dark:text-orange-300">
                   Location
                 </label>
-                <div className="flex items-center gap-2 bg-white/90 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70 rounded-2xl px-4 py-3">
-                  <MapPin className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+                <div className="flex items-center gap-3 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border border-orange-200/50 dark:border-orange-700/50 rounded-2xl px-4 py-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center">
+                    <MapPin className="w-4 h-4 text-white" />
+                  </div>
                   <input
                     value={locationQuery}
                     onChange={(e) => handleLocationInputChange(e.target.value)}
@@ -365,10 +381,10 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                   />
                   <button
                     onClick={useMyLocation}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-300 ${
                       isResolvingLocation 
                         ? 'bg-slate-200 text-slate-600' 
-                        : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                        : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 hover:scale-105'
                     }`}
                     disabled={isResolvingLocation}
                   >
