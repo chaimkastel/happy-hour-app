@@ -219,6 +219,37 @@ Username: chaimkastel
 Password: CHAIMrox11!
 ```
 
+## 🔗 All Page Links
+
+### Customer Pages
+- **Homepage**: https://www.orderhappyhour.com/
+- **Customer Signup**: https://www.orderhappyhour.com/signup
+- **Customer Login**: https://www.orderhappyhour.com/login
+- **Explore Deals**: https://www.orderhappyhour.com/explore
+- **Favorites**: https://www.orderhappyhour.com/favorites
+- **My Account**: https://www.orderhappyhour.com/account
+- **Wallet**: https://www.orderhappyhour.com/wallet
+
+### Merchant Pages
+- **Merchant Login**: https://www.orderhappyhour.com/merchant/login
+- **Merchant Signup**: https://www.orderhappyhour.com/merchant/signup
+- **Merchant Dashboard**: https://www.orderhappyhour.com/merchant/dashboard
+- **Create New Deal**: https://www.orderhappyhour.com/merchant/deals/new
+- **Manage Venues**: https://www.orderhappyhour.com/merchant/venues
+- **Add New Venue**: https://www.orderhappyhour.com/merchant/venues/new
+- **Merchant Settings**: https://www.orderhappyhour.com/merchant/settings
+
+### Admin Pages
+- **Admin Access**: https://www.orderhappyhour.com/admin-access
+- **Admin Dashboard**: https://www.orderhappyhour.com/admin
+- **Database Setup Test**: https://www.orderhappyhour.com/api/setup-db
+
+### API Endpoints
+- **Customer Signup API**: https://www.orderhappyhour.com/api/users/signup
+- **Admin Deals API**: https://www.orderhappyhour.com/api/admin/deals
+- **Merchant Deals API**: https://www.orderhappyhour.com/api/merchant/deals
+- **Merchant Venues API**: https://www.orderhappyhour.com/api/merchant/venues
+
 ## 🛡 Admin Dashboard
 
 The admin dashboard provides comprehensive platform management:
