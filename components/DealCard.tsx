@@ -94,9 +94,9 @@ export default function DealCard({ d }: { d: any }) {
         
         <Link 
           href={`/deal/${d.id}/view`}
-          className="block w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3 rounded-xl font-semibold text-center hover:from-orange-700 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+          className="block w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3 rounded-xl font-semibold text-center hover:from-orange-700 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
         >
-          View Deal
+          Claim This Deal
         </Link>
       </div>
 

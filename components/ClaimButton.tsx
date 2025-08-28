@@ -229,7 +229,7 @@ export default function ClaimButton({
               onClick={() => {
                 setShowSuccessModal(false)
                 // Navigate to wallet/redemptions page
-                window.location.href = '/wallet'
+                router.push('/wallet')
               }}
               variant="primary"
               fullWidth

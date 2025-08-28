@@ -162,12 +162,14 @@ export default function ViewDealPage() {
           </div>
           <h1 className="text-2xl font-bold text-red-800 dark:text-red-200 mb-4">Deal Not Found</h1>
           <p className="text-red-600 dark:text-red-400 mb-6">{error || 'Unable to load deal details'}</p>
-          <Link href="/">
-            <Button variant="primary" size="lg">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
-            </Button>
-          </Link>
+          <Button 
+            onClick={() => router.push('/')}
+            variant="primary" 
+            size="lg"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Button>
         </div>
       </div>
     )
@@ -184,12 +186,14 @@ export default function ViewDealPage() {
       <div className="bg-white dark:bg-slate-900 shadow-sm border-b border-slate-200 dark:border-slate-700">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Explore
-              </Button>
-            </Link>
+            <Button 
+              onClick={() => router.push('/')}
+              variant="ghost" 
+              size="sm"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Explore
+            </Button>
             
             <div className="flex items-center gap-3">
               <Button onClick={shareDeal} variant="ghost" size="sm">
@@ -647,14 +651,13 @@ export default function ViewDealPage() {
             >
               Stay Here
             </Button>
-            <Link href="/claim-success">
-              <Button 
-                variant="primary" 
-                size="lg"
-              >
-                View Redemption
-              </Button>
-            </Link>
+            <Button 
+              onClick={() => router.push('/claim-success')}
+              variant="primary" 
+              size="lg"
+            >
+              View Redemption
+            </Button>
           </div>
         </div>
       </Modal>

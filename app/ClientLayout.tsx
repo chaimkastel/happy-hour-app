@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import { Moon, Sun, Heart, Menu, X, LogIn, LogOut, User, MapPin, Crosshair, Search, CreditCard, Building2, Brain, Compass } from 'lucide-react';
 import { SessionProvider } from 'next-auth/react';
+import LocationSelector from '@/components/LocationSelector';
+import { AddressData } from '@/types/address';
 
 interface ClientLayoutProps {
   children: React.ReactNode;
@@ -54,6 +56,12 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       localStorage.setItem('hh:lastLocationCoords', JSON.stringify({ lat, lng }));
     } catch {}
     window.dispatchEvent(new CustomEvent('app:set-location', { detail: { lat, lng, label } }));
+  };
+
+  const handleLocationChange = (addressData: AddressData) => {
+    const label = addressData.formatted;
+    dispatchLocation(addressData.coordinates.lat, addressData.coordinates.lng, label);
+    setLocationQuery(label);
   };
 
   const useMyLocation = () => {
@@ -218,33 +226,15 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-8" role="navigation" aria-label="Main navigation">
-              {/* Modern Location Control */}
+              {/* Enhanced Location Control */}
               <div className="relative">
-                <div className="flex items-center gap-3 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border border-orange-200/50 dark:border-orange-700/50 rounded-2xl px-4 py-3 shadow-sm hover:shadow-lg transition-all duration-300">
-                  <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center">
-                    <MapPin className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="text-sm">
-                    <p className="text-xs text-orange-600 dark:text-orange-400 font-medium">Location</p>
-                    <p className="font-semibold text-slate-900 dark:text-slate-100">
-                      {locationQuery || 'Set your location'}
-                    </p>
-                  </div>
-                  <button
-                    onClick={useMyLocation}
-                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-300 ${
-                      isResolvingLocation 
-                        ? 'bg-slate-200 text-slate-600 cursor-not-allowed' 
-                        : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 hover:shadow-lg hover:scale-105'
-                    }`}
-                    title="Use my location"
-                    aria-label="Use my current location"
-                    disabled={isResolvingLocation}
-                  >
-                    <Crosshair className="w-3.5 h-3.5" />
-                    {isResolvingLocation ? 'Locating…' : 'My Location'}
-                  </button>
-                </div>
+                <LocationSelector
+                  value={locationQuery}
+                  onChange={handleLocationChange}
+                  onMyLocationClick={useMyLocation}
+                  isResolvingLocation={isResolvingLocation}
+                  placeholder="Search for a location..."
+                />
               </div>
 
               {/* Modern Navigation Links */}

@@ -130,7 +130,7 @@ export function PremiumHeader() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">🔥</span>
+              <span className="text-white font-bold text-sm">🍺</span>
             </div>
             <h1 className="text-white font-bold text-lg">HappyHour</h1>
           </div>
