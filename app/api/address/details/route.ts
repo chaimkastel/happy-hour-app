@@ -14,11 +14,56 @@ export async function GET(request: NextRequest) {
 
     const apiKey = process.env.GOOGLE_PLACES_API_KEY;
     if (!apiKey) {
-      console.error('Google Places API key not configured');
-      return NextResponse.json(
-        { error: 'Address service not configured' },
-        { status: 500 }
-      );
+      console.log('Google Places API key not configured, using fallback');
+      // Return mock data for development
+      const mockData = {
+        mock_1: {
+          place_id: 'mock_1',
+          formatted_address: 'New York, NY, USA',
+          address_components: [
+            { long_name: 'New York', short_name: 'NY', types: ['locality', 'political'] },
+            { long_name: 'New York', short_name: 'NY', types: ['administrative_area_level_1', 'political'] },
+            { long_name: 'United States', short_name: 'US', types: ['country', 'political'] }
+          ],
+          geometry: {
+            location: { lat: 40.7128, lng: -74.0060 }
+          }
+        },
+        mock_2: {
+          place_id: 'mock_2',
+          formatted_address: 'Los Angeles, CA, USA',
+          address_components: [
+            { long_name: 'Los Angeles', short_name: 'LA', types: ['locality', 'political'] },
+            { long_name: 'California', short_name: 'CA', types: ['administrative_area_level_1', 'political'] },
+            { long_name: 'United States', short_name: 'US', types: ['country', 'political'] }
+          ],
+          geometry: {
+            location: { lat: 34.0522, lng: -118.2437 }
+          }
+        },
+        mock_3: {
+          place_id: 'mock_3',
+          formatted_address: 'Chicago, IL, USA',
+          address_components: [
+            { long_name: 'Chicago', short_name: 'Chicago', types: ['locality', 'political'] },
+            { long_name: 'Illinois', short_name: 'IL', types: ['administrative_area_level_1', 'political'] },
+            { long_name: 'United States', short_name: 'US', types: ['country', 'political'] }
+          ],
+          geometry: {
+            location: { lat: 41.8781, lng: -87.6298 }
+          }
+        }
+      };
+      
+      const mockResult = mockData[placeId as keyof typeof mockData];
+      if (mockResult) {
+        return NextResponse.json(mockResult);
+      } else {
+        return NextResponse.json(
+          { error: 'Mock location not found' },
+          { status: 404 }
+        );
+      }
     }
 
     const response = await fetch(

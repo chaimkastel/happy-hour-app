@@ -203,60 +203,60 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   return (
     <SessionProvider>
       <div className={`min-h-screen transition-all duration-500 ${isHydrated && isDarkMode ? 'dark' : ''}`}>
-      {/* Modern Header */}
-      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl sticky top-0 z-50 border-b border-white/20 dark:border-slate-700/30 shadow-2xl" role="banner">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
-          <div className="flex items-center justify-between gap-6">
-            {/* Modern Logo */}
+      {/* Sleek Header */}
+      <header className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl sticky top-0 z-50 border-b border-white/10 dark:border-slate-700/20 shadow-lg" role="banner">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2">
+          <div className="flex items-center justify-between gap-4">
+            {/* Compact Logo */}
             <a href="/" className="flex-shrink-0 group">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white/20 dark:bg-slate-800/40 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-2xl group-hover:shadow-3xl transition-all duration-500 group-hover:scale-105 border border-white/30 dark:border-slate-600/40">
-                  <span className="text-slate-700 dark:text-slate-300 text-2xl font-bold">🍺</span>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-white/20 dark:bg-slate-800/40 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105 border border-white/20 dark:border-slate-600/30">
+                  <span className="text-slate-700 dark:text-slate-300 text-lg font-bold">🍺</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-all duration-300">
+                  <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-all duration-300">
                     Happy Hour
                   </span>
-                  <span className="text-xs text-slate-600 dark:text-slate-400 font-medium tracking-wider uppercase">
-                    Find Amazing Deals
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium tracking-wide">
+                    Find Deals
                   </span>
                 </div>
               </div>
             </a>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-8" role="navigation" aria-label="Main navigation">
-              {/* Enhanced Location Control */}
+            <nav className="hidden lg:flex items-center gap-6" role="navigation" aria-label="Main navigation">
+              {/* Compact Location Control */}
               <div className="relative">
                 <LocationSelector
                   value={locationQuery}
                   onChange={handleLocationChange}
                   onMyLocationClick={useMyLocation}
                   isResolvingLocation={isResolvingLocation}
-                  placeholder="Search for a location..."
+                  placeholder="Search location..."
                 />
               </div>
 
-              {/* Modern Navigation Links */}
-              <div className="flex items-center gap-3">
-                <a href="/explore" className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/20 dark:hover:bg-slate-800/30 px-5 py-3 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-slate-600/30">
-                  <Compass className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
+              {/* Sleek Navigation Links */}
+              <div className="flex items-center gap-1">
+                <a href="/explore" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/10 dark:hover:bg-slate-800/20 px-4 py-2 rounded-lg transition-all duration-200 font-medium text-sm flex items-center gap-2 group">
+                  <Compass className="w-4 h-4 group-hover:rotate-12 transition-transform duration-200" />
                   Explore
                 </a>
-                <a href="/favorites" className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/20 dark:hover:bg-slate-800/30 px-5 py-3 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-slate-600/30">
-                  <Heart className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                <a href="/favorites" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/10 dark:hover:bg-slate-800/20 px-4 py-2 rounded-lg transition-all duration-200 font-medium text-sm flex items-center gap-2 group">
+                  <Heart className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
                   Favorites
                 </a>
-                <a href="/account" className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/20 dark:hover:bg-slate-800/30 px-5 py-3 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-slate-600/30">
-                  <User className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                <a href="/account" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/10 dark:hover:bg-slate-800/20 px-4 py-2 rounded-lg transition-all duration-200 font-medium text-sm flex items-center gap-2 group">
+                  <User className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
                   Account
                 </a>
-                <a href="/wallet" className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/20 dark:hover:bg-slate-800/30 px-5 py-3 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-slate-600/30">
-                  <CreditCard className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                <a href="/wallet" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/10 dark:hover:bg-slate-800/20 px-4 py-2 rounded-lg transition-all duration-200 font-medium text-sm flex items-center gap-2 group">
+                  <CreditCard className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
                   Wallet
                 </a>
-                <a href="/partner" className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/20 dark:hover:bg-slate-800/30 px-5 py-3 rounded-xl transition-all duration-300 font-medium text-sm tracking-wide flex items-center gap-2 group backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-slate-600/30">
-                  <Building2 className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                <a href="/partner" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/10 dark:hover:bg-slate-800/20 px-4 py-2 rounded-lg transition-all duration-200 font-medium text-sm flex items-center gap-2 group">
+                  <Building2 className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
                   Partner
                 </a>
               </div>
@@ -319,154 +319,106 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
               </div>
             </nav>
 
-            {/* Modern Mobile Menu Button */}
-            <div className="lg:hidden flex items-center gap-3">
+            {/* Sleek Mobile Menu Button */}
+            <div className="lg:hidden flex items-center gap-2">
               <button
                 onClick={toggleDarkMode}
-                className="p-3 rounded-xl transition-all duration-300 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 text-slate-600 dark:text-slate-400 hover:from-orange-100 hover:to-amber-100 dark:hover:from-orange-900/20 dark:hover:to-amber-900/20 hover:text-orange-600 dark:hover:text-orange-400 hover:scale-105 shadow-sm hover:shadow-md"
+                className="p-2 rounded-lg transition-all duration-200 bg-white/10 dark:bg-slate-800/20 text-slate-600 dark:text-slate-400 hover:bg-white/20 dark:hover:bg-slate-800/40 hover:scale-105 backdrop-blur-sm border border-white/10 dark:border-slate-700/20"
               >
-                {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </button>
               
               <button 
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className={`relative p-4 rounded-xl transition-all duration-300 font-bold text-sm shadow-lg hover:shadow-xl hover:scale-105 ${
+                className={`p-2 rounded-lg transition-all duration-200 ${
                   isMobileMenuOpen 
-                    ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' 
-                    : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600'
-                }`}
+                    ? 'bg-white/20 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300' 
+                    : 'bg-white/10 dark:bg-slate-800/20 text-slate-600 dark:text-slate-400 hover:bg-white/20 dark:hover:bg-slate-800/40'
+                } backdrop-blur-sm border border-white/10 dark:border-slate-700/20`}
               >
-                <div className="flex items-center gap-2">
-                  {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-                  <span className="hidden sm:inline">
-                    {isMobileMenuOpen ? 'Close' : 'Menu'}
-                  </span>
-                </div>
-                {!isMobileMenuOpen && (
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
-                )}
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           </div>
         </div>
 
-        {/* Modern Mobile Navigation Menu */}
+        {/* Sleek Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-orange-200/30 dark:border-orange-800/30">
-            <nav className="px-4 sm:px-6 py-8 space-y-6 bg-gradient-to-br from-orange-50/95 to-amber-50/95 dark:from-orange-900/95 dark:to-amber-900/95 backdrop-blur-2xl">
-              {/* Modern Mobile Location Control */}
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-orange-700 dark:text-orange-300">
-                  Location
-                </label>
-                <div className="flex items-center gap-3 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border border-orange-200/50 dark:border-orange-700/50 rounded-2xl px-4 py-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center">
-                    <MapPin className="w-4 h-4 text-white" />
-                  </div>
-                  <input
-                    value={locationQuery}
-                    onChange={(e) => handleLocationInputChange(e.target.value)}
-                    placeholder="Enter your location"
-                    className="bg-transparent focus:outline-none text-sm text-slate-800 dark:text-slate-100 placeholder-slate-500 flex-1"
-                  />
-                  <button
-                    onClick={useMyLocation}
-                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-300 ${
-                      isResolvingLocation 
-                        ? 'bg-slate-200 text-slate-600' 
-                        : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 hover:scale-105'
-                    }`}
-                    disabled={isResolvingLocation}
-                  >
-                    <Crosshair className="w-3.5 h-3.5" />
-                    {isResolvingLocation ? 'Locating…' : 'My Location'}
-                  </button>
-                </div>
-
-                {/* Mobile Location Suggestions */}
-                {showLocationSuggestions && locationSuggestions.length > 0 && (
-                  <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-lg max-h-48 overflow-y-auto">
-                    {locationSuggestions.map((suggestion) => (
-                      <button
-                        key={suggestion.place_id}
-                        onClick={() => {
-                          selectLocation(suggestion);
-                          setIsMobileMenuOpen(false);
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150 border-b border-slate-100 dark:border-slate-700 last:border-b-0"
-                      >
-                        <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                          {suggestion.display_name.split(',')[0]}
-                        </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                          {suggestion.display_name.split(',').slice(1).join(',').trim()}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
+          <div className="lg:hidden border-t border-white/10 dark:border-slate-700/20">
+            <nav className="px-4 py-4 space-y-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl">
+              {/* Compact Mobile Location Control */}
+              <div className="space-y-2">
+                <LocationSelector
+                  value={locationQuery}
+                  onChange={handleLocationChange}
+                  onMyLocationClick={useMyLocation}
+                  isResolvingLocation={isResolvingLocation}
+                  placeholder="Search location..."
+                  className="text-sm"
+                />
               </div>
 
-              {/* Mobile Navigation Links */}
-              <div className="space-y-3">
+              {/* Sleek Mobile Navigation Links */}
+              <div className="space-y-1">
                 <a 
                   href="/explore" 
-                  className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-6 py-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-4 font-semibold text-lg"
+                  className="block text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 px-4 py-3 rounded-lg hover:bg-white/10 dark:hover:bg-slate-800/20 flex items-center gap-3 font-medium text-sm"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <Brain className="w-6 h-6" />
-                  Explore & Search
+                  <Compass className="w-4 h-4" />
+                  Explore
                 </a>
                 <a 
                   href="/favorites" 
-                  className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-6 py-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-4 font-semibold text-lg"
+                  className="block text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 px-4 py-3 rounded-lg hover:bg-white/10 dark:hover:bg-slate-800/20 flex items-center gap-3 font-medium text-sm"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <Heart className="w-6 h-6" />
+                  <Heart className="w-4 h-4" />
                   Favorites
                 </a>
                 <a 
                   href="/account" 
-                  className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-6 py-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-4 font-semibold text-lg"
+                  className="block text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 px-4 py-3 rounded-lg hover:bg-white/10 dark:hover:bg-slate-800/20 flex items-center gap-3 font-medium text-sm"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <User className="w-6 h-6" />
-                  My Account
+                  <User className="w-4 h-4" />
+                  Account
                 </a>
                 <a 
                   href="/wallet" 
-                  className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-6 py-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-4 font-semibold text-lg"
+                  className="block text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 px-4 py-3 rounded-lg hover:bg-white/10 dark:hover:bg-slate-800/20 flex items-center gap-3 font-medium text-sm"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <CreditCard className="w-6 h-6" />
+                  <CreditCard className="w-4 h-4" />
                   Wallet
                 </a>
-                {/* Owner section hidden for now
                 <a 
-                  href="/owner" 
-                  className="block text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 px-4 py-3 rounded-2xl hover:bg-slate-800 flex items-center gap-3 font-medium"
+                  href="/partner" 
+                  className="block text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 px-4 py-3 rounded-lg hover:bg-white/10 dark:hover:bg-slate-800/20 flex items-center gap-3 font-medium text-sm"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  🏢 Owner
+                  <Building2 className="w-4 h-4" />
+                  Partner
                 </a>
-                */}
               </div>
 
               {/* Mobile Login/Logout Button */}
-              <button
-                onClick={() => {
-                  toggleLogin();
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`w-full flex items-center justify-center gap-4 px-6 py-5 rounded-2xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 ${
-                  isLoggedIn 
-                    ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600' 
-                    : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700'
-                }`}
-              >
-                {isLoggedIn ? <LogOut className="w-6 h-6" /> : <LogIn className="w-6 h-6" />}
-                {isLoggedIn ? 'Logout' : 'Login'}
-              </button>
+              <div className="pt-2 border-t border-white/10 dark:border-slate-700/20">
+                <button
+                  onClick={() => {
+                    toggleLogin();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg font-medium text-sm transition-all duration-200 ${
+                    isLoggedIn 
+                      ? 'bg-white/20 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:bg-white/30 dark:hover:bg-slate-800/60' 
+                      : 'bg-white/10 dark:bg-slate-800/20 text-slate-600 dark:text-slate-400 hover:bg-white/20 dark:hover:bg-slate-800/40'
+                  } backdrop-blur-sm border border-white/10 dark:border-slate-700/20`}
+                >
+                  {isLoggedIn ? <LogOut className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
+                  {isLoggedIn ? 'Logout' : 'Login'}
+                </button>
+              </div>
             </nav>
           </div>
         )}
@@ -475,25 +427,10 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       {/* Main Content */}
       <main className="w-full" role="main">{children}</main>
 
-      {/* Merchant Section - Hidden for now
-      <div className="bg-gradient-to-r from-slate-50/80 to-indigo-50/80 dark:from-slate-900/50 dark:to-indigo-900/50 py-24">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <h2 className="text-5xl font-black mb-8 text-slate-900 dark:text-white tracking-tight">Are you a Restaurant Owner?</h2>
-          <p className="text-slate-600 dark:text-slate-300 mb-12 max-w-3xl mx-auto text-xl leading-relaxed font-medium">
-            Join Happy Hour and fill your quiet hours with amazing deals. Attract new customers and increase revenue during off-peak times.
-          </p>
-          <a href="/merchant" className="inline-flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-12 py-6 rounded-full font-black hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-3xl text-lg tracking-wide uppercase">
-            <Building2 className="w-7 h-7" />
-            Get Started as a Merchant
-          </a>
-        </div>
-      </div>
-      */}
-
       {/* Footer */}
-      <footer className="bg-white dark:bg-slate-900 py-16 border-t border-slate-200/50 dark:border-slate-700/50" role="contentinfo">
+      <footer className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl py-8 border-t border-white/10 dark:border-slate-700/20" role="contentinfo">
         <div className="max-w-7xl mx-auto px-6 text-center text-sm text-slate-500 dark:text-slate-400 font-medium">
-          © 2025 Happy Hour - Making restaurant deals beautiful and profitable! 🍕✨
+          © 2025 Happy Hour - Find amazing deals near you
         </div>
       </footer>
     </div>

@@ -204,9 +204,9 @@ export default function LocationSelector({
   return (
     <div className={`relative ${className}`}>
       {/* Location Input Field */}
-      <div className="flex items-center gap-4 bg-white/10 dark:bg-slate-900/20 backdrop-blur-xl border border-white/20 dark:border-slate-700/30 rounded-2xl px-5 py-4 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:bg-white/15 dark:hover:bg-slate-900/30">
-        <div className="w-10 h-10 bg-white/20 dark:bg-slate-800/40 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0 border border-white/30 dark:border-slate-600/40 shadow-lg">
-          <MapPin className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+      <div className="flex items-center gap-3 bg-white/10 dark:bg-slate-900/20 backdrop-blur-xl border border-white/20 dark:border-slate-700/30 rounded-xl px-4 py-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/15 dark:hover:bg-slate-900/30">
+        <div className="w-8 h-8 bg-white/20 dark:bg-slate-800/40 backdrop-blur-sm rounded-lg flex items-center justify-center flex-shrink-0 border border-white/30 dark:border-slate-600/40 shadow-md">
+          <MapPin className="w-4 h-4 text-slate-700 dark:text-slate-300" />
         </div>
         
         <div className="flex-1 min-w-0">
@@ -225,7 +225,7 @@ export default function LocationSelector({
               }}
               placeholder={placeholder}
               className={`
-                w-full bg-transparent border-none outline-none text-base font-medium text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400
+                w-full bg-transparent border-none outline-none text-sm font-medium text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400
                 ${error ? 'text-red-600 dark:text-red-400' : ''}
               `}
               aria-label="Location input with autocomplete"
@@ -251,7 +251,7 @@ export default function LocationSelector({
         
         <button
           onClick={onMyLocationClick}
-          className={`inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex-shrink-0 backdrop-blur-sm border ${
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex-shrink-0 backdrop-blur-sm border ${
             isResolvingLocation 
               ? 'bg-slate-200/50 text-slate-600 cursor-not-allowed border-slate-300/50' 
               : 'bg-white/20 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:bg-white/30 dark:hover:bg-slate-800/60 border-white/30 dark:border-slate-600/40 hover:shadow-lg hover:scale-105'
