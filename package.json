@@ -19,7 +19,8 @@
     "monitor:stop": "node scripts/monitoring-daemon.js stop",
     "monitor:status": "node scripts/monitoring-daemon.js status",
     "health:check": "node -e \"fetch('http://localhost:3000/api/admin/health').then(r=>r.json()).then(console.log).catch(console.error)\"",
-    "test:functionality": "node test-functionality.js"
+    "test:functionality": "node test-functionality.js",
+    "test:admin-integration": "node test-admin-integration.js"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
