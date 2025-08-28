@@ -23,7 +23,7 @@ import {
   ChevronRight,
   ArrowRight
 } from 'lucide-react';
-import { getSampleDeals, getSampleStats, getSampleNotifications, getSampleReviews } from '../../utils/sampleData';
+import { getSampleDeals, getSampleStats, getSampleNotifications, getSampleReviews } from '@/utils/sampleData';
 import { Deal, UserStats } from '@/types';
 
 export default function AccountPage() {

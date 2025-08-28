@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Scan, Receipt, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react'
-import QRCodeScanner from '../../../components/QRCodeScanner'
+import QRCodeScanner from '@/components/QRCodeScanner'
 
 interface Redemption {
   id: string
