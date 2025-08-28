@@ -375,10 +375,18 @@ export default function AdminDashboard() {
   if (!isAdminAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-100 dark:bg-slate-900">
-        <div className="text-center">
+        <div className="text-center max-w-md mx-auto p-8">
           <Shield className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <p className="text-xl font-semibold text-slate-600 dark:text-slate-300">Access Denied</p>
-          <p className="text-slate-500 dark:text-slate-400">Redirecting to admin login...</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Admin Access Required</h1>
+          <p className="text-slate-600 dark:text-slate-400 mb-6">
+            You need to log in with admin credentials to access this dashboard.
+          </p>
+          <button
+            onClick={() => window.location.href = '/admin-access'}
+            className="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+          >
+            Go to Admin Login
+          </button>
         </div>
       </div>
     );
