@@ -6,12 +6,20 @@ export async function GET(request: NextRequest) {
     // Test database connection
     await prisma.$connect();
     
-    // Try to create a simple query to test if tables exist
+    // Test all tables exist
     const userCount = await prisma.user.count();
+    const merchantCount = await prisma.merchant.count();
+    const venueCount = await prisma.venue.count();
+    const dealCount = await prisma.deal.count();
     
     return NextResponse.json({
       message: 'Database connected successfully!',
-      userCount: userCount,
+      tables: {
+        users: userCount,
+        merchants: merchantCount,
+        venues: venueCount,
+        deals: dealCount
+      },
       status: 'ready'
     });
   } catch (error) {
