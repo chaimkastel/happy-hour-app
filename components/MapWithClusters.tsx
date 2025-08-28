@@ -1,14 +1,16 @@
 'use client'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import dynamic from 'next/dynamic';
+import { useEffect, useState } from 'react';
 
-// Fix for default markers in Next.js
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+// Dynamically import the map component to avoid SSR issues
+const MapComponent = dynamic(() => import('./MapComponent'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 dark:from-blue-900/30 dark:via-indigo-900/30 dark:to-purple-900/30 rounded-3xl flex flex-col items-center justify-center">
+      <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+      <p className="text-blue-600 dark:text-blue-300">Loading map...</p>
+    </div>
+  )
 });
 
 interface Deal {
@@ -29,6 +31,12 @@ interface MapWithClustersProps {
 }
 
 export default function MapWithClusters({ deals, userLocation }: MapWithClustersProps) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   if (deals.length === 0) {
     return (
       <div className="w-full h-full bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 dark:from-blue-900/30 dark:via-indigo-900/30 dark:to-purple-900/30 rounded-3xl flex flex-col items-center justify-center">
@@ -55,41 +63,15 @@ export default function MapWithClusters({ deals, userLocation }: MapWithClusters
     lng: deals[0].venue.longitude 
   };
 
-  return (
-    <div className="w-full h-full rounded-3xl overflow-hidden">
-      <MapContainer 
-        center={[center.lat, center.lng]} 
-        zoom={12} 
-        style={{ height: '100%', width: '100%' }}
-        className="rounded-3xl"
-      >
-        <TileLayer 
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        {deals.map((deal) => (
-          <Marker 
-            key={deal.id} 
-            position={[deal.venue.latitude, deal.venue.longitude]}
-          >
-            <Popup>
-              <div className="p-2">
-                <h3 className="font-bold text-slate-900 mb-1">
-                  {deal.venue.name}
-                </h3>
-                <p className="text-sm text-slate-600 mb-2">
-                  {deal.title || 'Special Deal'}
-                </p>
-                <div className="flex items-center gap-2">
-                  <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                    {deal.discount || deal.percentOff || 0}% OFF
-                  </span>
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
-    </div>
-  )
+  // Only render the map on the client side
+  if (!isClient) {
+    return (
+      <div className="w-full h-full bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 dark:from-blue-900/30 dark:via-indigo-900/30 dark:to-purple-900/30 rounded-3xl flex flex-col items-center justify-center">
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-blue-600 dark:text-blue-300">Loading map...</p>
+      </div>
+    );
+  }
+
+  return <MapComponent deals={deals} center={center} />;
 }
