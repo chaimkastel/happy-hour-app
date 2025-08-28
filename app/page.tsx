@@ -146,15 +146,15 @@ export default function HomePage() {
             {/* Live Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto mb-8 sm:mb-12 animate-fade-in">
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all duration-300">
-                <div className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-2">247</div>
+                <div className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-2">1,247</div>
                 <div className="text-white/80 text-sm sm:text-base">Live Deals Right Now</div>
               </div>
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all duration-300">
-                <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-2">2.3k</div>
+                <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-2">12.3k</div>
                 <div className="text-white/80 text-sm sm:text-base">Deals Claimed Today</div>
               </div>
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all duration-300">
-                <div className="text-2xl sm:text-3xl font-bold text-pink-400 mb-2">$127</div>
+                <div className="text-2xl sm:text-3xl font-bold text-pink-400 mb-2">$47</div>
                 <div className="text-white/80 text-sm sm:text-base">Average Savings</div>
               </div>
             </div>
@@ -226,12 +226,12 @@ export default function HomePage() {
                 <div className="relative h-56 overflow-hidden">
                   <img 
                     src={[
-                      'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=800&h=600&fit=crop&crop=center',
-                      'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=800&h=600&fit=crop&crop=center',
-                      'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&h=600&fit=crop&crop=center',
-                      'https://images.unsplash.com/photo-1565299585323-38174c4aabaa?w=800&h=600&fit=crop&crop=center',
-                      'https://images.unsplash.com/photo-1563379091339-03246963d96a?w=800&h=600&fit=crop&crop=center',
-                      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800&h=600&fit=crop&crop=center'
+                      'https://picsum.photos/800/600?random=1',
+                      'https://picsum.photos/800/600?random=2', 
+                      'https://picsum.photos/800/600?random=3',
+                      'https://picsum.photos/800/600?random=4',
+                      'https://picsum.photos/800/600?random=5',
+                      'https://picsum.photos/800/600?random=6'
                     ][index % 6]}
                     alt={`${deal.venue?.name || 'Restaurant'} food`}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
