@@ -55,7 +55,6 @@ export async function GET(request: NextRequest) {
         }
       },
       orderBy: [
-        { isHot: 'desc' },
         { createdAt: 'desc' }
       ],
       take: limit,
