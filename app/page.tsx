@@ -100,93 +100,160 @@ export default function HomePage() {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-cyan-400/10 to-blue-500/10 rounded-full blur-3xl animate-pulse delay-500"></div>
       </div>
 
-      {/* Hero Section - Exciting & Engaging */}
+      {/* Hero Section - Clean & Elegant */}
       <div className="relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-24 lg:py-32">
-          <div className="text-center">
-            {/* Social Proof Badge */}
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8 animate-fade-in">
-              <div className="flex -space-x-1 sm:-space-x-2">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full border-2 border-white"></div>
-                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-pink-400 to-red-500 rounded-full border-2 border-white"></div>
-                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full border-2 border-white"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Side - Content */}
+            <div className="text-center lg:text-left">
+              {/* Social Proof Badge */}
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-6 animate-fade-in">
+                <div className="flex -space-x-1">
+                  <div className="w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full border-2 border-white"></div>
+                  <div className="w-6 h-6 bg-gradient-to-r from-pink-400 to-red-500 rounded-full border-2 border-white"></div>
+                  <div className="w-6 h-6 bg-gradient-to-r from-green-400 to-blue-500 rounded-full border-2 border-white"></div>
+                </div>
+                <span className="text-white font-semibold text-sm">10,000+ Happy Customers</span>
+                <div className="flex items-center gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-3 h-3 text-yellow-400 fill-current" />
+                  ))}
+                </div>
               </div>
-              <span className="text-white font-semibold text-sm sm:text-base">10,000+ Happy Customers</span>
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 fill-current" />
-                ))}
-              </div>
-            </div>
 
-            {/* Main Brand */}
-                        <div className="mb-6 sm:mb-8 animate-slide-in-down">
-              <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 mb-4 sm:mb-6 leading-tight">
-            Happy Hour
-          </h1>
-              <div className="flex items-center justify-center gap-2 sm:gap-4 mb-4">
-                <div className="w-8 sm:w-16 h-1 bg-gradient-to-r from-yellow-400 to-pink-500 rounded-full"></div>
-                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400 animate-spin" />
-                <div className="w-8 sm:w-16 h-1 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full"></div>
-              </div>
-            </div>
-            
-            {/* Compelling Headlines */}
-                        <div className="mb-8 sm:mb-12 animate-slide-in-up">
-              <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
+              {/* Main Headline */}
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 mb-6 leading-tight">
+                Happy Hour
+              </h1>
+              
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-6 leading-tight">
                 🚀 <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Instant Deals</span> at Restaurants Near You
               </h2>
-              <p className="text-lg sm:text-xl md:text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed mb-6 sm:mb-8">
+              
+              <p className="text-lg text-white/90 max-w-2xl mx-auto lg:mx-0 leading-relaxed mb-8">
                 Save up to <span className="font-bold text-yellow-400">70% OFF</span> when restaurants are quiet! 
-                <br />
-                <span className="text-base sm:text-lg text-white/80">Real-time deals • Instant savings • No waiting</span>
+                Real-time deals • Instant savings • No waiting
               </p>
-          </div>
 
-            {/* Live Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto mb-8 sm:mb-12 animate-fade-in">
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all duration-300">
-                <div className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-2">🔥 247</div>
-                <div className="text-white/80 text-sm sm:text-base">Live Deals Right Now</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all duration-300">
-                <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-2">⚡ 2.3k</div>
-                <div className="text-white/80 text-sm sm:text-base">Deals Claimed Today</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all duration-300">
-                <div className="text-2xl sm:text-3xl font-bold text-pink-400 mb-2">💰 $127</div>
-                <div className="text-white/80 text-sm sm:text-base">Average Savings</div>
-              </div>
-            </div>
-            
-            {/* Search Bar */}
-            <div className="max-w-3xl mx-auto mb-8 sm:mb-12 animate-scale-in">
-              <div className="relative">
-                <Search className="absolute left-4 sm:left-6 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5 sm:w-6 sm:h-6" />
-                <input
-                  type="text"
-                  placeholder="Enter your address or city to find amazing deals..."
-                  className="w-full pl-12 sm:pl-16 pr-24 sm:pr-32 py-4 sm:py-6 text-lg sm:text-xl bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl sm:rounded-3xl focus:border-yellow-400 focus:outline-none transition-all duration-300 text-white placeholder-white/60 shadow-2xl"
-                />
-                <button className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105">
-                  <span className="hidden sm:inline">🔍 Find Deals</span>
-                  <span className="sm:hidden">🔍</span>
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
+                <button 
+                  onClick={() => window.location.href = '/explore'}
+                  className="group bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-8 py-4 rounded-2xl font-black text-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-2xl hover:shadow-yellow-500/25 hover:scale-105 flex items-center gap-3 justify-center"
+                >
+                  <Rocket className="w-6 h-6 group-hover:animate-bounce" />
+                  🚀 Explore Deals
+                  <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
                 </button>
               </div>
-            </div>
-            
-            {/* Primary CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-12 sm:mb-16 animate-fade-in">
-              <button 
-                onClick={() => window.location.href = '/explore'}
-                className="group bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-8 sm:px-12 py-4 sm:py-6 rounded-2xl sm:rounded-3xl font-black text-lg sm:text-2xl hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-2xl hover:shadow-yellow-500/25 hover:scale-105 flex items-center gap-3 sm:gap-4"
-              >
-                <Rocket className="w-6 h-6 sm:w-8 sm:h-8 group-hover:animate-bounce" />
-                <span className="hidden sm:inline">🚀 Explore Deals</span>
-                <span className="sm:hidden">🚀 Explore</span>
-                <ArrowRight className="w-6 h-6 sm:w-8 sm:h-8 group-hover:translate-x-2 transition-transform" />
-              </button>
 
+              {/* Live Stats */}
+              <div className="grid grid-cols-3 gap-4 max-w-md mx-auto lg:mx-0">
+                <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-yellow-400 mb-1">🔥 247</div>
+                  <div className="text-white/80 text-xs">Live Deals</div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-green-400 mb-1">⚡ 2.3k</div>
+                  <div className="text-white/80 text-xs">Claimed Today</div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-pink-400 mb-1">💰 $127</div>
+                  <div className="text-white/80 text-xs">Avg Savings</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side - Cute Map Design */}
+            <div className="relative">
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl p-8 shadow-2xl">
+                {/* Map Background */}
+                <div className="relative bg-gradient-to-br from-blue-100 to-green-100 rounded-2xl h-96 overflow-hidden">
+                  {/* Map Grid Pattern */}
+                  <div className="absolute inset-0 opacity-20">
+                    <div className="grid grid-cols-8 grid-rows-6 h-full">
+                      {Array.from({ length: 48 }).map((_, i) => (
+                        <div key={i} className="border border-gray-300"></div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Streets */}
+                  <div className="absolute inset-0">
+                    <div className="absolute top-1/4 left-0 right-0 h-1 bg-gray-400"></div>
+                    <div className="absolute top-3/4 left-0 right-0 h-1 bg-gray-400"></div>
+                    <div className="absolute left-1/4 top-0 bottom-0 w-1 bg-gray-400"></div>
+                    <div className="absolute left-3/4 top-0 bottom-0 w-1 bg-gray-400"></div>
+                  </div>
+
+                  {/* Restaurant Locations with Discount Badges */}
+                  <div className="absolute top-8 left-8">
+                    <div className="relative">
+                      <div className="w-4 h-4 bg-red-500 rounded-full border-2 border-white shadow-lg"></div>
+                      <div className="absolute -top-8 -left-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg animate-pulse">
+                        50% OFF
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="absolute top-16 right-12">
+                    <div className="relative">
+                      <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg"></div>
+                      <div className="absolute -top-8 -left-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg animate-pulse">
+                        30% OFF
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="absolute bottom-20 left-16">
+                    <div className="relative">
+                      <div className="w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-lg"></div>
+                      <div className="absolute -top-8 -left-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg animate-pulse">
+                        40% OFF
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="absolute bottom-12 right-8">
+                    <div className="relative">
+                      <div className="w-4 h-4 bg-purple-500 rounded-full border-2 border-white shadow-lg"></div>
+                      <div className="absolute -top-8 -left-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg animate-pulse">
+                        60% OFF
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                    <div className="relative">
+                      <div className="w-4 h-4 bg-yellow-500 rounded-full border-2 border-white shadow-lg"></div>
+                      <div className="absolute -top-8 -left-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg animate-pulse">
+                        70% OFF
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Floating Elements */}
+                  <div className="absolute top-4 right-4 w-3 h-3 bg-pink-300 rounded-full animate-bounce"></div>
+                  <div className="absolute bottom-4 left-4 w-2 h-2 bg-blue-300 rounded-full animate-bounce delay-1000"></div>
+                  <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-green-300 rounded-full animate-bounce delay-500"></div>
+                </div>
+
+                {/* Map Legend */}
+                <div className="mt-6 flex items-center justify-center gap-6 text-white/80 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <span>Hot Deals</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <span>Good Deals</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span>Great Deals</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

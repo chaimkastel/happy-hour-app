@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     let latitude = 0;
     let longitude = 0;
 
-    if (!geocodeResult.error) {
+    if ('latitude' in geocodeResult && 'longitude' in geocodeResult) {
       latitude = geocodeResult.latitude;
       longitude = geocodeResult.longitude;
     }
