@@ -467,7 +467,7 @@ export default function HomePage() {
           <div className="text-center mt-16">
             <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-3xl p-8 shadow-2xl max-w-4xl mx-auto">
               <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
-                Ready to Start Saving? 🎯
+                Ready to Start Saving?
               </h3>
               <p className="text-xl text-slate-600 dark:text-slate-300 mb-8">
                 Join thousands of smart diners who are already saving money every day!
@@ -503,7 +503,7 @@ export default function HomePage() {
               <span className="text-white font-bold">FOR RESTAURANTS</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-black mb-6">
-              🏆 Turn <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">Quiet Hours</span> into <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">Revenue Gold</span>
+              Turn <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">Quiet Hours</span> into <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">Revenue Gold</span>
           </h2>
             <p className="text-xl text-white/90 max-w-4xl mx-auto leading-relaxed">
               Join <span className="font-bold text-yellow-300">500+ restaurants</span> already using Happy Hour to fill empty tables and boost revenue during slow periods!
@@ -520,7 +520,7 @@ export default function HomePage() {
                   💰
                 </div>
               </div>
-              <h3 className="text-2xl font-bold mb-4">🚀 Boost Revenue by 40%</h3>
+              <h3 className="text-2xl font-bold mb-4">Boost Revenue by 40%</h3>
               <p className="text-white/80 text-lg leading-relaxed">
                 Fill empty tables during slow periods and increase your average order value with targeted deals
               </p>
@@ -535,7 +535,7 @@ export default function HomePage() {
                   👥
                 </div>
               </div>
-              <h3 className="text-2xl font-bold mb-4">🎯 Attract New Customers</h3>
+              <h3 className="text-2xl font-bold mb-4">Attract New Customers</h3>
               <p className="text-white/80 text-lg leading-relaxed">
                 Reach food lovers in your area who are actively looking for great deals and new places to try
               </p>
