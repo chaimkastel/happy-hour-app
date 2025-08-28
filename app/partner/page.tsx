@@ -6,10 +6,42 @@ import { Building2, Users, TrendingUp, DollarSign, Clock, CheckCircle, ArrowRigh
 export default function PartnerPage() {
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsFormSubmitted(true);
-    // Here you would typically send the form data to your backend
+    
+    const formData = new FormData(e.target as HTMLFormElement);
+    const data = {
+      restaurantName: formData.get('restaurantName'),
+      contactName: formData.get('contactName'),
+      email: formData.get('email'),
+      phone: formData.get('phone'),
+      address: formData.get('address'),
+      cuisine: formData.get('cuisine'),
+      description: formData.get('description')
+    };
+
+    try {
+      const response = await fetch('/api/partner/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to submit application');
+      }
+      
+      console.log('Partner application submitted:', result);
+    } catch (error) {
+      console.error('Error submitting partner application:', error);
+      setIsFormSubmitted(false);
+      alert('Failed to submit application. Please try again.');
+    }
   };
 
   const benefits = [
@@ -253,6 +285,7 @@ export default function PartnerPage() {
                     </label>
                     <input
                       type="text"
+                      name="restaurantName"
                       required
                       className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
                       placeholder="Your restaurant name"
@@ -264,6 +297,7 @@ export default function PartnerPage() {
                     </label>
                     <input
                       type="text"
+                      name="contactName"
                       required
                       className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
                       placeholder="Your full name"
@@ -278,6 +312,7 @@ export default function PartnerPage() {
                     </label>
                     <input
                       type="email"
+                      name="email"
                       required
                       className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
                       placeholder="your@email.com"
@@ -289,6 +324,7 @@ export default function PartnerPage() {
                     </label>
                     <input
                       type="tel"
+                      name="phone"
                       required
                       className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
                       placeholder="(555) 123-4567"
@@ -302,6 +338,7 @@ export default function PartnerPage() {
                   </label>
                   <input
                     type="text"
+                    name="address"
                     required
                     className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
                     placeholder="123 Main St, City, State 12345"
@@ -313,6 +350,7 @@ export default function PartnerPage() {
                     Cuisine Type *
                   </label>
                   <select
+                    name="cuisine"
                     required
                     className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
                   >

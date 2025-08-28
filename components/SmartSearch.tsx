@@ -1,295 +1,130 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { Search, MapPin, Clock, Star, TrendingUp, ArrowRight, Sparkles } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-
-interface SearchSuggestion {
-  id: string;
-  type: 'deal' | 'restaurant' | 'category' | 'location';
-  title: string;
-  subtitle: string;
-  icon: string;
-  popularity?: number;
-  distance?: string;
-  discount?: number;
-}
+import React, { useState } from 'react';
+import { Search, MapPin, Clock, Star, Filter } from 'lucide-react';
 
 export default function SmartSearch() {
-  const [query, setQuery] = useState('');
-  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [isLoading, setIsLoading] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const suggestionsRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
-  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
 
-  // Mock AI-powered suggestions based on query
-  const generateSuggestions = (searchQuery: string): SearchSuggestion[] => {
-    const queryLower = searchQuery.toLowerCase();
-    
-    // Smart suggestions based on common patterns
-    const allSuggestions: SearchSuggestion[] = [
-      // Deal suggestions
-      { id: '1', type: 'deal', title: 'Happy Hour Specials', subtitle: '50% off drinks at 50+ restaurants', icon: '🍺', popularity: 95, discount: 50 },
-      { id: '2', type: 'deal', title: 'Lunch Deals', subtitle: 'Quick lunch specials near you', icon: '🍽️', popularity: 88, discount: 30 },
-      { id: '3', type: 'deal', title: 'Weekend Brunch', subtitle: 'Bottomless mimosas & breakfast deals', icon: '🥞', popularity: 82, discount: 25 },
-      
-      // Restaurant suggestions
-      { id: '4', type: 'restaurant', title: 'Pizza Palace', subtitle: 'Best pizza in town • 4.8★ • 0.3mi', icon: '🍕', distance: '0.3mi' },
-      { id: '5', type: 'restaurant', title: 'Sushi Zen', subtitle: 'Fresh sushi & sake • 4.9★ • 0.5mi', icon: '🍣', distance: '0.5mi' },
-      { id: '6', type: 'restaurant', title: 'Burger Barn', subtitle: 'Gourmet burgers • 4.7★ • 0.2mi', icon: '🍔', distance: '0.2mi' },
-      
-      // Category suggestions
-      { id: '7', type: 'category', title: 'Italian Food', subtitle: 'Pasta, pizza & more Italian cuisine', icon: '🍝', popularity: 76 },
-      { id: '8', type: 'category', title: 'Asian Fusion', subtitle: 'Chinese, Japanese, Thai & more', icon: '🥢', popularity: 71 },
-      { id: '9', type: 'category', title: 'Mexican Food', subtitle: 'Tacos, burritos & authentic flavors', icon: '🌮', popularity: 68 },
-      
-      // Location suggestions
-      { id: '10', type: 'location', title: 'Downtown District', subtitle: 'Trendy restaurants & bars', icon: '🏙️', popularity: 85 },
-      { id: '11', type: 'location', title: 'Waterfront Area', subtitle: 'Scenic dining with ocean views', icon: '🌊', popularity: 79 },
-      { id: '12', type: 'location', title: 'University District', subtitle: 'Student-friendly deals & eats', icon: '🎓', popularity: 73 }
-    ];
-
-    if (!searchQuery) {
-      return allSuggestions.slice(0, 6); // Show top 6 when no query
-    }
-
-    // Filter and rank suggestions based on query
-    const filtered = allSuggestions.filter(suggestion => 
-      suggestion.title.toLowerCase().includes(queryLower) ||
-      suggestion.subtitle.toLowerCase().includes(queryLower)
-    );
-
-    // Sort by relevance and popularity
-    return filtered
-      .sort((a, b) => {
-        const aRelevance = a.title.toLowerCase().startsWith(queryLower) ? 2 : 1;
-        const bRelevance = b.title.toLowerCase().startsWith(queryLower) ? 2 : 1;
-        const aScore = aRelevance + (a.popularity || 0) / 100;
-        const bScore = bRelevance + (b.popularity || 0) / 100;
-        return bScore - aScore;
-      })
-      .slice(0, 8);
-  };
-
-  // Handle input change with debouncing
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newQuery = e.target.value;
-    setQuery(newQuery);
-
-    // Clear previous timeout
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-
-    // Set new timeout for AI suggestions
-    debounceRef.current = setTimeout(() => {
-      setIsLoading(true);
-      setTimeout(() => {
-        const newSuggestions = generateSuggestions(newQuery);
-        setSuggestions(newSuggestions);
-        setShowSuggestions(true);
-        setSelectedIndex(-1);
-        setIsLoading(false);
-      }, 300); // Simulate AI processing time
-    }, 200);
-  };
-
-  // Handle suggestion selection
-  const handleSuggestionSelect = (suggestion: SearchSuggestion) => {
-    setQuery(suggestion.title);
-    setShowSuggestions(false);
-    setSelectedIndex(-1);
-    
-    // Navigate based on suggestion type
-    if (suggestion.type === 'deal' || suggestion.type === 'category') {
-      router.push(`/explore?search=${encodeURIComponent(suggestion.title)}`);
-    } else if (suggestion.type === 'restaurant') {
-      router.push(`/restaurant/${suggestion.id}`);
-    } else if (suggestion.type === 'location') {
-      router.push(`/explore?location=${encodeURIComponent(suggestion.title)}`);
-    }
-  };
-
-  // Handle keyboard navigation
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showSuggestions || suggestions.length === 0) return;
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedIndex(prev => 
-          prev < suggestions.length - 1 ? prev + 1 : prev
-        );
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedIndex(prev => prev > 0 ? prev - 1 : -1);
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
-          handleSuggestionSelect(suggestions[selectedIndex]);
-        } else if (query.trim()) {
-          // Search with current query
-          router.push(`/explore?search=${encodeURIComponent(query)}`);
-        }
-        break;
-      case 'Escape':
-        setShowSuggestions(false);
-        setSelectedIndex(-1);
-        break;
-    }
-  };
-
-  // Handle search submission
   const handleSearch = () => {
-    if (query.trim()) {
-      router.push(`/explore?search=${encodeURIComponent(query)}`);
+    if (searchQuery.trim()) {
+      // Redirect to explore page with search query
+      window.location.href = `/explore?q=${encodeURIComponent(searchQuery)}`;
     }
   };
 
-  // Clear suggestions when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        suggestionsRef.current &&
-        !suggestionsRef.current.contains(event.target as Node) &&
-        inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
-      ) {
-        setShowSuggestions(false);
-        setSelectedIndex(-1);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Get suggestion icon
-  const getSuggestionIcon = (suggestion: SearchSuggestion) => {
-    switch (suggestion.type) {
-      case 'deal':
-        return <TrendingUp className="w-4 h-4 text-green-500" />;
-      case 'restaurant':
-        return <MapPin className="w-4 h-4 text-blue-500" />;
-      case 'category':
-        return <Star className="w-4 h-4 text-purple-500" />;
-      case 'location':
-        return <MapPin className="w-4 h-4 text-orange-500" />;
-      default:
-        return <Search className="w-4 h-4 text-gray-500" />;
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
     }
   };
 
   return (
-    <div className="relative w-full max-w-2xl mx-auto">
-      {/* Search Input */}
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-          {isLoading ? (
-            <div className="w-5 h-5 border-2 border-slate-300 border-t-indigo-600 rounded-full animate-spin"></div>
-          ) : (
-            <Search className="w-5 h-5 text-slate-400" />
-          )}
-        </div>
-        
+    <div className="w-full max-w-2xl mx-auto">
+      {/* Main Search Bar */}
+      <div className="relative mb-4">
+        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
         <input
-          ref={inputRef}
           type="text"
-          value={query}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          onFocus={() => {
-            if (suggestions.length > 0) {
-              setShowSuggestions(true);
-            }
-          }}
-          placeholder="Search for deals, restaurants, or cuisines..."
-          className="w-full pl-14 pr-16 py-4 bg-white/95 backdrop-blur-sm border-2 border-white/30 rounded-2xl focus:ring-4 focus:ring-indigo-500/30 focus:border-indigo-500 text-slate-900 placeholder-slate-500 text-lg font-medium shadow-xl transition-all duration-300"
+          placeholder="Search restaurants, cuisines, or deals..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyPress={handleKeyPress}
+          className="w-full pl-12 pr-32 py-4 text-lg bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl focus:border-yellow-400 focus:outline-none transition-all duration-300 text-white placeholder-white/60 shadow-2xl"
         />
-        
         <button
           onClick={handleSearch}
-          className="absolute inset-y-0 right-0 pr-2 flex items-center"
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-2 rounded-xl font-bold hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
         >
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 flex items-center gap-2 shadow-lg">
-            <span className="font-semibold">Search</span>
-            <ArrowRight className="w-4 h-4" />
-          </div>
+          🔍 Search
         </button>
       </div>
 
-      {/* AI Suggestions Dropdown */}
-      {showSuggestions && suggestions.length > 0 && (
-        <div
-          ref={suggestionsRef}
-          className="absolute z-50 w-full mt-2 bg-white/95 backdrop-blur-sm border border-white/30 rounded-2xl shadow-2xl max-h-96 overflow-y-auto"
+      {/* Quick Filters */}
+      <div className="flex items-center gap-3 mb-4">
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-200"
         >
-          {/* Top 3 Suggestions */}
-          <div className="p-2">
-            {suggestions.slice(0, 3).map((suggestion, index) => (
-              <button
-                key={suggestion.id}
-                type="button"
-                onClick={() => handleSuggestionSelect(suggestion)}
-                className={`w-full px-4 py-3 text-left hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors rounded-xl ${
-                  index === selectedIndex ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0">
-                    {getSuggestionIcon(suggestion)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{suggestion.icon}</span>
-                      <div className="text-sm font-semibold text-slate-900 truncate">
-                        {suggestion.title}
-                      </div>
-                      {suggestion.discount && (
-                        <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-bold">
-                          {suggestion.discount}% OFF
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-sm text-slate-600 truncate">
-                      {suggestion.subtitle}
-                    </div>
-                  </div>
-                  {suggestion.popularity && (
-                    <div className="flex items-center gap-1 text-xs text-slate-500">
-                      <TrendingUp className="w-3 h-3" />
-                      {suggestion.popularity}%
-                    </div>
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
+          <Filter className="w-4 h-4" />
+          <span className="text-sm font-medium">Filters</span>
+        </button>
+        
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+          <button className="flex-shrink-0 bg-gradient-to-r from-yellow-400/20 to-orange-500/20 text-yellow-300 px-4 py-2 rounded-full text-sm font-medium border border-yellow-400/30 hover:bg-yellow-400/30 transition-all duration-200">
+            <MapPin className="w-4 h-4 inline mr-1" />
+            Near Me
+          </button>
+          <button className="flex-shrink-0 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium border border-white/20 hover:bg-white/20 transition-all duration-200">
+            <Clock className="w-4 h-4 inline mr-1" />
+            Open Now
+          </button>
+          <button className="flex-shrink-0 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium border border-white/20 hover:bg-white/20 transition-all duration-200">
+            <Star className="w-4 h-4 inline mr-1" />
+            Top Rated
+          </button>
+          <button className="flex-shrink-0 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium border border-white/20 hover:bg-white/20 transition-all duration-200">
+            💰 Best Deals
+          </button>
+        </div>
+      </div>
 
-          {/* See More Button */}
-          {suggestions.length > 3 && (
-            <div className="border-t border-slate-200 p-2">
-              <button
-                onClick={() => {
-                  setShowSuggestions(false);
-                  router.push(`/explore?search=${encodeURIComponent(query)}`);
-                }}
-                className="w-full px-4 py-3 text-center hover:bg-slate-50 transition-colors rounded-xl flex items-center justify-center gap-2 text-indigo-600 font-semibold"
-              >
-                <Sparkles className="w-4 h-4" />
-                See more suggestions
-                <ArrowRight className="w-4 h-4" />
-              </button>
+      {/* Advanced Filters (Collapsible) */}
+      {showFilters && (
+        <div className="bg-white/5 backdrop-blur-sm border border-white/20 rounded-2xl p-4 mb-4 animate-in slide-in-from-top duration-300">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-white/80 text-sm font-medium mb-2">Cuisine</label>
+              <select className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50">
+                <option value="">All Cuisines</option>
+                <option value="italian">Italian</option>
+                <option value="chinese">Chinese</option>
+                <option value="mexican">Mexican</option>
+                <option value="japanese">Japanese</option>
+                <option value="indian">Indian</option>
+                <option value="american">American</option>
+              </select>
             </div>
-          )}
+            <div>
+              <label className="block text-white/80 text-sm font-medium mb-2">Price Range</label>
+              <select className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50">
+                <option value="">Any Price</option>
+                <option value="1">$ (Budget)</option>
+                <option value="2">$$ (Moderate)</option>
+                <option value="3">$$$ (Expensive)</option>
+                <option value="4">$$$$ (Luxury)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-white/80 text-sm font-medium mb-2">Distance</label>
+              <select className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50">
+                <option value="">Any Distance</option>
+                <option value="1">Within 1 mile</option>
+                <option value="3">Within 3 miles</option>
+                <option value="5">Within 5 miles</option>
+                <option value="10">Within 10 miles</option>
+              </select>
+            </div>
+          </div>
         </div>
       )}
+
+      {/* Popular Searches */}
+      <div className="text-center">
+        <p className="text-white/60 text-sm mb-2">Popular searches:</p>
+        <div className="flex flex-wrap justify-center gap-2">
+          {['Pizza', 'Sushi', 'Burger', 'Tacos', 'Pasta', 'Ramen'].map((term) => (
+            <button
+              key={term}
+              onClick={() => setSearchQuery(term)}
+              className="text-white/80 hover:text-white text-sm px-3 py-1 rounded-full hover:bg-white/10 transition-all duration-200"
+            >
+              {term}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

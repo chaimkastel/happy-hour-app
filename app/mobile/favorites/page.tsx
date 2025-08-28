@@ -1,308 +1,289 @@
 'use client';
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
 import { 
   Heart, 
-  Star, 
   MapPin, 
-  Tag, 
   Clock, 
-  ArrowLeft,
-  Users,
-  CreditCard,
-  Bell,
-  Settings,
-  Grid,
+  Star, 
+  ArrowRight,
   Menu,
-  X
+  X,
+  Filter,
+  Search
 } from 'lucide-react';
-import { 
-  PremiumBottomNav, 
-  PremiumHeader, 
-  PremiumSideMenu 
-} from '../../../components/PremiumComponents';
-import { Button, Card, Badge } from '../../../components/DesignSystem';
 
-interface Deal {
+interface FavoriteDeal {
   id: string;
   title: string;
   description: string;
-  discountPercent: number;
-  dealType: string;
-  isActive: boolean;
-  restaurant: {
+  percentOff: number;
+  venue: {
     name: string;
     address: string;
-    businessType: string;
-    priceRange: string;
   };
+  cuisine: string;
+  distance: string;
+  rating: number;
+  isOpen: boolean;
+  isFavorited: boolean;
 }
 
 export default function MobileFavoritesPage() {
-  const [favorites] = useState<Deal[]>([
-    {
-      id: 'deal1',
-      title: 'Late Lunch Happy Hour',
-      description: '30% off pastas 3–5pm',
-      discountPercent: 30,
-      dealType: 'quiet_time',
-      isActive: false,
-      restaurant: {
-        name: 'Crown Heights Trattoria',
-        address: '123 Nostrand Ave, Brooklyn, NY',
-        businessType: 'Italian',
-        priceRange: '$$'
-      }
-    },
-    {
-      id: 'deal2',
-      title: 'Early Bird Beer Special',
-      description: '20% off all craft beers 4-6pm',
-      discountPercent: 20,
-      dealType: 'quiet_time',
-      isActive: true,
-      restaurant: {
-        name: 'Brooklyn Brew House',
-        address: '456 Atlantic Ave, Brooklyn, NY',
-        businessType: 'American',
-        priceRange: '$$'
-      }
-    },
-    {
-      id: 'deal3',
-      title: 'Weekend Brunch Deal',
-      description: '25% off brunch items 10am-12pm',
-      discountPercent: 25,
-      dealType: 'happy_blast',
-      isActive: true,
-      restaurant: {
-        name: 'Sunset Diner',
-        address: '789 Ocean Ave, Brooklyn, NY',
-        businessType: 'American',
-        priceRange: '$'
-      }
-    }
-  ]);
-  
+  const [favorites, setFavorites] = useState<FavoriteDeal[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const removeFavorite = (dealId: string) => {
-    console.log('Removing favorite:', dealId);
-  };
+  useEffect(() => {
+    fetchFavorites();
+  }, []);
 
-  const getDealTypeLabel = (dealType: string) => {
-    switch (dealType) {
-      case 'quiet_time':
-        return 'Quiet Time';
-      case 'happy_blast':
-        return 'Happy Blast';
-      default:
-        return 'Special';
+  const fetchFavorites = async () => {
+    try {
+      // For demo purposes, we'll use the same deals API and filter for favorites
+      const response = await fetch('/api/deals/search');
+      if (response.ok) {
+        const data = await response.json();
+        // Mock some favorites by adding isFavorited property
+        const mockFavorites = (data.deals || []).slice(0, 5).map((deal: any) => ({
+          ...deal,
+          isFavorited: true
+        }));
+        setFavorites(mockFavorites);
+      }
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getDealTypeColor = (dealType: string) => {
-    switch (dealType) {
-      case 'quiet_time':
-        return 'bg-blue-100 text-blue-700';
-      case 'happy_blast':
-        return 'bg-purple-100 text-purple-700';
-      default:
-        return 'bg-gray-100 text-gray-600';
-    }
+  const toggleFavorite = (dealId: string) => {
+    setFavorites(prev => 
+      prev.map(deal => 
+        deal.id === dealId 
+          ? { ...deal, isFavorited: !deal.isFavorited }
+          : deal
+      ).filter(deal => deal.isFavorited)
+    );
   };
 
-  const bottomNavItems = [
-    { id: 'explore', label: 'Explore', icon: <Grid className="w-6 h-6" />, isActive: false, onClick: () => window.location.href = '/mobile/explore' },
-    { id: 'map', label: 'Map', icon: <MapPin className="w-6 h-6" />, isActive: false, onClick: () => {} },
-    { id: 'favorites', label: 'Favorites', icon: <Heart className="w-6 h-6" />, isActive: true, onClick: () => {} },
-    { id: 'profile', label: 'Profile', icon: <Users className="w-6 h-6" />, isActive: false, onClick: () => window.location.href = '/mobile/account' },
-  ];
+  const filteredFavorites = favorites.filter(deal =>
+    deal.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    deal.venue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    deal.cuisine.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  const sideMenuItems = [
-    { id: 'account', label: 'My Account', icon: <Users className="w-5 h-5" />, onClick: () => window.location.href = '/mobile/account' },
-    { id: 'favorites', label: 'Favorites', icon: <Heart className="w-5 h-5" />, onClick: () => {} },
-    { id: 'wallet', label: 'Wallet', icon: <CreditCard className="w-5 h-5" />, onClick: () => window.location.href = '/mobile/wallet' },
-    { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" />, onClick: () => alert('Settings coming soon!') },
-    { id: 'notifications', label: 'Notifications', icon: <Bell className="w-5 h-5" />, onClick: () => alert('Notifications feature coming soon!') },
-  ];
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white/80">Loading your favorites...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Premium Header */}
-      <PremiumHeader
-        title="🍺 Happy Hour"
-        subtitle="Your favorite deals"
-        onMenuClick={() => setShowMobileMenu(true)}
-        onNotificationClick={() => alert('Notifications feature coming soon!')}
-      />
-
-      {/* Back Button */}
-      <div className="px-4 py-2">
-        <button
-          onClick={() => window.history.back()}
-          className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 transition-colors duration-200"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </button>
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 overflow-x-hidden">
+      {/* Mobile Header */}
+      <div className="sticky top-0 z-50 bg-white/10 backdrop-blur-md border-b border-white/20">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+                <Heart className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-white font-bold text-lg">Favorites</h1>
+            </div>
+            <button 
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+            >
+              {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Summary Stats */}
-      {favorites.length > 0 && (
-        <div className="px-4 pb-6">
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white rounded-2xl p-4 shadow-sm text-center">
-              <div className="w-8 h-8 bg-pink-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-                <Heart className="w-4 h-4 text-pink-600" />
-              </div>
-              <div className="text-lg font-bold text-gray-900">{favorites.length}</div>
-              <div className="text-xs text-gray-600">Total</div>
-            </div>
+      {/* Search Bar */}
+      <div className="px-4 py-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            type="text"
+            placeholder="Search your favorites..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 transition-all duration-200"
+          />
+          {searchQuery && (
+            <button 
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+            >
+              ×
+            </button>
+          )}
+        </div>
+      </div>
 
-            <div className="bg-white rounded-2xl p-4 shadow-sm text-center">
-              <div className="w-8 h-8 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-                <Tag className="w-4 h-4 text-green-600" />
-              </div>
-              <div className="text-lg font-bold text-gray-900">
-                {favorites.filter(f => f.isActive).length}
-              </div>
-              <div className="text-xs text-gray-600">Active</div>
+      {/* Stats */}
+      <div className="px-4 pb-4">
+        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-white font-bold text-lg">{filteredFavorites.length} Favorites</h3>
+              <p className="text-white/70 text-sm">Your saved deals and restaurants</p>
             </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-yellow-400">
+                {filteredFavorites.reduce((sum, deal) => sum + deal.percentOff, 0) / filteredFavorites.length || 0}%
+              </div>
+              <p className="text-white/70 text-xs">Avg Discount</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            <div className="bg-white rounded-2xl p-4 shadow-sm text-center">
-              <div className="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-                <MapPin className="w-4 h-4 text-blue-600" />
+      {/* Favorites List */}
+      <div className="px-4 pb-20">
+        {filteredFavorites.length === 0 ? (
+          <div className="text-center py-12">
+            <Heart className="w-16 h-16 text-white/30 mx-auto mb-4" />
+            <h3 className="text-white font-bold text-lg mb-2">
+              {searchQuery ? 'No matches found' : 'No favorites yet'}
+            </h3>
+            <p className="text-white/70 text-sm mb-6">
+              {searchQuery 
+                ? 'Try adjusting your search terms'
+                : 'Start exploring deals and add them to your favorites!'
+              }
+            </p>
+            {!searchQuery && (
+              <button 
+                onClick={() => window.location.href = '/explore'}
+                className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-6 py-3 rounded-xl font-bold hover:from-yellow-500 hover:to-orange-600 transition-all duration-300"
+              >
+                Explore Deals
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredFavorites.map((deal, index) => (
+              <div 
+                key={deal.id} 
+                className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-300 transform hover:scale-[1.02] shadow-lg"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <h3 className="text-white font-semibold text-lg mb-1">{deal.title}</h3>
+                    <p className="text-gray-300 text-sm mb-2">{deal.venue.name}</p>
+                    <div className="flex items-center space-x-2 mb-3">
+                      <span className="bg-gradient-to-r from-yellow-400/20 to-orange-500/20 text-yellow-300 px-3 py-1 rounded-full text-xs font-medium border border-yellow-400/30">
+                        {deal.percentOff}% OFF
+                      </span>
+                      <span className="bg-white/10 text-gray-300 px-3 py-1 rounded-full text-xs border border-white/20">
+                        {deal.cuisine}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="ml-3 flex flex-col items-center space-y-2">
+                    <button 
+                      onClick={() => toggleFavorite(deal.id)}
+                      className="w-12 h-12 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg transform hover:scale-110 transition-all duration-200"
+                    >
+                      <Heart className="w-5 h-5 text-white fill-current" />
+                    </button>
+                    <button className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg transform hover:scale-110 transition-all duration-200">
+                      <ArrowRight className="w-5 h-5 text-white" />
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-sm text-gray-300">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center">
+                      <MapPin className="w-4 h-4 mr-1 text-blue-400" />
+                      <span>{deal.distance}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Clock className="w-4 h-4 mr-1 text-green-400" />
+                      <span>{deal.isOpen ? 'Open' : 'Closed'}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <Star className="w-4 h-4 mr-1 text-yellow-400" />
+                    <span className="font-medium">{deal.rating}</span>
+                  </div>
+                </div>
               </div>
-              <div className="text-lg font-bold text-gray-900">
-                {new Set(favorites.map(f => f.restaurant.name)).size}
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/10 backdrop-blur-md border-t border-white/20 safe-area-pb">
+        <div className="flex items-center justify-around py-2">
+          <button className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transform hover:scale-110 transition-all duration-200">
+            <MapPin className="w-6 h-6 mb-1" />
+            <span className="text-xs">Explore</span>
+          </button>
+          <button className="flex flex-col items-center py-2 px-3 text-yellow-400 transform hover:scale-110 transition-all duration-200">
+            <Heart className="w-6 h-6 mb-1" />
+            <span className="text-xs font-medium">Favorites</span>
+          </button>
+          <button className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transform hover:scale-110 transition-all duration-200">
+            <Star className="w-6 h-6 mb-1" />
+            <span className="text-xs">Profile</span>
+          </button>
+          <button className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transform hover:scale-110 transition-all duration-200">
+            <Clock className="w-6 h-6 mb-1" />
+            <span className="text-xs">History</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {showMobileMenu && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="absolute top-0 right-0 w-80 h-full bg-white/10 backdrop-blur-md border-l border-white/20 animate-in slide-in-from-right duration-300">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-white text-xl font-bold">Menu</h2>
+                <button 
+                  onClick={() => setShowMobileMenu(false)}
+                  className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+                >
+                  ×
+                </button>
               </div>
-              <div className="text-xs text-gray-600">Restaurants</div>
+              <div className="space-y-3">
+                <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 transform hover:scale-105">
+                  <Heart className="w-5 h-5 inline mr-3" />
+                  Favorites
+                </button>
+                <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 transform hover:scale-105">
+                  <MapPin className="w-5 h-5 inline mr-3" />
+                  Explore
+                </button>
+                <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 transform hover:scale-105">
+                  <Star className="w-5 h-5 inline mr-3" />
+                  Profile
+                </button>
+                <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 transform hover:scale-105">
+                  <Clock className="w-5 h-5 inline mr-3" />
+                  Settings
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
-
-      {/* Favorites List */}
-      <div className="px-4 pb-24">
-        {favorites.length === 0 ? (
-          <motion.div
-            className="text-center py-20"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Heart className="w-10 h-10 text-gray-400" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2 text-gray-900">No favorites yet</h3>
-            <p className="text-gray-600 mb-6">Start exploring deals and add your favorites</p>
-            <Button 
-              onClick={() => window.location.href = '/mobile/explore'} 
-              variant="primary" 
-              size="lg"
-            >
-              Explore Deals
-            </Button>
-          </motion.div>
-        ) : (
-          <motion.div 
-            className="space-y-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            {favorites.map((deal, index) => (
-              <motion.div
-                key={deal.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-              >
-                <Card variant="elevated" className="overflow-hidden">
-                  <div className="p-4">
-                    {/* Deal Header */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-bold text-gray-900 mb-1">{deal.title}</h3>
-                        <p className="text-gray-600 text-sm mb-2">{deal.description}</p>
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          deal.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-                        }`}>
-                          {deal.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDealTypeColor(deal.dealType)}`}>
-                          {getDealTypeLabel(deal.dealType)}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Restaurant Info */}
-                    <div className="mb-4">
-                      <div className="text-base font-semibold mb-1 text-gray-900">{deal.restaurant.name}</div>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-gray-600 text-sm">
-                          <MapPin className="w-3 h-3" />
-                          <span>{deal.restaurant.address}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-600 text-sm">
-                          <Tag className="w-3 h-3" />
-                          <span>{deal.restaurant.businessType} • {deal.restaurant.priceRange}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Deal Actions */}
-                    <div className="flex items-center justify-between">
-                      <div className="bg-gradient-to-r from-pink-50 to-red-50 rounded-xl p-3 flex-1 mr-3">
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-pink-600">
-                            {deal.discountPercent}%
-                          </div>
-                          <div className="text-xs text-gray-600">OFF</div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <button
-                          onClick={() => window.location.href = `/redeem/${deal.id}`}
-                          className="bg-pink-600 text-white text-center py-2 px-4 rounded-xl text-sm font-medium hover:bg-pink-700 transition-colors duration-200"
-                        >
-                          Redeem
-                        </button>
-                        <button
-                          onClick={() => removeFavorite(deal.id)}
-                          className="bg-gray-200 text-gray-700 text-center py-2 px-4 rounded-xl text-sm font-medium hover:bg-gray-300 transition-colors duration-200"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-      </div>
-
-      {/* Premium Bottom Navigation */}
-      <PremiumBottomNav items={bottomNavItems} />
-
-      {/* Premium Side Menu */}
-      <PremiumSideMenu
-        isOpen={showMobileMenu}
-        onClose={() => setShowMobileMenu(false)}
-        items={sideMenuItems}
-        user={{
-          name: "John Doe",
-          email: "john@example.com",
-          avatar: undefined
-        }}
-      />
     </div>
   );
 }

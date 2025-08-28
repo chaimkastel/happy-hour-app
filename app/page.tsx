@@ -1,53 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  MapPin, 
-  Clock, 
-  Users, 
-  Filter, 
-  Grid, 
-  List, 
-  Search, 
-  Star, 
-  TrendingUp, 
-  Zap, 
-  Heart, 
-  ArrowRight, 
-  Shield, 
-  Award, 
-  Globe, 
-  Smartphone, 
-  CreditCard, 
-  Timer, 
-  CheckCircle, 
-  Sparkles, 
-  Flame, 
-  Gift, 
-  Target, 
-  Rocket, 
-  Crown, 
-  Diamond,
-  Bell,
-  Menu,
-  X,
-  ChevronRight
-} from 'lucide-react';
-import { 
-  PremiumSearchBar, 
-  QuickAction, 
-  PremiumDealCard, 
-  PremiumBottomNav, 
-  PremiumHeader, 
-  PremiumSideMenu 
-} from '../components/PremiumComponents';
-import { Button, Card, Badge, Avatar } from '../components/DesignSystem';
-import { FireIcon, StarIcon, HeartIcon, GiftIcon, CrownIcon, DiamondIcon, RocketIcon, TargetIcon, SparklesIcon, ZapIcon, TrendingUpIcon, TimerIcon, CheckCircleIcon, AwardIcon, ShieldIcon, GlobeIcon, SmartphoneIcon, CreditCardIcon } from '../components/CustomIcons';
+import { MapPin, Clock, Users, Filter, Grid, List, Search, Star, TrendingUp, Zap, Heart, ArrowRight, Shield, Award, Globe, Smartphone, CreditCard, Timer, CheckCircle, Sparkles, Flame, Gift, Target, Rocket, Crown, Diamond } from 'lucide-react';
 import DealCard from '../components/DealCard';
 import MapWithClusters from '../components/MapWithClusters';
 import SortFilterBar from '../components/SortFilterBar';
-import SmartSearch from '../components/SmartSearch';
 
 interface Deal {
   id: string;
@@ -80,21 +37,9 @@ export default function HomePage() {
     minDiscount: 0,
     openNow: false
   });
-  const [isMobile, setIsMobile] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   useEffect(() => {
     fetchDeals();
-    
-    // Detect mobile device
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   const fetchDeals = async () => {
@@ -146,193 +91,6 @@ export default function HomePage() {
     );
   }
 
-  // Redirect to mobile page
-  if (isMobile) {
-    // Import and render mobile page component
-    const MobilePage = require('./mobile/page').default;
-    return <MobilePage />;
-  }
-
-  // Legacy mobile layout (keeping for fallback)
-  if (false && isMobile) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 overflow-x-hidden">
-        {/* Mobile Header */}
-        <div className="sticky top-0 z-50 bg-white/10 backdrop-blur-md border-b border-white/20">
-          <div className="px-4 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
-                  <FireIcon className="w-5 h-5 text-white" />
-                </div>
-                <h1 className="text-white font-bold text-lg">HappyHour</h1>
-              </div>
-              <button 
-                onClick={() => setShowMobileMenu(!showMobileMenu)}
-                className="p-2 rounded-lg bg-white/10 text-white"
-              >
-                <Grid className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Search Bar */}
-        <div className="px-4 py-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search restaurants, cuisines..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 transition-all duration-200"
-            />
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-              >
-                ×
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Mobile Quick Actions */}
-        <div className="px-4 pb-4">
-          <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-hide">
-            <button className="flex-shrink-0 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg transform hover:scale-105 transition-all duration-200">
-              <MapPin className="w-4 h-4 inline mr-1" />
-              Near Me
-            </button>
-            <button className="flex-shrink-0 bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-medium border border-white/20 hover:bg-white/20 transition-all duration-200">
-              <Clock className="w-4 h-4 inline mr-1" />
-              Open Now
-            </button>
-            <button className="flex-shrink-0 bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-medium border border-white/20 hover:bg-white/20 transition-all duration-200">
-              <StarIcon className="w-4 h-4 inline mr-1" />
-              Top Rated
-            </button>
-            <button className="flex-shrink-0 bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-medium border border-white/20 hover:bg-white/20 transition-all duration-200">
-              <GiftIcon className="w-4 h-4 inline mr-1" />
-              Best Deals
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Deals List */}
-        <div className="px-4 pb-20">
-          <div className="space-y-4">
-            {deals.map((deal, index) => (
-              <div 
-                key={deal.id} 
-                className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-300 transform hover:scale-[1.02] shadow-lg"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <h3 className="text-white font-semibold text-lg mb-1">{deal.title}</h3>
-                    <p className="text-gray-300 text-sm mb-2">{deal.venue.name}</p>
-                    <div className="flex items-center space-x-2 mb-3">
-                      <span className="bg-gradient-to-r from-yellow-400/20 to-orange-500/20 text-yellow-300 px-3 py-1 rounded-full text-xs font-medium border border-yellow-400/30">
-                        {deal.discount}% OFF
-                      </span>
-                      <span className="bg-white/10 text-gray-300 px-3 py-1 rounded-full text-xs border border-white/20">
-                        {deal.cuisine}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="ml-3">
-                    <button className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg transform hover:scale-110 transition-all duration-200">
-                      <ArrowRight className="w-5 h-5 text-white" />
-                    </button>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-sm text-gray-300">
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center">
-                      <MapPin className="w-4 h-4 mr-1 text-blue-400" />
-                      <span>0.5 mi</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Clock className="w-4 h-4 mr-1 text-green-400" />
-                      <span>Open</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <StarIcon className="w-4 h-4 mr-1 text-yellow-400" />
-                    <span className="font-medium">4.8</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Mobile Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white/10 backdrop-blur-md border-t border-white/20 safe-area-pb">
-          <div className="flex items-center justify-around py-2">
-            <button className="flex flex-col items-center py-2 px-3 text-yellow-400 transform hover:scale-110 transition-all duration-200">
-              <Grid className="w-6 h-6 mb-1" />
-              <span className="text-xs font-medium">Explore</span>
-            </button>
-            <button className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transform hover:scale-110 transition-all duration-200">
-              <MapPin className="w-6 h-6 mb-1" />
-              <span className="text-xs">Map</span>
-            </button>
-            <button className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transform hover:scale-110 transition-all duration-200">
-              <HeartIcon className="w-6 h-6 mb-1" />
-              <span className="text-xs">Favorites</span>
-            </button>
-            <button className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transform hover:scale-110 transition-all duration-200">
-              <Users className="w-6 h-6 mb-1" />
-              <span className="text-xs">Profile</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Menu Overlay */}
-        {showMobileMenu && (
-          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="absolute top-0 right-0 w-80 h-full bg-white/10 backdrop-blur-md border-l border-white/20 animate-in slide-in-from-right duration-300">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-white text-xl font-bold">Menu</h2>
-                  <button 
-                    onClick={() => setShowMobileMenu(false)}
-                    className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
-                  >
-                    ×
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 transform hover:scale-105">
-                    <Users className="w-5 h-5 inline mr-3" />
-                    My Account
-                  </button>
-                  <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 transform hover:scale-105">
-                    <HeartIcon className="w-5 h-5 inline mr-3" />
-                    Favorites
-                  </button>
-                  <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 transform hover:scale-105">
-                    <CreditCardIcon className="w-5 h-5 inline mr-3" />
-                    Wallet
-                  </button>
-                  <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 transform hover:scale-105">
-                    <ShieldIcon className="w-5 h-5 inline mr-3" />
-                    Settings
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // Desktop layout (existing)
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 dark:from-slate-900 dark:via-purple-900 dark:to-indigo-900">
       {/* Animated Background Elements */}
@@ -342,204 +100,93 @@ export default function HomePage() {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-cyan-400/10 to-blue-500/10 rounded-full blur-3xl animate-pulse delay-500"></div>
       </div>
 
-      {/* Hero Section - Clean & Elegant */}
+      {/* Hero Section - Exciting & Engaging */}
       <div className="relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Left Side - Content */}
-            <div className="text-center lg:text-left">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-24 lg:py-32">
+          <div className="text-center">
             {/* Social Proof Badge */}
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-6 animate-fade-in">
-                <div className="flex -space-x-1">
-                  <div className="w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full border-2 border-white"></div>
-                  <div className="w-6 h-6 bg-gradient-to-r from-pink-400 to-red-500 rounded-full border-2 border-white"></div>
-                  <div className="w-6 h-6 bg-gradient-to-r from-green-400 to-blue-500 rounded-full border-2 border-white"></div>
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8 animate-fade-in">
+              <div className="flex -space-x-1 sm:-space-x-2">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full border-2 border-white"></div>
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-pink-400 to-red-500 rounded-full border-2 border-white"></div>
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full border-2 border-white"></div>
               </div>
-                <span className="text-white font-semibold text-sm">10,000+ Happy Customers</span>
+              <span className="text-white font-semibold text-sm sm:text-base">10,000+ Happy Customers</span>
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3 h-3 text-yellow-400 fill-current" />
+                  <Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 fill-current" />
                 ))}
               </div>
             </div>
 
-              {/* Main Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 mb-6 leading-tight">
+            {/* Main Brand */}
+                        <div className="mb-6 sm:mb-8 animate-slide-in-down">
+              <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 mb-4 sm:mb-6 leading-tight">
             Happy Hour
           </h1>
-              
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-6 leading-tight">
-                🚀 <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Instant Deals</span> at Restaurants Near You
+              <div className="flex items-center justify-center gap-2 sm:gap-4 mb-4">
+                <div className="w-8 sm:w-16 h-1 bg-gradient-to-r from-yellow-400 to-pink-500 rounded-full"></div>
+                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400 animate-spin" />
+                <div className="w-8 sm:w-16 h-1 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full"></div>
+              </div>
+            </div>
+            
+            {/* Compelling Headlines */}
+                        <div className="mb-8 sm:mb-12 animate-slide-in-up">
+              <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Instant Deals</span> at Restaurants Near You
               </h2>
-              
-              <p className="text-lg text-white/90 max-w-2xl mx-auto lg:mx-0 leading-relaxed mb-8">
+              <p className="text-lg sm:text-xl md:text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed mb-6 sm:mb-8">
                 Save up to <span className="font-bold text-yellow-400">70% OFF</span> when restaurants are quiet! 
-                Real-time deals • Instant savings • No waiting
+                <br />
+                <span className="text-base sm:text-lg text-white/80">Real-time deals • Instant savings • No waiting</span>
               </p>
-
-                            {/* Smart Search */}
-              <div className="mb-8">
-                <SmartSearch />
           </div>
 
             {/* Live Stats */}
-              <div className="grid grid-cols-3 gap-4 max-w-md mx-auto lg:mx-0">
-                <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 text-center">
-                  <div className="text-2xl font-bold text-yellow-400 mb-1">🔥 247</div>
-                  <div className="text-white/80 text-xs">Live Deals</div>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 text-center">
-                  <div className="text-2xl font-bold text-green-400 mb-1">⚡ 2.3k</div>
-                  <div className="text-white/80 text-xs">Claimed Today</div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto mb-8 sm:mb-12 animate-fade-in">
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all duration-300">
+                <div className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-2">🔥 247</div>
+                <div className="text-white/80 text-sm sm:text-base">Live Deals Right Now</div>
               </div>
-                <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 text-center">
-                  <div className="text-2xl font-bold text-pink-400 mb-1">💰 $127</div>
-                  <div className="text-white/80 text-xs">Avg Savings</div>
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all duration-300">
+                <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-2">⚡ 2.3k</div>
+                <div className="text-white/80 text-sm sm:text-base">Deals Claimed Today</div>
               </div>
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all duration-300">
+                <div className="text-2xl sm:text-3xl font-bold text-pink-400 mb-2">💰 $127</div>
+                <div className="text-white/80 text-sm sm:text-base">Average Savings</div>
               </div>
             </div>
             
-            {/* Right Side - Cute Map Design */}
-            <div className="relative">
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl p-8 shadow-2xl">
-                {/* Cute Map Background */}
-                <div className="relative bg-gradient-to-br from-blue-50 via-green-50 to-yellow-50 rounded-2xl h-96 overflow-hidden">
-                  {/* Map Grid Pattern */}
-                  <div className="absolute inset-0 opacity-10">
-                    <div className="grid grid-cols-12 grid-rows-8 h-full">
-                      {Array.from({ length: 96 }).map((_, i) => (
-                        <div key={i} className="border border-gray-200"></div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {/* Cute Streets with rounded corners */}
-                  <div className="absolute inset-0">
-                    {/* Main horizontal streets */}
-                    <div className="absolute top-1/4 left-0 right-0 h-2 bg-gray-300 rounded-full shadow-sm"></div>
-                    <div className="absolute top-3/4 left-0 right-0 h-2 bg-gray-300 rounded-full shadow-sm"></div>
-                    <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 rounded-full"></div>
-                    
-                    {/* Main vertical streets */}
-                    <div className="absolute left-1/4 top-0 bottom-0 w-2 bg-gray-300 rounded-full shadow-sm"></div>
-                    <div className="absolute left-3/4 top-0 bottom-0 w-2 bg-gray-300 rounded-full shadow-sm"></div>
-                    <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-gray-200 rounded-full"></div>
-                    
-                    {/* Side streets */}
-                    <div className="absolute left-1/6 top-0 bottom-0 w-1 bg-gray-200 rounded-full"></div>
-                    <div className="absolute left-5/6 top-0 bottom-0 w-1 bg-gray-200 rounded-full"></div>
-                    <div className="absolute top-1/6 left-0 right-0 h-1 bg-gray-200 rounded-full"></div>
-                    <div className="absolute top-5/6 left-0 right-0 h-1 bg-gray-200 rounded-full"></div>
-                  </div>
-
-                  {/* Cute Buildings/Blocks */}
-                  <div className="absolute top-2 left-2 w-8 h-6 bg-blue-200 rounded-sm shadow-sm"></div>
-                  <div className="absolute top-2 right-2 w-8 h-6 bg-green-200 rounded-sm shadow-sm"></div>
-                  <div className="absolute bottom-2 left-2 w-8 h-6 bg-purple-200 rounded-sm shadow-sm"></div>
-                  <div className="absolute bottom-2 right-2 w-8 h-6 bg-pink-200 rounded-sm shadow-sm"></div>
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-yellow-200 rounded-sm shadow-sm"></div>
-
-                  {/* Restaurant Locations with Cute Building Icons and Discount Badges */}
-                  <div className="absolute top-8 left-8">
-                    <div className="relative">
-                      {/* Cute restaurant building */}
-                      <div className="w-6 h-6 bg-red-400 rounded-sm shadow-lg border-2 border-white relative">
-                        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-red-600 rounded-full"></div>
-                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-red-600 rounded-full"></div>
-                      </div>
-                      {/* Discount badge */}
-                      <div className="absolute -top-10 -left-3 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse border-2 border-white">
-                        🍕 50% OFF
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="absolute top-16 right-12">
-                    <div className="relative">
-                      {/* Cute restaurant building */}
-                      <div className="w-6 h-6 bg-blue-400 rounded-sm shadow-lg border-2 border-white relative">
-                        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-600 rounded-full"></div>
-                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-600 rounded-full"></div>
-                      </div>
-                      {/* Discount badge */}
-                      <div className="absolute -top-10 -left-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse border-2 border-white">
-                        🍔 30% OFF
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="absolute bottom-20 left-16">
-                    <div className="relative">
-                      {/* Cute restaurant building */}
-                      <div className="w-6 h-6 bg-green-400 rounded-sm shadow-lg border-2 border-white relative">
-                        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-green-600 rounded-full"></div>
-                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-green-600 rounded-full"></div>
-                      </div>
-                      {/* Discount badge */}
-                      <div className="absolute -top-10 -left-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse border-2 border-white">
-                        🍜 40% OFF
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="absolute bottom-12 right-8">
-                    <div className="relative">
-                      {/* Cute restaurant building */}
-                      <div className="w-6 h-6 bg-purple-400 rounded-sm shadow-lg border-2 border-white relative">
-                        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-purple-600 rounded-full"></div>
-                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-purple-600 rounded-full"></div>
-                      </div>
-                      {/* Discount badge */}
-                      <div className="absolute -top-10 -left-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse border-2 border-white">
-                        🍣 60% OFF
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            {/* Search Bar */}
+            <div className="max-w-3xl mx-auto mb-8 sm:mb-12 animate-scale-in">
               <div className="relative">
-                      {/* Cute restaurant building */}
-                      <div className="w-6 h-6 bg-yellow-400 rounded-sm shadow-lg border-2 border-white relative">
-                        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-yellow-600 rounded-full"></div>
-                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-yellow-600 rounded-full"></div>
-                      </div>
-                      {/* Discount badge */}
-                      <div className="absolute -top-10 -left-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse border-2 border-white">
-                        🍰 70% OFF
-                      </div>
+                <Search className="absolute left-4 sm:left-6 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5 sm:w-6 sm:h-6" />
+                <input
+                  type="text"
+                  placeholder="Enter your address or city to find amazing deals..."
+                  className="w-full pl-12 sm:pl-16 pr-24 sm:pr-32 py-4 sm:py-6 text-lg sm:text-xl bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl sm:rounded-3xl focus:border-yellow-400 focus:outline-none transition-all duration-300 text-white placeholder-white/60 shadow-2xl"
+                />
+                <button className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105">
+                  <span className="hidden sm:inline">🔍 Find Deals</span>
+                  <span className="sm:hidden">🔍</span>
+                </button>
               </div>
             </div>
             
-                  {/* Additional cute elements */}
-                  <div className="absolute top-4 right-4 w-3 h-3 bg-pink-300 rounded-full animate-bounce shadow-sm"></div>
-                  <div className="absolute bottom-4 left-4 w-2 h-2 bg-blue-300 rounded-full animate-bounce delay-1000 shadow-sm"></div>
-                  <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-green-300 rounded-full animate-bounce delay-500 shadow-sm"></div>
-                  
-                  {/* Cute trees/parks */}
-                  <div className="absolute top-6 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-green-300 rounded-full shadow-sm"></div>
-                  <div className="absolute bottom-6 right-1/4 w-3 h-3 bg-green-300 rounded-full shadow-sm"></div>
-                  
-                  {/* Cute cars */}
-                  <div className="absolute top-1/4 left-1/3 w-2 h-1 bg-gray-400 rounded-sm animate-pulse"></div>
-                  <div className="absolute bottom-1/4 right-1/3 w-2 h-1 bg-gray-400 rounded-sm animate-pulse delay-1000"></div>
-                </div>
+            {/* Primary CTAs */}
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-12 sm:mb-16 animate-fade-in">
+              <button 
+                onClick={() => window.location.href = '/explore'}
+                className="group bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-8 sm:px-12 py-4 sm:py-6 rounded-2xl sm:rounded-3xl font-black text-lg sm:text-2xl hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-2xl hover:shadow-yellow-500/25 hover:scale-105 flex items-center gap-3 sm:gap-4"
+              >
+                <Rocket className="w-6 h-6 sm:w-8 sm:h-8 group-hover:animate-bounce" />
+                <span className="hidden sm:inline">🚀 Explore Deals</span>
+                <span className="sm:hidden">🚀 Explore</span>
+                <ArrowRight className="w-6 h-6 sm:w-8 sm:h-8 group-hover:translate-x-2 transition-transform" />
+              </button>
 
-                {/* Enhanced Map Legend */}
-                <div className="mt-6 flex items-center justify-center gap-4 text-white/80 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-red-400 rounded-sm border border-white"></div>
-                    <span>Hot Deals</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-blue-400 rounded-sm border border-white"></div>
-                    <span>Good Deals</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-green-400 rounded-sm border border-white"></div>
-                    <span>Great Deals</span>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -903,7 +550,7 @@ export default function HomePage() {
                   ⚡
                 </div>
               </div>
-              <h3 className="text-2xl font-bold mb-4">⚡ Instant Activation</h3>
+              <h3 className="text-2xl font-bold mb-4">Instant Activation</h3>
               <p className="text-white/80 text-lg leading-relaxed">
                 Create and activate deals in seconds. No complicated setup, no waiting, just instant results
               </p>
@@ -913,24 +560,24 @@ export default function HomePage() {
           <div className="text-center">
             <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl p-8 shadow-2xl max-w-4xl mx-auto">
               <h3 className="text-3xl font-bold text-white mb-4">
-                Ready to Transform Your Business? 🎯
+                Ready to Transform Your Business?
               </h3>
               <p className="text-xl text-white/90 mb-8">
                 Join the restaurant revolution! Start your free trial today and see the difference in just 24 hours.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button 
-                  onClick={() => window.location.href = '/merchant/signup'}
-                  className="group bg-white text-orange-600 px-12 py-6 rounded-3xl font-black text-xl hover:bg-white/90 transition-all duration-300 shadow-2xl hover:shadow-white/25 hover:scale-105 flex items-center gap-3"
-                >
+                <button className="group bg-white text-orange-600 px-12 py-6 rounded-3xl font-black text-xl hover:bg-white/90 transition-all duration-300 shadow-2xl hover:shadow-white/25 hover:scale-105 flex items-center gap-3">
                   <Rocket className="w-6 h-6 group-hover:animate-bounce" />
                   Start Free Trial
                   <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
                 </button>
-
+                <button className="group bg-white/20 backdrop-blur-sm border-2 border-white/30 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/30 transition-all duration-300 flex items-center gap-3">
+                  <span className="text-2xl">▶️</span>
+                  Watch Success Stories
+          </button>
               </div>
               <p className="text-white/80 mt-6 text-sm">
-                ✨ No setup fees • 🚀 Cancel anytime • 💰 30-day money-back guarantee
+                No setup fees • Cancel anytime • 30-day money-back guarantee
               </p>
             </div>
           </div>
@@ -938,4 +585,4 @@ export default function HomePage() {
       </div>
     </div>
   );
-}
+}// Force deployment Thu Aug 28 01:24:27 EDT 2025

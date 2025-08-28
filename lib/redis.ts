@@ -4,7 +4,6 @@ let redis: Redis | null = null;
 
 if (process.env.REDIS_URL) {
   redis = new Redis(process.env.REDIS_URL, {
-    retryDelayOnFailover: 100,
     maxRetriesPerRequest: 3,
     lazyConnect: true,
   });
@@ -49,6 +48,6 @@ export async function getRedisInfo(): Promise<any> {
     const info = await redis.info();
     return { status: 'connected', info };
   } catch (error) {
-    return { error: error.message };
+    return { error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
