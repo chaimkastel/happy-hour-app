@@ -1,116 +1,148 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { MapPin, X, Search } from 'lucide-react';
-
-interface AddressSuggestion {
-  place_id: string;
-  display_name: string;
-  lat: string;
-  lon: string;
-  address?: {
-    house_number?: string;
-    road?: string;
-    suburb?: string;
-    city?: string;
-    state?: string;
-    postcode?: string;
-    country?: string;
-  };
-}
-
-interface AddressAutocompleteProps {
-  value: string;
-  onChange: (value: string) => void;
-  onSelect: (suggestion: AddressSuggestion) => void;
-  placeholder?: string;
-  className?: string;
-  disabled?: boolean;
-  required?: boolean;
-  label?: string;
-  error?: string;
-}
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { MapPin, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { AddressAutocompleteProps, AddressData, GooglePlacesResponse } from '@/types/address';
+import { parseGooglePlaceResult, validateAddressData, debounce } from '@/lib/address-validation';
 
 export default function AddressAutocomplete({
   value,
   onChange,
-  onSelect,
-  placeholder = "Enter your address",
-  className = "",
-  disabled = false,
+  placeholder = "Enter address...",
   required = false,
-  label,
-  error
+  disabled = false,
+  className = "",
+  onError,
+  onLoadingChange
 }: AddressAutocompleteProps) {
-  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [inputValue, setInputValue] = useState(value);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [error, setError] = useState<string | null>(null);
+  const [isValid, setIsValid] = useState(false);
+  
   const inputRef = useRef<HTMLInputElement>(null);
-  const suggestionsRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Debounced search function
-  const searchAddresses = async (query: string) => {
-    if (query.length < 3) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=8&addressdetails=1&countrycodes=us,ca,gb,au&bounded=1`,
-        {
-          headers: {
-            'User-Agent': 'HappyHourApp/1.0'
-          }
-        }
-      );
-      
-      if (response.ok) {
-        const data = await response.json();
-        setSuggestions(data);
-        setShowSuggestions(true);
-        setSelectedIndex(-1);
+  const debouncedSearch = useCallback(
+    debounce(async (query: string) => {
+      if (!query.trim() || query.length < 3) {
+        setSuggestions([]);
+        setIsOpen(false);
+        return;
       }
-    } catch (error) {
-      console.error('Error fetching address suggestions:', error);
-      setSuggestions([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  // Handle input change with debouncing
+      // Cancel previous request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      abortControllerRef.current = new AbortController();
+      setIsLoading(true);
+      onLoadingChange?.(true);
+
+      try {
+        const response = await fetch(
+          `/api/address/autocomplete?query=${encodeURIComponent(query)}`,
+          {
+            signal: abortControllerRef.current.signal,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data: GooglePlacesResponse = await response.json();
+        
+        if (data.status === 'OK') {
+          setSuggestions(data.predictions);
+          setIsOpen(true);
+          setError(null);
+        } else {
+          setSuggestions([]);
+          setIsOpen(false);
+          setError('Unable to find addresses. Please try again.');
+        }
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          console.error('Address autocomplete error:', err);
+          setError('Failed to load address suggestions. Please try again.');
+          onError?.(err.message);
+        }
+      } finally {
+        setIsLoading(false);
+        onLoadingChange?.(false);
+      }
+    }, 300),
+    [onError, onLoadingChange]
+  );
+
+  // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    onChange(newValue);
-
-    // Clear previous timeout
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
+    setInputValue(newValue);
+    setSelectedIndex(-1);
+    setError(null);
+    setIsValid(false);
+    
+    if (newValue.trim()) {
+      debouncedSearch(newValue);
+    } else {
+      setSuggestions([]);
+      setIsOpen(false);
     }
-
-    // Set new timeout
-    debounceRef.current = setTimeout(() => {
-      searchAddresses(newValue);
-    }, 300);
   };
 
   // Handle suggestion selection
-  const handleSuggestionSelect = (suggestion: AddressSuggestion) => {
-    onChange(suggestion.display_name);
-    onSelect(suggestion);
-    setShowSuggestions(false);
-    setSuggestions([]);
+  const handleSuggestionSelect = async (suggestion: any) => {
+    setInputValue(suggestion.description);
+    setIsOpen(false);
     setSelectedIndex(-1);
+    setIsLoading(true);
+    onLoadingChange?.(true);
+
+    try {
+      const response = await fetch(
+        `/api/address/details?place_id=${suggestion.place_id}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const placeDetails = await response.json();
+      const addressData = parseGooglePlaceResult(placeDetails);
+      const validation = validateAddressData(addressData);
+
+      if (validation.isValid) {
+        setIsValid(true);
+        setError(null);
+        onChange(addressData);
+      } else {
+        setError(validation.errors.join(', '));
+        onError?.(validation.errors.join(', '));
+      }
+    } catch (err: any) {
+      console.error('Address details error:', err);
+      setError('Failed to load address details. Please try again.');
+      onError?.(err.message);
+    } finally {
+      setIsLoading(false);
+      onLoadingChange?.(false);
+    }
   };
 
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showSuggestions || suggestions.length === 0) return;
+    if (!isOpen || suggestions.length === 0) return;
 
     switch (e.key) {
       case 'ArrowDown':
@@ -130,22 +162,23 @@ export default function AddressAutocomplete({
         }
         break;
       case 'Escape':
-        setShowSuggestions(false);
+        setIsOpen(false);
         setSelectedIndex(-1);
+        inputRef.current?.blur();
         break;
     }
   };
 
-  // Clear suggestions when clicking outside
+  // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        suggestionsRef.current &&
-        !suggestionsRef.current.contains(event.target as Node) &&
         inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
+        !inputRef.current.contains(event.target as Node) &&
+        listRef.current &&
+        !listRef.current.contains(event.target as Node)
       ) {
-        setShowSuggestions(false);
+        setIsOpen(false);
         setSelectedIndex(-1);
       }
     };
@@ -154,142 +187,118 @@ export default function AddressAutocomplete({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Format address for display
-  const formatAddress = (suggestion: AddressSuggestion) => {
-    const addr = suggestion.address;
-    if (!addr) return suggestion.display_name;
-
-    const parts = [];
-    if (addr.house_number && addr.road) {
-      parts.push(`${addr.house_number} ${addr.road}`);
-    } else if (addr.road) {
-      parts.push(addr.road);
-    }
-    if (addr.suburb) parts.push(addr.suburb);
-    if (addr.city) parts.push(addr.city);
-    if (addr.state) parts.push(addr.state);
-    if (addr.postcode) parts.push(addr.postcode);
-
-    return parts.join(', ') || suggestion.display_name;
-  };
-
-  // Get address type icon
-  const getAddressTypeIcon = (suggestion: AddressSuggestion) => {
-    const addr = suggestion.address;
-    if (!addr) return <MapPin className="w-4 h-4" />;
-
-    if (addr.house_number) {
-      return <MapPin className="w-4 h-4 text-blue-500" />; // Specific address
-    } else if (addr.road) {
-      return <MapPin className="w-4 h-4 text-green-500" />; // Street
-    } else if (addr.suburb || addr.city) {
-      return <MapPin className="w-4 h-4 text-orange-500" />; // Area
-    } else {
-      return <MapPin className="w-4 h-4 text-gray-500" />; // General
-    }
-  };
+  // Update input value when prop changes
+  useEffect(() => {
+    setInputValue(value);
+  }, [value]);
 
   return (
     <div className={`relative ${className}`}>
-      {label && (
-        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-          {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
-        </label>
-      )}
-      
+      {/* Input Field */}
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          {isLoading ? (
-            <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
-          ) : (
-            <Search className="w-4 h-4 text-slate-400" />
-          )}
+          <MapPin className="h-5 w-5 text-gray-400" />
         </div>
         
         <input
           ref={inputRef}
           type="text"
-          value={value}
+          value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => {
             if (suggestions.length > 0) {
-              setShowSuggestions(true);
+              setIsOpen(true);
             }
           }}
           placeholder={placeholder}
-          disabled={disabled}
           required={required}
-          className={`w-full pl-10 pr-10 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
-            error 
-              ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-              : 'border-slate-300 dark:border-slate-600'
-          } ${
-            disabled 
-              ? 'bg-slate-50 dark:bg-slate-800 text-slate-500 cursor-not-allowed' 
-              : 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white'
-          }`}
+          disabled={disabled}
+          className={`
+            block w-full pl-10 pr-10 py-3 border rounded-lg
+            focus:ring-2 focus:ring-orange-500 focus:border-orange-500
+            disabled:bg-gray-50 disabled:text-gray-500
+            ${error 
+              ? 'border-red-300 bg-red-50' 
+              : isValid 
+                ? 'border-green-300 bg-green-50'
+                : 'border-gray-300 bg-white'
+            }
+            ${disabled ? 'cursor-not-allowed' : 'cursor-text'}
+          `}
+          aria-label="Address input with autocomplete"
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
+          aria-autocomplete="list"
+          role="combobox"
+          aria-describedby={error ? "address-error" : undefined}
         />
-        
-        {value && !disabled && (
-          <button
-            type="button"
-            onClick={() => {
-              onChange('');
-              setSuggestions([]);
-              setShowSuggestions(false);
-              setSelectedIndex(-1);
-            }}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        )}
+
+        {/* Loading/Status Icons */}
+        <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+          {isLoading ? (
+            <Loader2 className="h-5 w-5 text-gray-400 animate-spin" />
+          ) : error ? (
+            <AlertCircle className="h-5 w-5 text-red-500" />
+          ) : isValid ? (
+            <CheckCircle className="h-5 w-5 text-green-500" />
+          ) : null}
+        </div>
       </div>
 
-      {/* Suggestions Dropdown */}
-      {showSuggestions && suggestions.length > 0 && (
-        <div
-          ref={suggestionsRef}
-          className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-lg max-h-64 overflow-y-auto"
-        >
-          {suggestions.map((suggestion, index) => (
-            <button
-              key={suggestion.place_id}
-              type="button"
-              onClick={() => handleSuggestionSelect(suggestion)}
-              className={`w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${
-                index === selectedIndex ? 'bg-slate-50 dark:bg-slate-700' : ''
-              } ${
-                index === 0 ? 'rounded-t-xl' : ''
-              } ${
-                index === suggestions.length - 1 ? 'rounded-b-xl' : 'border-b border-slate-100 dark:border-slate-700'
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 mt-0.5">
-                  {getAddressTypeIcon(suggestion)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-slate-900 dark:text-white truncate">
-                    {formatAddress(suggestion)}
-                  </div>
-                  {suggestion.display_name !== formatAddress(suggestion) && (
-                    <div className="text-xs text-slate-500 dark:text-slate-400 truncate mt-1">
-                      {suggestion.display_name}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
+      {/* Error Message */}
+      {error && (
+        <p id="address-error" className="mt-2 text-sm text-red-600 flex items-center gap-1">
+          <AlertCircle className="h-4 w-4" />
+          {error}
+        </p>
       )}
 
-      {error && (
-        <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
+      {/* Suggestions Dropdown */}
+      {isOpen && suggestions.length > 0 && (
+        <ul
+          ref={listRef}
+          className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto"
+          role="listbox"
+          aria-label="Address suggestions"
+        >
+          {suggestions.map((suggestion, index) => (
+            <li
+              key={suggestion.place_id}
+              className={`
+                px-4 py-3 cursor-pointer border-b border-gray-100 last:border-b-0
+                hover:bg-orange-50 focus:bg-orange-50
+                ${selectedIndex === index ? 'bg-orange-50' : ''}
+              `}
+              onClick={() => handleSuggestionSelect(suggestion)}
+              onMouseEnter={() => setSelectedIndex(index)}
+              role="option"
+              aria-selected={selectedIndex === index}
+            >
+              <div className="flex items-start gap-3">
+                <MapPin className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-gray-900">
+                    {suggestion.structured_formatting.main_text}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {suggestion.structured_formatting.secondary_text}
+                  </div>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
       )}
+
+      {/* Screen Reader Instructions */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {isLoading && "Loading address suggestions..."}
+        {suggestions.length > 0 && !isLoading && 
+          `${suggestions.length} address suggestions available. Use arrow keys to navigate, Enter to select, Escape to close.`
+        }
+        {error && `Error: ${error}`}
+      </div>
     </div>
   );
 }

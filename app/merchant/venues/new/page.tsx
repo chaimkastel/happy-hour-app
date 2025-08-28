@@ -4,10 +4,13 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, MapPin, Building2, Tag, DollarSign, Clock, Save, X, Upload, Image, Plus, Phone, Mail, Globe, Wifi, Car, CreditCard, Users, Star, Sparkles, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import AddressAutocomplete from '@/components/AddressAutocomplete';
+import { AddressData } from '@/types/address';
 
 interface VenueFormData {
   name: string;
   address: string;
+  addressData?: AddressData;
   businessType: string[];
   priceTier: string;
   hours: {
@@ -54,6 +57,7 @@ export default function NewVenuePage() {
   const [formData, setFormData] = useState<VenueFormData>({
     name: '',
     address: '',
+    addressData: undefined,
     businessType: [],
     priceTier: 'MODERATE',
     hours: {
@@ -94,6 +98,16 @@ export default function NewVenuePage() {
     }));
   };
 
+  const handleAddressChange = (addressData: AddressData) => {
+    setFormData(prev => ({
+      ...prev,
+      address: addressData.formatted,
+      addressData: addressData,
+      latitude: addressData.coordinates.lat,
+      longitude: addressData.coordinates.lng
+    }));
+  };
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     setFormData(prev => ({ ...prev, photos: [...prev.photos, ...files] }));
@@ -130,6 +144,9 @@ export default function NewVenuePage() {
       const submitData = new FormData();
       submitData.append('name', formData.name);
       submitData.append('address', formData.address);
+      if (formData.addressData) {
+        submitData.append('addressData', JSON.stringify(formData.addressData));
+      }
       submitData.append('businessType', JSON.stringify(formData.businessType));
       submitData.append('priceTier', formData.priceTier);
       submitData.append('hours', JSON.stringify(formData.hours));
@@ -137,6 +154,8 @@ export default function NewVenuePage() {
       submitData.append('contactInfo', JSON.stringify(formData.contactInfo));
       submitData.append('amenities', JSON.stringify(formData.amenities));
       submitData.append('capacity', formData.capacity.toString());
+      if (formData.latitude) submitData.append('latitude', formData.latitude.toString());
+      if (formData.longitude) submitData.append('longitude', formData.longitude.toString());
       
       // Add photos
       formData.photos.forEach((photo, index) => {
@@ -253,17 +272,14 @@ export default function NewVenuePage() {
                 <label className="block text-sm font-bold text-white/90 mb-3">
                   Address *
                 </label>
-                <div className="flex items-center">
-                  <MapPin className="w-5 h-5 text-white/60 mr-3" />
-                  <input
-                    type="text"
-                    required
-                    value={formData.address}
-                    onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                    className="flex-1 px-6 py-4 bg-white/10 backdrop-blur-sm border border-white/30 rounded-2xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-white/60 transition-all duration-300"
-                    placeholder="123 Main St, City, State 12345"
-                  />
-                </div>
+                <AddressAutocomplete
+                  value={formData.address}
+                  onChange={handleAddressChange}
+                  placeholder="Start typing your address..."
+                  required
+                  className="w-full"
+                  onError={(error) => console.error('Address error:', error)}
+                />
               </div>
 
               <div>
