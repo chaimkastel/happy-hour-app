@@ -47,13 +47,17 @@ export default function HomePage() {
       const response = await fetch('/api/deals/search');
       if (response.ok) {
         const data = await response.json();
+        // The API returns { deals: [...] }, so we need to access data.deals
+        const dealsData = data.deals || data;
         // Transform the data to include venue information
-        const transformedDeals = data.map((deal: any) => ({
+        const transformedDeals = dealsData.map((deal: any) => ({
           ...deal,
+          discount: deal.percentOff || deal.discount || 0,
+          cuisine: deal.venue?.businessType || deal.cuisine || 'Restaurant',
           venue: {
-            latitude: deal.restaurant?.latitude || 40.7128,
-            longitude: deal.restaurant?.longitude || -74.0060,
-            name: deal.restaurant?.name || 'Restaurant'
+            latitude: deal.venue?.latitude || 40.7128,
+            longitude: deal.venue?.longitude || -74.0060,
+            name: deal.venue?.name || 'Restaurant'
           }
         }));
         setDeals(transformedDeals);
