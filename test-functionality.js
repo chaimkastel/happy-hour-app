@@ -5,7 +5,7 @@
  * This script tests all major features and API endpoints
  */
 
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = 'https://orderhappyhour.com';
 
 // Test results tracking
 const testResults = {

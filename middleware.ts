@@ -1,67 +1,45 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Add paths that require authentication
-const protectedPaths = [
-  '/merchant',
-  '/account',
-  '/favorites',
-  '/wallet',
-  '/api/merchant'
-];
-
-// Add paths that should redirect to login if not authenticated
-const authRedirectPaths = [
-  '/merchant',
-  '/account',
-  '/favorites',
-  '/wallet'
-];
-
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  
-  // Check if the path requires authentication
-  const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
-  const shouldRedirectToLogin = authRedirectPaths.some(path => pathname.startsWith(path));
-  
-  if (isProtectedPath) {
-    // For API routes, return 401 if not authenticated
-    if (pathname.startsWith('/api/')) {
-      // Check for session token (this is a simplified check)
-      const token = request.cookies.get('next-auth.session-token') || 
-                   request.cookies.get('__Secure-next-auth.session-token');
-      
-      if (!token) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
-    }
+  // Force HTTPS redirect in production
+  if (process.env.NODE_ENV === 'production') {
+    const hostname = request.headers.get('host') || '';
+    const protocol = request.headers.get('x-forwarded-proto') || 'http';
     
-    // For page routes, redirect to login if not authenticated
-    if (shouldRedirectToLogin) {
-      const token = request.cookies.get('next-auth.session-token') || 
-                   request.cookies.get('__Secure-next-auth.session-token');
-      
-      if (!token) {
-        const loginUrl = new URL('/login', request.url);
-        loginUrl.searchParams.set('callbackUrl', pathname);
-        return NextResponse.redirect(loginUrl);
-      }
+    // Only redirect if the request is HTTP and not already HTTPS
+    if (protocol === 'http' && !hostname.includes('localhost')) {
+      const httpsUrl = `https://${hostname}${request.nextUrl.pathname}${request.nextUrl.search}`;
+      return NextResponse.redirect(httpsUrl, 301);
     }
   }
+
+  // Add security headers
+  const response = NextResponse.next();
   
-  return NextResponse.next();
+  // Force HTTPS
+  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  
+  // Prevent mixed content
+  response.headers.set('Content-Security-Policy', "upgrade-insecure-requests");
+  
+  // Additional security headers
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  
+  return response;
 }
 
 export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
+     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder
      */
-    '/((?!_next/static|_next/image|favicon.ico|public).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };

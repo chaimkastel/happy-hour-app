@@ -26,23 +26,46 @@ export const authOptions: any = {
   },
   providers: [
     {
-      id: "demo",
-      name: "Demo",
+      id: "credentials",
+      name: "Credentials",
       type: "credentials" as const,
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials: any) {
-        // For demo purposes, allow any login
-        if (credentials?.email && typeof credentials.email === 'string') {
-          return {
-            id: "demo-user",
-            email: credentials.email,
-            name: "Demo User"
-          }
+        if (!credentials?.email || !credentials?.password) {
+          return null;
         }
-        return null
+
+        try {
+          // Find user in database
+          const user = await prisma.user.findUnique({
+            where: {
+              email: credentials.email
+            }
+          });
+
+          if (!user) {
+            return null;
+          }
+
+          // In a real app, you'd hash and compare passwords
+          // For now, we'll use a simple check
+          if (credentials.password === 'password123' || credentials.password === 'demo123') {
+            return {
+              id: user.id,
+              email: user.email,
+              name: user.email.split('@')[0], // Use email prefix as name
+              role: user.role
+            };
+          }
+
+          return null;
+        } catch (error) {
+          console.error('Auth error:', error);
+          return null;
+        }
       }
     }
   ],

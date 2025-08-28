@@ -4,7 +4,7 @@ async function testRedirect() {
   console.log('Testing redirect behavior...');
   
   try {
-    const response = await fetch('http://localhost:3000/merchant');
+    const response = await fetch('https://orderhappyhour.com/merchant');
     console.log('Status:', response.status);
     console.log('Status text:', response.statusText);
     console.log('Headers:', Object.fromEntries(response.headers.entries()));

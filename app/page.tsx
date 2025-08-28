@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MapPin, Clock, Users, Filter, Grid, List, Search, Star, TrendingUp, Zap, Heart, ArrowRight, Play, Shield, Award, Globe, Smartphone, CreditCard, Timer, CheckCircle, Sparkles, Flame, Gift, Target, Rocket, Crown, Diamond } from 'lucide-react';
+import { MapPin, Clock, Users, Filter, Grid, List, Search, Star, TrendingUp, Zap, Heart, ArrowRight, Shield, Award, Globe, Smartphone, CreditCard, Timer, CheckCircle, Sparkles, Flame, Gift, Target, Rocket, Crown, Diamond } from 'lucide-react';
 import DealCard from '../components/DealCard';
 import MapWithClusters from '../components/MapWithClusters';
 import SortFilterBar from '../components/SortFilterBar';
@@ -186,11 +186,7 @@ export default function HomePage() {
                 <span className="sm:hidden">🚀 Explore</span>
                 <ArrowRight className="w-6 h-6 sm:w-8 sm:h-8 group-hover:translate-x-2 transition-transform" />
               </button>
-              <button className="group bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg hover:bg-white/20 transition-all duration-300 flex items-center gap-2 sm:gap-3">
-                <Play className="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-110 transition-transform" />
-                <span className="hidden sm:inline">📱 Watch Demo</span>
-                <span className="sm:hidden">📱 Demo</span>
-              </button>
+
             </div>
           </div>
         </div>
@@ -485,10 +481,7 @@ export default function HomePage() {
                   Start Saving Now
                   <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
                 </button>
-                <button className="group bg-white/50 dark:bg-slate-700/50 backdrop-blur-sm border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/70 dark:hover:bg-slate-600/70 transition-all duration-300 flex items-center gap-3">
-                  <Play className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  Watch Demo
-                </button>
+
               </div>
             </div>
           </div>

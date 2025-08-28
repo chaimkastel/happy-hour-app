@@ -65,43 +65,130 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { venueId, title, description, percentOff, startAt, endAt, maxRedemptions, minSpend, tags } = body;
+    // Handle both JSON and FormData
+    const contentType = request.headers.get('content-type');
+    let dealData: any = {};
+
+    if (contentType?.includes('multipart/form-data')) {
+      const formData = await request.formData();
+      
+      // Extract form fields
+      dealData = {
+        title: formData.get('title') as string,
+        description: formData.get('description') as string,
+        percentOff: parseInt(formData.get('percentOff') as string),
+        dealType: formData.get('dealType') as string,
+        startDate: formData.get('startDate') as string,
+        endDate: formData.get('endDate') as string,
+        startTime: formData.get('startTime') as string,
+        endTime: formData.get('endTime') as string,
+        maxRedemptions: parseInt(formData.get('maxRedemptions') as string),
+        minOrderAmount: parseFloat(formData.get('minOrderAmount') as string) || 0,
+        applicableItems: formData.get('applicableItems') as string,
+        terms: formData.get('terms') as string,
+        isActive: formData.get('isActive') === 'true',
+        flashDuration: formData.get('flashDuration') ? parseInt(formData.get('flashDuration') as string) : null,
+        scheduleDays: formData.get('scheduleDays') ? JSON.parse(formData.get('scheduleDays') as string) : [],
+        scheduleFrequency: formData.get('scheduleFrequency') as string,
+        scheduleEndDate: formData.get('scheduleEndDate') as string,
+        recurringPattern: formData.get('recurringPattern') as string,
+        recurringInterval: formData.get('recurringInterval') ? parseInt(formData.get('recurringInterval') as string) : 1,
+        recurringEndDate: formData.get('recurringEndDate') as string,
+      };
+
+      // Handle file uploads (for now, we'll just store the filenames)
+      const images: string[] = [];
+      for (const [key, value] of formData.entries()) {
+        if (key.startsWith('image_') && value instanceof File) {
+          // In a real app, you'd upload to cloud storage
+          images.push(value.name);
+        }
+      }
+      dealData.images = images;
+    } else {
+      dealData = await request.json();
+    }
+
+    const { 
+      title, 
+      description, 
+      percentOff, 
+      dealType, 
+      startDate, 
+      endDate, 
+      startTime, 
+      endTime, 
+      maxRedemptions, 
+      minOrderAmount, 
+      applicableItems, 
+      terms, 
+      isActive,
+      flashDuration,
+      scheduleDays,
+      scheduleFrequency,
+      scheduleEndDate,
+      recurringPattern,
+      recurringInterval,
+      recurringEndDate,
+      images
+    } = dealData;
 
     // Get the merchant for this user
     const merchant = await prisma.merchant.findFirst({
       where: { user: { email: session.user.email } },
-      include: { venues: { where: { id: venueId } } }
+      include: { venues: true }
     });
 
     if (!merchant) {
       return NextResponse.json({ error: 'Merchant not found' }, { status: 404 });
     }
 
-    // Verify the venue belongs to this merchant
-    if (merchant.venues.length === 0) {
-      return NextResponse.json({ error: 'Venue not found or not owned by merchant' }, { status: 404 });
+    // Use the first venue for now (in a real app, you'd let them select)
+    const venue = merchant.venues[0];
+    if (!venue) {
+      return NextResponse.json({ error: 'No venues found. Please create a venue first.' }, { status: 400 });
     }
 
-    // Create the deal
+    // Calculate start and end times
+    const startAt = new Date(`${startDate}T${startTime || '00:00'}`);
+    const endAt = new Date(`${endDate}T${endTime || '23:59'}`);
+
+    // Create the deal with enhanced data
     const deal = await prisma.deal.create({
       data: {
-        venueId,
+        venueId: venue.id,
         title,
         description: description || '',
         percentOff,
-        startAt: new Date(startAt),
-        endAt: new Date(endAt),
+        startAt,
+        endAt,
         maxRedemptions: maxRedemptions || 100,
         redeemedCount: 0,
-        minSpend: minSpend || null,
-        inPersonOnly: true, // Default to in-person deals
-        tags: Array.isArray(tags) ? JSON.stringify(tags) : tags || '[]',
-        status: 'DRAFT' // New deals start as drafts
+        minSpend: minOrderAmount || null,
+        inPersonOnly: true,
+        tags: JSON.stringify([dealType, applicableItems].filter(Boolean)),
+        status: isActive ? 'LIVE' : 'DRAFT',
+        // Store additional deal type data in tags for now
+        // In a real app, you'd add these fields to the schema
+        metadata: JSON.stringify({
+          dealType,
+          flashDuration,
+          scheduleDays,
+          scheduleFrequency,
+          scheduleEndDate,
+          recurringPattern,
+          recurringInterval,
+          recurringEndDate,
+          images: images || [],
+          terms
+        })
       }
     });
 
-    return NextResponse.json({ deal }, { status: 201 });
+    return NextResponse.json({ 
+      deal,
+      message: 'Deal created successfully!'
+    }, { status: 201 });
   } catch (error) {
     console.error('Error creating deal:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
