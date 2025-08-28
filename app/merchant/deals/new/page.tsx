@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { ArrowLeft, Save, X, Calendar, Clock, Users, Tag, Building2 } from 'lucide-react';
+import { ArrowLeft, Save, X, Calendar, Clock, Users, Tag, Building2, Upload, Image, Sparkles, Rocket, Zap, Target, Gift } from 'lucide-react';
 import Link from 'next/link';
 
 interface Venue {
@@ -146,36 +146,53 @@ export default function NewDealPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center py-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-yellow-400/10 to-orange-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-pink-400/10 to-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      </div>
+
+      {/* Exciting Header */}
+      <div className="relative bg-white/10 backdrop-blur-sm border-b border-white/20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center py-8">
             <Link 
               href="/merchant/deals"
-              className="inline-flex items-center text-gray-500 hover:text-gray-700 mr-4"
+              className="inline-flex items-center text-white/80 hover:text-white mr-6 transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 mr-2" />
+              <ArrowLeft className="w-6 h-6 mr-2" />
               Back to Deals
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Create New Deal</h1>
-              <p className="text-gray-600 mt-1">Set up a new promotion to attract customers</p>
+              <div className="inline-flex items-center gap-2 bg-yellow-400/20 backdrop-blur-sm border border-yellow-400/30 rounded-full px-4 py-2 mb-3">
+                <Rocket className="w-4 h-4 text-yellow-400" />
+                <span className="text-yellow-400 font-bold text-sm">CREATE DEAL</span>
+              </div>
+              <h1 className="text-4xl md:text-5xl font-black text-white mb-2">
+                🚀 <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Create</span> Amazing Deal
+              </h1>
+              <p className="text-xl text-white/80">Set up a promotion that will attract customers and boost your revenue!</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow">
-          <form onSubmit={handleSubmit} className="p-6 space-y-8">
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl">
+          <form onSubmit={handleSubmit} className="p-8 space-y-8">
             {/* Basic Information */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <Target className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white">Basic Information</h3>
+              </div>
               <div className="grid grid-cols-1 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-bold text-white/90 mb-3">
                     Deal Title *
                   </label>
                   <input
@@ -183,7 +200,7 @@ export default function NewDealPage() {
                     required
                     value={form.title}
                     onChange={(e) => handleInputChange('title', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-6 py-4 bg-white/10 backdrop-blur-sm border border-white/30 rounded-2xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-white/60 transition-all duration-300"
                     placeholder="e.g., Happy Hour Special, Lunch Rush Deal"
                   />
                 </div>
