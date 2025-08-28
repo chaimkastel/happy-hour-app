@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Scan, Receipt, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react'
-import QRCodeScanner from '../../../components/QRCodeScanner'
+// QRCodeScanner component removed for optimization
 
 interface Redemption {
   id: string
@@ -277,13 +277,20 @@ export default function MerchantRedemptionsPage() {
         </div>
       </div>
 
-      {/* QR Scanner Modal */}
+      {/* QR Scanner Modal - Temporarily disabled for optimization */}
       {showQRScanner && (
-        <QRCodeScanner
-          onScanSuccess={handleScanSuccess}
-          onScanError={handleScanError}
-          onClose={() => setShowQRScanner(false)}
-        />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md mx-4">
+            <h3 className="text-lg font-semibold mb-4">QR Scanner</h3>
+            <p className="text-gray-600 mb-4">QR Scanner temporarily disabled for optimization.</p>
+            <button
+              onClick={() => setShowQRScanner(false)}
+              className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700"
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )

@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { CheckCircle, ArrowLeft, MapPin, Tag, Clock, Star } from 'lucide-react';
-import confetti from 'canvas-confetti';
+// confetti removed for optimization
 
 interface Deal {
   id: string;
@@ -69,12 +69,7 @@ export default function RedeemPage({ params }: { params: { id: string } }) {
       
       setSuccess(true);
       
-      // Trigger confetti animation
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
+      // Confetti animation removed for optimization
       
     } catch (error) {
       setError('Failed to redeem deal. Please try again.');

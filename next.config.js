@@ -5,7 +5,6 @@ const nextConfig = {
   
   // Reduce bundle size
   experimental: {
-    optimizeCss: true,
     optimizePackageImports: ['lucide-react', 'framer-motion'],
   },
   
