@@ -64,7 +64,7 @@ export default function SignupPage() {
 
     try {
       // Create user account
-      const response = await fetch('/api/auth/signup', {
+      const response = await fetch('/api/users/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
