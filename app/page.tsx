@@ -167,89 +167,140 @@ export default function HomePage() {
             {/* Right Side - Cute Map Design */}
             <div className="relative">
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl p-8 shadow-2xl">
-                {/* Map Background */}
-                <div className="relative bg-gradient-to-br from-blue-100 to-green-100 rounded-2xl h-96 overflow-hidden">
+                {/* Cute Map Background */}
+                <div className="relative bg-gradient-to-br from-blue-50 via-green-50 to-yellow-50 rounded-2xl h-96 overflow-hidden">
                   {/* Map Grid Pattern */}
-                  <div className="absolute inset-0 opacity-20">
-                    <div className="grid grid-cols-8 grid-rows-6 h-full">
-                      {Array.from({ length: 48 }).map((_, i) => (
-                        <div key={i} className="border border-gray-300"></div>
+                  <div className="absolute inset-0 opacity-10">
+                    <div className="grid grid-cols-12 grid-rows-8 h-full">
+                      {Array.from({ length: 96 }).map((_, i) => (
+                        <div key={i} className="border border-gray-200"></div>
                       ))}
                     </div>
                   </div>
                   
-                  {/* Streets */}
+                  {/* Cute Streets with rounded corners */}
                   <div className="absolute inset-0">
-                    <div className="absolute top-1/4 left-0 right-0 h-1 bg-gray-400"></div>
-                    <div className="absolute top-3/4 left-0 right-0 h-1 bg-gray-400"></div>
-                    <div className="absolute left-1/4 top-0 bottom-0 w-1 bg-gray-400"></div>
-                    <div className="absolute left-3/4 top-0 bottom-0 w-1 bg-gray-400"></div>
+                    {/* Main horizontal streets */}
+                    <div className="absolute top-1/4 left-0 right-0 h-2 bg-gray-300 rounded-full shadow-sm"></div>
+                    <div className="absolute top-3/4 left-0 right-0 h-2 bg-gray-300 rounded-full shadow-sm"></div>
+                    <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 rounded-full"></div>
+                    
+                    {/* Main vertical streets */}
+                    <div className="absolute left-1/4 top-0 bottom-0 w-2 bg-gray-300 rounded-full shadow-sm"></div>
+                    <div className="absolute left-3/4 top-0 bottom-0 w-2 bg-gray-300 rounded-full shadow-sm"></div>
+                    <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-gray-200 rounded-full"></div>
+                    
+                    {/* Side streets */}
+                    <div className="absolute left-1/6 top-0 bottom-0 w-1 bg-gray-200 rounded-full"></div>
+                    <div className="absolute left-5/6 top-0 bottom-0 w-1 bg-gray-200 rounded-full"></div>
+                    <div className="absolute top-1/6 left-0 right-0 h-1 bg-gray-200 rounded-full"></div>
+                    <div className="absolute top-5/6 left-0 right-0 h-1 bg-gray-200 rounded-full"></div>
                   </div>
 
-                  {/* Restaurant Locations with Discount Badges */}
+                  {/* Cute Buildings/Blocks */}
+                  <div className="absolute top-2 left-2 w-8 h-6 bg-blue-200 rounded-sm shadow-sm"></div>
+                  <div className="absolute top-2 right-2 w-8 h-6 bg-green-200 rounded-sm shadow-sm"></div>
+                  <div className="absolute bottom-2 left-2 w-8 h-6 bg-purple-200 rounded-sm shadow-sm"></div>
+                  <div className="absolute bottom-2 right-2 w-8 h-6 bg-pink-200 rounded-sm shadow-sm"></div>
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-yellow-200 rounded-sm shadow-sm"></div>
+
+                  {/* Restaurant Locations with Cute Building Icons and Discount Badges */}
                   <div className="absolute top-8 left-8">
                     <div className="relative">
-                      <div className="w-4 h-4 bg-red-500 rounded-full border-2 border-white shadow-lg"></div>
-                      <div className="absolute -top-8 -left-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg animate-pulse">
-                        50% OFF
+                      {/* Cute restaurant building */}
+                      <div className="w-6 h-6 bg-red-400 rounded-sm shadow-lg border-2 border-white relative">
+                        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-red-600 rounded-full"></div>
+                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-red-600 rounded-full"></div>
+                      </div>
+                      {/* Discount badge */}
+                      <div className="absolute -top-10 -left-3 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse border-2 border-white">
+                        🍕 50% OFF
                       </div>
                     </div>
                   </div>
 
                   <div className="absolute top-16 right-12">
                     <div className="relative">
-                      <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg"></div>
-                      <div className="absolute -top-8 -left-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg animate-pulse">
-                        30% OFF
+                      {/* Cute restaurant building */}
+                      <div className="w-6 h-6 bg-blue-400 rounded-sm shadow-lg border-2 border-white relative">
+                        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-600 rounded-full"></div>
+                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-600 rounded-full"></div>
+                      </div>
+                      {/* Discount badge */}
+                      <div className="absolute -top-10 -left-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse border-2 border-white">
+                        🍔 30% OFF
                       </div>
                     </div>
                   </div>
 
                   <div className="absolute bottom-20 left-16">
                     <div className="relative">
-                      <div className="w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-lg"></div>
-                      <div className="absolute -top-8 -left-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg animate-pulse">
-                        40% OFF
+                      {/* Cute restaurant building */}
+                      <div className="w-6 h-6 bg-green-400 rounded-sm shadow-lg border-2 border-white relative">
+                        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-green-600 rounded-full"></div>
+                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-green-600 rounded-full"></div>
+                      </div>
+                      {/* Discount badge */}
+                      <div className="absolute -top-10 -left-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse border-2 border-white">
+                        🍜 40% OFF
                       </div>
                     </div>
                   </div>
 
                   <div className="absolute bottom-12 right-8">
                     <div className="relative">
-                      <div className="w-4 h-4 bg-purple-500 rounded-full border-2 border-white shadow-lg"></div>
-                      <div className="absolute -top-8 -left-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg animate-pulse">
-                        60% OFF
+                      {/* Cute restaurant building */}
+                      <div className="w-6 h-6 bg-purple-400 rounded-sm shadow-lg border-2 border-white relative">
+                        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-purple-600 rounded-full"></div>
+                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-purple-600 rounded-full"></div>
+                      </div>
+                      {/* Discount badge */}
+                      <div className="absolute -top-10 -left-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse border-2 border-white">
+                        🍣 60% OFF
                       </div>
                     </div>
                   </div>
 
                   <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
                     <div className="relative">
-                      <div className="w-4 h-4 bg-yellow-500 rounded-full border-2 border-white shadow-lg"></div>
-                      <div className="absolute -top-8 -left-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg animate-pulse">
-                        70% OFF
+                      {/* Cute restaurant building */}
+                      <div className="w-6 h-6 bg-yellow-400 rounded-sm shadow-lg border-2 border-white relative">
+                        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-yellow-600 rounded-full"></div>
+                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-yellow-600 rounded-full"></div>
+                      </div>
+                      {/* Discount badge */}
+                      <div className="absolute -top-10 -left-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse border-2 border-white">
+                        🍰 70% OFF
                       </div>
                     </div>
                   </div>
 
-                  {/* Floating Elements */}
-                  <div className="absolute top-4 right-4 w-3 h-3 bg-pink-300 rounded-full animate-bounce"></div>
-                  <div className="absolute bottom-4 left-4 w-2 h-2 bg-blue-300 rounded-full animate-bounce delay-1000"></div>
-                  <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-green-300 rounded-full animate-bounce delay-500"></div>
+                  {/* Additional cute elements */}
+                  <div className="absolute top-4 right-4 w-3 h-3 bg-pink-300 rounded-full animate-bounce shadow-sm"></div>
+                  <div className="absolute bottom-4 left-4 w-2 h-2 bg-blue-300 rounded-full animate-bounce delay-1000 shadow-sm"></div>
+                  <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-green-300 rounded-full animate-bounce delay-500 shadow-sm"></div>
+                  
+                  {/* Cute trees/parks */}
+                  <div className="absolute top-6 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-green-300 rounded-full shadow-sm"></div>
+                  <div className="absolute bottom-6 right-1/4 w-3 h-3 bg-green-300 rounded-full shadow-sm"></div>
+                  
+                  {/* Cute cars */}
+                  <div className="absolute top-1/4 left-1/3 w-2 h-1 bg-gray-400 rounded-sm animate-pulse"></div>
+                  <div className="absolute bottom-1/4 right-1/3 w-2 h-1 bg-gray-400 rounded-sm animate-pulse delay-1000"></div>
                 </div>
 
-                {/* Map Legend */}
-                <div className="mt-6 flex items-center justify-center gap-6 text-white/80 text-sm">
+                {/* Enhanced Map Legend */}
+                <div className="mt-6 flex items-center justify-center gap-4 text-white/80 text-sm">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <div className="w-4 h-4 bg-red-400 rounded-sm border border-white"></div>
                     <span>Hot Deals</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <div className="w-4 h-4 bg-blue-400 rounded-sm border border-white"></div>
                     <span>Good Deals</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <div className="w-4 h-4 bg-green-400 rounded-sm border border-white"></div>
                     <span>Great Deals</span>
                   </div>
                 </div>
