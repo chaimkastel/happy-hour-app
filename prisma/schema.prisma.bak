@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String?
+  passwordHash String?
+  role         String        @default("merchant")
+
+  restaurants  Restaurant[]
+  favorites    Favorite[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Restaurant {
+  id           String     @id @default(cuid())
+  name         String
+  address      String
+  lat          Float
+  lng          Float
+  description  String?
+  phone        String?
+  website      String?
+  heroImage    String?
+  photosJson  String? .Text
+  avgRating    Float      @default(0)
+  ratingCount  Int        @default(0)
+
+  ownerId      String
+  owner        User       @relation(fields: [ownerId], references: [id])
+
+  deals        Deal[]
+  favorites    Favorite[]
+  reviews      Review[]
+
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([name, ownerId])
+  @@index([lat, lng])
+}
+
+model Deal {
+  id                 String      @id @default(cuid())
+  restaurantId       String
+  restaurant         Restaurant  @relation(fields: [restaurantId], references: [id])
+
+  title              String
+  description        String?
+  discountPercent    Int
+  isActive           Boolean     @default(false)
+  activationFeeCents Int         @default(0)
+
+  activatedAt        DateTime?
+  expiresAt          DateTime?
+  qrSecret           String?
+
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  redemptions        Redemption[]
+
+  @@index([isActive, activatedAt])
+  @@index([restaurantId])
+}
+
+model Redemption {
+  id        String   @id @default(cuid())
+  dealId    String
+  deal      Deal     @relation(fields: [dealId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([dealId, createdAt])
+}
+
+model Favorite {
+  userId       String
+  restaurantId String
+  user         User       @relation(fields: [userId], references: [id])
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  @@id([userId, restaurantId])
+  @@index([restaurantId])
+}
+
+model Review {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  authorName   String
+  rating       Int
+  comment      String?
+  createdAt    DateTime   @default(now())
+
+  @@index([restaurantId, createdAt])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  lat       Float?
+  lng       Float?
+  createdAt DateTime @default(now())
+}

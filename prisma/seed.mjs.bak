@@ -1,0 +1,146 @@
+import bcrypt from 'bcryptjs';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+function minutesFromNow(m) { return new Date(Date.now() + m * 60 * 1000); }
+function makeSecret() { return Math.random().toString(36).slice(2, 10); }
+
+async function ensureUser(email, name, role = 'merchant') {
+  const hash = await bcrypt.hash('password', 10);
+  return prisma.user.upsert({
+    where: { email },
+    update: {},
+    create: { email, name, passwordHash: hash, role },
+  });
+}
+
+async function ensureRestaurant(ownerId, data) {
+  return prisma.restaurant.upsert({
+    where: { name_ownerId: { name: data.name, ownerId } },
+    update: {
+      address: data.address,
+      lat: data.lat,
+      lng: data.lng,
+      description: data.description ?? null,
+      phone: data.phone ?? null,
+      website: data.website ?? null,
+      heroImage: data.heroImage ?? null,
+      photos: data.photos ?? null,
+    },
+    create: { ...data, ownerId },
+  });
+}
+
+async function ensureDeal(restaurantId, deal) {
+  const existing = await prisma.deal.findFirst({ where: { restaurantId, title: deal.title } });
+  if (existing) return existing;
+  return prisma.deal.create({
+    data: {
+      restaurantId,
+      title: deal.title,
+      description: deal.description ?? null,
+      discountPercent: Number(deal.discountPercent || 20),
+      isActive: !!deal.isActive,
+      qrSecret: deal.qrSecret ?? makeSecret(),
+      activatedAt: deal.activatedAt ?? null,
+      expiresAt: deal.expiresAt ?? null,
+    },
+  });
+}
+
+async function main() {
+  const owner = await ensureUser('owner@happyhour.local', 'Demo Owner', 'merchant');
+
+  const r1 = await ensureRestaurant(owner.id, {
+    name: 'Crown Heights Trattoria',
+    address: '123 Nostrand Ave, Brooklyn, NY',
+    lat: 40.6681, lng: -73.9442,
+    description: 'Neighborhood Italian with spritzes & fresh pasta.',
+    phone: '(718) 555-1001',
+    website: 'https://trattoria.example',
+    photos: [{ url: 'https://picsum.photos/seed/pasta/640/360' }],
+  });
+
+  const r2 = await ensureRestaurant(owner.id, {
+    name: 'East Village Sushi',
+    address: '456 2nd Ave, New York, NY',
+    lat: 40.7307, lng: -73.9860,
+    description: 'Quick sushi & sake flights.',
+    phone: '(212) 555-2002',
+    website: 'https://sushi.example',
+    photos: [{ url: 'https://picsum.photos/seed/sushi/640/360' }],
+  });
+
+  const r3 = await ensureRestaurant(owner.id, {
+    name: 'Bushwick Burgers',
+    address: '789 Wyckoff Ave, Brooklyn, NY',
+    lat: 40.6986, lng: -73.9106,
+    description: 'Smash burgers and craft sodas.',
+    phone: '(347) 555-3003',
+    website: 'https://burgers.example',
+    photos: [{ url: 'https://picsum.photos/seed/burger/640/360' }],
+  });
+
+  await ensureDeal(r1.id, {
+    title: 'Late Lunch Happy Hour',
+    description: '30% off pastas 3–5pm',
+    discountPercent: 30,
+    isActive: false,
+  });
+
+  await ensureDeal(r1.id, {
+    title: 'Aperitivo Hour',
+    description: 'Buy 1 get 1 spritz, 4–6pm',
+    discountPercent: 50,
+    isActive: true,
+    activatedAt: new Date(),
+    expiresAt: minutesFromNow(180),
+  });
+
+  await ensureDeal(r2.id, {
+    title: 'Nigiri Flight',
+    description: '25% off sampler flight, 5–7pm',
+    discountPercent: 25,
+    isActive: true,
+    activatedAt: new Date(),
+    expiresAt: minutesFromNow(120),
+  });
+
+  await ensureDeal(r3.id, {
+    title: 'Burger + Fries',
+    description: '20% off combo all day Monday',
+    discountPercent: 20,
+    isActive: false,
+  });
+
+  await prisma.review.createMany({
+    data: [
+      { restaurantId: r1.id, authorName: 'Jess',  rating: 5, comment: 'Amazing spritzes.' },
+      { restaurantId: r2.id, authorName: 'Avery', rating: 4, comment: 'Nigiri flight is great value.' },
+    ],
+    skipDuplicates: true,
+  });
+
+  // refresh aggregates
+  for (const rest of [r1, r2, r3]) {
+    const agg = await prisma.review.aggregate({
+      where: { restaurantId: rest.id },
+      _avg: { rating: true },
+      _count: true,
+    });
+    await prisma.restaurant.update({
+      where: { id: rest.id },
+      data: {
+        avgRating: agg._avg.rating || 0,
+        ratingCount: agg._count,
+      },
+    });
+  }
+
+  console.log('Seed complete: demo owner + restaurants + deals + reviews.');
+}
+
+main()
+  .catch((e) => { console.error(e); process.exit(1); })
+  .finally(() => prisma.$disconnect());

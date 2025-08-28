@@ -1,0 +1,195 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id              String       @id @default(cuid())
+  email           String       @unique
+  phone           String?
+  role            String       @default("USER")
+  walletCardId    String?
+  preferredCities String       @default("[]")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  merchant        Merchant?
+  redemptions     Redemption[]
+  walletCard      WalletCard?
+
+  @@map("users")
+}
+
+model Venue {
+  id                  String               @id @default(cuid())
+  merchantId          String
+  name                String
+  slug                String               @unique
+  address             String
+  latitude            Float
+  longitude           Float
+  businessType        String               @default("[]")
+  priceTier           String               @default("MODERATE")
+  hours               String               @default("{}")
+  rating              Float?               @default(0)
+  photos              String               @default("[]")
+  isVerified          Boolean              @default(false)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  deals               Deal[]
+  dynamicPricingHints DynamicPricingHint[]
+  merchant            Merchant             @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@index([latitude, longitude])
+  @@map("venues")
+}
+
+model Merchant {
+  id              String            @id @default(cuid())
+  userId          String            @unique
+  businessName    String
+  abnOrEIN        String?
+  payoutAccountId String?
+  kycStatus       String            @default("PENDING")
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  auditLogs       AuditLog[]
+  settings        MerchantSettings?
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  settlements     Settlement[]
+  subscription    Subscription?
+  venues          Venue[]
+
+  @@map("merchants")
+}
+
+model Subscription {
+  id                   String    @id @default(cuid())
+  merchantId           String    @unique
+  plan                 String
+  status               String    @default("ACTIVE")
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean   @default(false)
+  trialStartedAt       DateTime?
+  stripeSubscriptionId String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  merchant             Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model Deal {
+  id             String       @id @default(cuid())
+  venueId        String
+  title          String
+  description    String
+  percentOff     Int
+  startAt        DateTime
+  endAt          DateTime
+  maxRedemptions Int
+  redeemedCount  Int          @default(0)
+  minSpend       Float?
+  inPersonOnly   Boolean      @default(true)
+  tags           String       @default("[]")
+  status         String       @default("DRAFT")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  venue          Venue        @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  redemptions    Redemption[]
+
+  @@index([venueId, startAt, endAt])
+  @@index([status])
+  @@map("deals")
+}
+
+model Redemption {
+  id        String   @id @default(cuid())
+  dealId    String
+  userId    String
+  status    String   @default("CLAIMED")
+  code      String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([code])
+  @@map("redemptions")
+}
+
+model DynamicPricingHint {
+  id                    String   @id @default(cuid())
+  venueId               String
+  window                String
+  recommendedPercentOff Int
+  confidence            Float
+  createdAt             DateTime @default(now())
+  venue                 Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@map("dynamic_pricing_hints")
+}
+
+model WalletCard {
+  id                       String   @id @default(cuid())
+  userId                   String   @unique
+  stripeCardId             String
+  walletProvisioningStatus String   @default("PENDING")
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+  user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("wallet_cards")
+}
+
+model Settlement {
+  id          String   @id @default(cuid())
+  merchantId  String
+  periodStart DateTime
+  periodEnd   DateTime
+  gross       Float
+  fees        Float
+  net         Float
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@map("settlements")
+}
+
+model MerchantSettings {
+  id             String   @id @default(cuid())
+  merchantId     String   @unique
+  businessHours  String   @default("{}")
+  quietWindows   String   @default("[]")
+  defaultRules   String   @default("{}")
+  notifications  String   @default("{}")
+  payoutSettings String   @default("{}")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  merchant       Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@map("merchant_settings")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  merchantId String
+  entityType String
+  entityId   String
+  action     String
+  changes    String   @default("{}")
+  metadata   String   @default("{}")
+  createdAt  DateTime @default(now())
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@index([merchantId, entityType, createdAt])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
