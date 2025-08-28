@@ -223,30 +223,8 @@ export default function HomePage() {
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 {/* Restaurant Image */}
-                <div className="relative h-56 overflow-hidden">
-                  <img 
-                    src={[
-                      'https://picsum.photos/800/600?random=1',
-                      'https://picsum.photos/800/600?random=2', 
-                      'https://picsum.photos/800/600?random=3',
-                      'https://picsum.photos/800/600?random=4',
-                      'https://picsum.photos/800/600?random=5',
-                      'https://picsum.photos/800/600?random=6'
-                    ][index % 6]}
-                    alt={`${deal.venue?.name || 'Restaurant'} food`}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    loading="lazy"
-                    onLoad={() => console.log('Image loaded successfully')}
-                    onError={(e) => {
-                      console.log('Image failed to load:', e.currentTarget.src);
-                      e.currentTarget.style.display = 'none';
-                      e.currentTarget.nextElementSibling.style.display = 'block';
-                    }}
-                  />
-                  <div className="w-full h-full bg-gradient-to-br from-yellow-400/20 to-orange-500/20 hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-pink-500/30"></div>
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-black/30 to-black/50 group-hover:from-black/40 group-hover:to-black/60 transition-all duration-300"></div>
+                <div className="relative h-56 bg-gradient-to-br from-yellow-400/20 to-orange-500/20">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-pink-500/30"></div>
                   
                   {/* Hot Badge */}
                   <div className="absolute top-4 left-4">
