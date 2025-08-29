@@ -1,98 +1,74 @@
 'use client';
 
+import { Search, Heart, MapPin, Users, User } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Grid, Heart, Search, CreditCard, User } from 'lucide-react';
 
-interface BottomNavItem {
+interface Tab {
   id: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  path: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  href: string;
 }
 
-const bottomNavItems: BottomNavItem[] = [
-  {
-    id: 'explore',
-    label: 'Explore',
-    icon: Grid,
-    path: '/mobile'
-  },
-  {
-    id: 'favorites',
-    label: 'Favorites',
-    icon: Heart,
-    path: '/mobile/favorites'
-  },
-  {
-    id: 'search',
-    label: 'Search',
-    icon: Search,
-    path: '/mobile/search'
-  },
-  {
-    id: 'wallet',
-    label: 'Wallet',
-    icon: CreditCard,
-    path: '/wallet'
-  },
-  {
-    id: 'account',
-    label: 'Account',
-    icon: User,
-    path: '/mobile/account'
-  }
+const tabs: Tab[] = [
+  { id: 'explore', label: 'Explore', icon: Search, href: '/mobile' },
+  { id: 'favorites', label: 'Favorites', icon: Heart, href: '/mobile/favorites' },
+  { id: 'search', label: 'Search', icon: MapPin, href: '/mobile/search' },
+  { id: 'wallet', label: 'Wallet', icon: Users, href: '/mobile/wallet' },
+  { id: 'account', label: 'Account', icon: User, href: '/mobile/account' }
 ];
 
-export default function MobileBottomNav() {
+interface MobileBottomNavProps {
+  className?: string;
+}
+
+export default function MobileBottomNav({ className = '' }: MobileBottomNavProps) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const handleNavigation = (path: string) => {
-    router.push(path);
-  };
-
-  const isActive = (path: string) => {
-    if (path === '/mobile') {
-      return pathname === '/mobile' || pathname === '/mobile/explore';
-    }
-    return pathname === path;
+  const handleTabClick = (href: string) => {
+    router.push(href);
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white/10 backdrop-blur-xl border-t border-white/20 safe-area-pb z-50 md:hidden">
-      <div className="flex items-center justify-around py-3">
-        {bottomNavItems.map((item) => {
-          const Icon = item.icon;
-          const active = isActive(item.path);
+    <nav 
+      className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden ${className}`}
+      style={{ 
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        paddingLeft: 'env(safe-area-inset-left)',
+        paddingRight: 'env(safe-area-inset-right)'
+      }}
+    >
+      <div className="flex justify-around items-center py-2">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = pathname === tab.href || (tab.id === 'explore' && pathname === '/mobile');
           
           return (
             <button
-              key={item.id}
+              key={tab.id}
               type="button"
-              onClick={() => handleNavigation(item.path)}
-              className={`flex flex-col items-center py-2 px-3 transition-all duration-200 ${
-                active 
-                  ? 'text-yellow-400 transform scale-110' 
-                  : 'text-white/70 hover:text-white transform hover:scale-110'
+              onClick={() => handleTabClick(tab.href)}
+              className={`flex flex-col items-center gap-1 p-2 min-w-0 flex-1 transition-colors ${
+                isActive ? 'text-orange-500' : 'text-gray-500 hover:text-gray-700'
               }`}
-              aria-label={item.label}
+              style={{ minHeight: '44px', minWidth: '44px' }}
+              aria-label={tab.label}
             >
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${
-                active 
-                  ? 'bg-yellow-400/20' 
-                  : 'bg-white/10'
+              <div className={`w-6 h-6 flex items-center justify-center rounded-full transition-all ${
+                isActive ? 'bg-orange-100' : ''
               }`}>
-                <Icon className="w-5 h-5" />
+                <Icon size={isActive ? 18 : 16} />
               </div>
-              <span className={`text-xs font-medium ${
-                active ? 'font-bold' : 'font-medium'
+              <span className={`text-xs font-medium truncate ${
+                isActive ? 'text-orange-500' : 'text-gray-500'
               }`}>
-                {item.label}
+                {tab.label}
               </span>
             </button>
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 }

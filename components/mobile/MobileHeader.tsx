@@ -1,67 +1,92 @@
 'use client';
 
-import { Bell, Menu, X } from 'lucide-react';
+import { useState } from 'react';
+import { Search, MapPin, ChevronDown } from 'lucide-react';
+import BrandLogo from './BrandLogo';
 
 interface MobileHeaderProps {
-  title: string;
-  subtitle?: string;
-  showMenu?: boolean;
-  showNotifications?: boolean;
-  onMenuToggle?: () => void;
-  onNotificationClick?: () => void;
-  isMenuOpen?: boolean;
+  title?: string;
+  showSearch?: boolean;
+  showLocation?: boolean;
+  onSearchClick?: () => void;
+  onLocationClick?: () => void;
+  locationText?: string;
+  rightElement?: React.ReactNode;
 }
 
 export default function MobileHeader({
   title,
-  subtitle,
-  showMenu = true,
-  showNotifications = true,
-  onMenuToggle,
-  onNotificationClick,
-  isMenuOpen = false
+  showSearch = true,
+  showLocation = true,
+  onSearchClick,
+  onLocationClick,
+  locationText = "Brooklyn, New York",
+  rightElement
 }: MobileHeaderProps) {
   return (
-    <div className="sticky top-0 z-50 bg-white/10 backdrop-blur-xl border-b border-white/20 md:hidden">
-      <div className="px-4 py-4">
+    <header 
+      className="sticky top-0 z-50 bg-white border-b border-gray-200 md:hidden"
+      style={{ 
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingLeft: 'env(safe-area-inset-left)',
+        paddingRight: 'env(safe-area-inset-right)'
+      }}
+    >
+      <div className="px-4 py-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-lg">🍺</span>
-            </div>
-            <div>
-              <h1 className="text-white font-bold text-xl drop-shadow-lg">{title}</h1>
-              {subtitle && (
-                <p className="text-white/70 text-xs">{subtitle}</p>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            {showNotifications && (
-              <button 
-                type="button"
-                onClick={onNotificationClick}
-                className="p-2 rounded-lg bg-white/15 backdrop-blur-sm text-white hover:bg-white/25 transition-colors"
-                aria-label="Notifications"
-              >
-                <Bell className="w-5 h-5" />
-              </button>
+          {/* Left: Brand Logo or Back Button */}
+          <div className="flex items-center">
+            {title ? (
+              <div className="flex items-center gap-3">
+                <button 
+                  type="button"
+                  className="p-1 -ml-1"
+                  aria-label="Go back"
+                >
+                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <h1 className="text-lg font-semibold text-gray-900 truncate">{title}</h1>
+              </div>
+            ) : (
+              <BrandLogo size="md" />
             )}
-            {showMenu && onMenuToggle && (
-              <button 
-                type="button"
-                onClick={onMenuToggle}
-                className="p-2 rounded-lg bg-white/15 backdrop-blur-sm text-white hover:bg-white/25 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400/50 focus:ring-offset-2 focus:ring-offset-transparent"
-                aria-label="Menu"
-                aria-expanded={isMenuOpen}
-                aria-haspopup="menu"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
+          </div>
+
+          {/* Right: Search, Location, or Custom Element */}
+          <div className="flex items-center gap-2">
+            {rightElement || (
+              <>
+                {showSearch && (
+                  <button
+                    type="button"
+                    onClick={onSearchClick}
+                    className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                    aria-label="Search"
+                  >
+                    <Search size={20} />
+                  </button>
+                )}
+                {showLocation && (
+                  <button
+                    type="button"
+                    onClick={onLocationClick}
+                    className="flex items-center gap-1 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                    aria-label="Change location"
+                  >
+                    <MapPin size={16} className="text-gray-600" />
+                    <span className="text-sm font-medium text-gray-700 truncate max-w-24">
+                      {locationText}
+                    </span>
+                    <ChevronDown size={14} className="text-gray-500" />
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 }
