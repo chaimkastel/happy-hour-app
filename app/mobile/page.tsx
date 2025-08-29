@@ -33,6 +33,18 @@ export default function MobileLandingPage() {
             </div>
             <div className="flex items-center gap-2">
               <button
+                onClick={() => window.location.href = '/mobile/explore'}
+                className="px-3 py-1.5 bg-white/20 backdrop-blur-xl border border-white/30 text-white text-sm font-medium rounded-lg hover:bg-white/30 transition-all duration-300"
+              >
+                Explore
+              </button>
+              <button
+                onClick={() => window.location.href = '/mobile/favorites'}
+                className="px-3 py-1.5 bg-white/20 backdrop-blur-xl border border-white/30 text-white text-sm font-medium rounded-lg hover:bg-white/30 transition-all duration-300"
+              >
+                Favorites
+              </button>
+              <button
                 onClick={handleSignIn}
                 className="px-3 py-1.5 bg-white/20 backdrop-blur-xl border border-white/30 text-white text-sm font-medium rounded-lg hover:bg-white/30 transition-all duration-300"
               >
