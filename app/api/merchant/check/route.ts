@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
+// Force dynamic rendering for merchant check API
+export const dynamic = 'force-dynamic';
+
 // Type assertion for session
 type SessionWithUser = {
   user: {

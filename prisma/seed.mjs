@@ -246,8 +246,13 @@ async function main() {
   for (let i = 0; i < venues.length; i++) {
     const venueData = venues[i];
     const merchantIndex = i % merchantProfiles.length;
-    const venue = await prisma.venue.create({
-      data: {
+    const venue = await prisma.venue.upsert({
+      where: { slug: venueData.slug },
+      update: {
+        ...venueData,
+        merchantId: merchantProfiles[merchantIndex].id
+      },
+      create: {
         ...venueData,
         merchantId: merchantProfiles[merchantIndex].id
       }
@@ -300,13 +305,25 @@ async function main() {
 
   const createdDeals = [];
   for (let i = 0; i < deals.length; i++) {
-    const deal = await prisma.deal.create({
-      data: {
-        ...deals[i],
+    // Check if deal already exists
+    const existingDeal = await prisma.deal.findFirst({
+      where: {
+        title: deals[i].title,
         venueId: createdVenues[i % createdVenues.length].id
       }
     });
-    createdDeals.push(deal);
+    
+    if (existingDeal) {
+      createdDeals.push(existingDeal);
+    } else {
+      const deal = await prisma.deal.create({
+        data: {
+          ...deals[i],
+          venueId: createdVenues[i % createdVenues.length].id
+        }
+      });
+      createdDeals.push(deal);
+    }
   }
 
   console.log('✅ Deals created');
@@ -382,9 +399,16 @@ async function main() {
   ];
 
   for (const redemptionData of sampleRedemptions) {
-    await prisma.redemption.create({
-      data: redemptionData
+    // Check if redemption already exists
+    const existingRedemption = await prisma.redemption.findUnique({
+      where: { code: redemptionData.code }
     });
+    
+    if (!existingRedemption) {
+      await prisma.redemption.create({
+        data: redemptionData
+      });
+    }
   }
 
   console.log(`✅ Created ${sampleRedemptions.length} sample redemptions`);

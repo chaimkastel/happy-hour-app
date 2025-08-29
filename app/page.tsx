@@ -400,7 +400,9 @@ export default function HomePage() {
 
           {filteredDeals.length === 0 && (
             <div className="text-center py-20">
-              <div className="text-8xl mb-6 animate-bounce">🍔</div>
+              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center animate-bounce">
+                <span className="text-4xl text-white">!</span>
+              </div>
               <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-6">
                 No deals found in your area
               </h3>
@@ -605,7 +607,7 @@ export default function HomePage() {
                   <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
                 </button>
                                   <button className="group bg-white/20 backdrop-blur-sm border-2 border-white/30 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/30 transition-all duration-300 flex items-center gap-3">
-                    <span className="text-2xl">▶️</span>
+                    <span className="text-2xl">▶</span>
                     Watch Success Stories
             </button>
               </div>
