@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { 
   Search, 
   MapPin, 
@@ -46,7 +47,7 @@ interface Deal {
   isOpen: boolean;
 }
 
-export default function ExplorePage() {
+export default function MobilePage() {
   const router = useRouter();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -63,18 +64,27 @@ export default function ExplorePage() {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   useEffect(() => {
-    fetchDeals();
+    console.log('Mobile page mounted, fetching deals...');
+    // Add a small delay to ensure component is fully mounted
+    const timer = setTimeout(() => {
+      fetchDeals();
+    }, 100);
+    return () => clearTimeout(timer);
   }, []);
 
   const fetchDeals = async (searchTerm = '') => {
     try {
-      setLoading(true);
+      console.log('fetchDeals called with searchTerm:', searchTerm);
       const url = searchTerm 
         ? `/api/deals/search?search=${encodeURIComponent(searchTerm)}`
         : '/api/deals/search';
+      console.log('Fetching from URL:', url);
       const response = await fetch(url);
+      console.log('Response status:', response.status);
       if (response.ok) {
         const data = await response.json();
+        console.log('API response:', data);
+        // Transform the API data to match the expected interface
         const transformedDeals = (data.deals || []).map((deal: any) => ({
           id: deal.id,
           title: deal.title,
@@ -87,15 +97,51 @@ export default function ExplorePage() {
           cuisine: Array.isArray(deal.venue?.businessType) 
             ? deal.venue.businessType[0] 
             : deal.venue?.businessType || 'Restaurant',
-          distance: '0.5 mi',
+          distance: '0.5 mi', // Mock distance for now
           rating: deal.venue?.rating || 4.0,
-          isOpen: true
+          isOpen: true // Mock open status for now
         }));
+        console.log('Transformed deals:', transformedDeals);
         setDeals(transformedDeals);
+      } else {
+        console.error('API response not ok:', response.status);
       }
     } catch (error) {
       console.error('Error fetching deals:', error);
+      // Fallback to mock data if API fails
+      const mockDeals = [
+        {
+          id: 'mock-1',
+          title: 'Happy Hour Special',
+          description: '50% off all drinks and appetizers',
+          percentOff: 50,
+          venue: {
+            name: 'Sample Restaurant',
+            address: '123 Main St, City, State'
+          },
+          cuisine: 'American',
+          distance: '0.5 mi',
+          rating: 4.5,
+          isOpen: true
+        },
+        {
+          id: 'mock-2',
+          title: 'Lunch Deal',
+          description: '30% off lunch entrees',
+          percentOff: 30,
+          venue: {
+            name: 'Another Place',
+            address: '456 Oak Ave, City, State'
+          },
+          cuisine: 'Italian',
+          distance: '0.8 mi',
+          rating: 4.2,
+          isOpen: true
+        }
+      ];
+      setDeals(mockDeals);
     } finally {
+      console.log('Setting loading to false');
       setLoading(false);
     }
   };
@@ -111,6 +157,7 @@ export default function ExplorePage() {
 
   const handleApplyFilters = (filters: any) => {
     setAppliedFilters(filters);
+    // Here you would typically refetch deals with the new filters
     console.log('Applied filters:', filters);
   };
 
@@ -132,7 +179,7 @@ export default function ExplorePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-purple-600 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-purple-600 relative overflow-hidden md:hidden">
         {/* Enhanced Background */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-br from-slate-900/70 via-slate-800/60 to-slate-900/70"></div>
@@ -142,15 +189,7 @@ export default function ExplorePage() {
         
         {/* Mobile Header */}
         <MobileHeader
-          title="Explore"
-          rightElement={
-            <button
-              onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="p-2 rounded-lg bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors shadow-lg"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-          }
+          title="Happy Hour"
         />
 
         {/* Loading Content */}
@@ -169,7 +208,7 @@ export default function ExplorePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-purple-600 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-purple-600 relative overflow-hidden md:hidden">
       {/* Enhanced Background */}
       <div className="absolute inset-0">
         <div 
@@ -185,7 +224,7 @@ export default function ExplorePage() {
       
       {/* Mobile Header */}
       <MobileHeader
-        title="Explore"
+        title="Happy Hour"
         rightElement={
           <button
             onClick={() => setShowMobileMenu(!showMobileMenu)}
@@ -203,6 +242,7 @@ export default function ExplorePage() {
           <LocationSelector
             onLocationChange={(addressData) => {
               console.log('Location changed:', addressData);
+              // Here you would typically update the deals based on location
             }}
             placeholder="Enter your location..."
           />
@@ -464,12 +504,12 @@ export default function ExplorePage() {
               {/* Menu Items */}
               <div className="flex-1 space-y-3">
                 <button 
-                  onClick={() => handleNavigation('/mobile')}
+                  onClick={() => handleNavigation('/explore')}
                   className="w-full text-left text-white py-4 px-4 rounded-xl bg-white/15 backdrop-blur-sm hover:bg-white/25 transition-all duration-200 transform hover:scale-105 border border-white/20 shadow-lg"
                 >
                   <div className="flex items-center">
                     <Grid className="w-5 h-5 mr-3" />
-                    <span className="font-medium">Home</span>
+                    <span className="font-medium">Explore</span>
                   </div>
                 </button>
                 <button 
