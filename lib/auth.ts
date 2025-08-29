@@ -54,7 +54,8 @@ export const authOptions: any = {
 
           // For demo purposes, allow demo123 password for any user
           // In production, you'd hash and compare passwords properly
-          if (credentials.password === 'demo123' || credentials.password === 'password123') {
+          const validPasswords = process.env.DEMO_PASSWORDS?.split(',') || ['demo123', 'password123'];
+          if (validPasswords.includes(credentials.password)) {
             return {
               id: user.id,
               email: user.email,

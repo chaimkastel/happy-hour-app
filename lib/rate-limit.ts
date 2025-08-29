@@ -1,76 +1,81 @@
-import { NextRequest } from 'next/server'
+import { NextRequest } from 'next/server';
 
-interface RateLimitConfig {
-  windowMs: number // Time window in milliseconds
-  maxRequests: number // Maximum requests per window
-  keyGenerator?: (req: NextRequest) => string // Function to generate rate limit key
-}
+// Simple in-memory rate limiting (for production, use Redis)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
-interface RateLimitStore {
-  [key: string]: {
-    count: number
-    resetTime: number
+export function rateLimit(
+  request: NextRequest,
+  options: {
+    limit: number;
+    windowMs: number;
+    keyGenerator?: (req: NextRequest) => string;
   }
-}
-
-// In-memory store (in production, use Redis or similar)
-const store: RateLimitStore = {}
-
-// Clean up expired entries every 5 minutes
-setInterval(() => {
-  const now = Date.now()
-  for (const key in store) {
-    if (store[key].resetTime < now) {
-      delete store[key]
-    }
-  }
-}, 5 * 60 * 1000)
-
-export function createRateLimiter(config: RateLimitConfig) {
-  return function rateLimit(req: NextRequest) {
-    const key = config.keyGenerator ? config.keyGenerator(req) : req.ip || 'unknown'
-    const now = Date.now()
-    
-    if (!store[key] || store[key].resetTime < now) {
-      store[key] = {
-        count: 1,
-        resetTime: now + config.windowMs
-      }
-      return { success: true, remaining: config.maxRequests - 1 }
-    }
-    
-    if (store[key].count >= config.maxRequests) {
-      return { 
-        success: false, 
-        remaining: 0,
-        resetTime: store[key].resetTime,
-        error: 'Rate limit exceeded'
-      }
-    }
-    
-    store[key].count++
-    return { 
-      success: true, 
-      remaining: config.maxRequests - store[key].count 
+): { success: boolean; limit: number; remaining: number; resetTime: number } {
+  const { limit, windowMs, keyGenerator } = options;
+  
+  // Generate key for rate limiting
+  const key = keyGenerator 
+    ? keyGenerator(request)
+    : request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  
+  const now = Date.now();
+  const windowStart = now - windowMs;
+  
+  // Clean up expired entries
+  for (const [k, v] of rateLimitMap.entries()) {
+    if (v.resetTime < now) {
+      rateLimitMap.delete(k);
     }
   }
+  
+  // Get or create rate limit entry
+  let entry = rateLimitMap.get(key);
+  if (!entry || entry.resetTime < now) {
+    entry = { count: 0, resetTime: now + windowMs };
+    rateLimitMap.set(key, entry);
+  }
+  
+  // Check if limit exceeded
+  if (entry.count >= limit) {
+    return {
+      success: false,
+      limit,
+      remaining: 0,
+      resetTime: entry.resetTime
+    };
+  }
+  
+  // Increment counter
+  entry.count++;
+  
+  return {
+    success: true,
+    limit,
+    remaining: limit - entry.count,
+    resetTime: entry.resetTime
+  };
 }
 
-// Pre-configured rate limiters
-export const authRateLimit = createRateLimiter({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  maxRequests: 5, // 5 requests per 15 minutes
-  keyGenerator: (req) => `auth:${req.ip || 'unknown'}`
-})
-
-export const apiRateLimit = createRateLimiter({
-  windowMs: 60 * 1000, // 1 minute
-  maxRequests: 100, // 100 requests per minute
-  keyGenerator: (req) => `api:${req.ip || 'unknown'}`
-})
-
-export const bulkOperationRateLimit = createRateLimiter({
-  windowMs: 60 * 1000, // 1 minute
-  maxRequests: 10, // 10 bulk operations per minute
-  keyGenerator: (req) => `bulk:${req.ip || 'unknown'}`
-})
+// Common rate limit configurations
+export const rateLimitConfigs = {
+  // API routes
+  api: {
+    limit: 100,
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    keyGenerator: (req: NextRequest) => `api:${req.ip || 'unknown'}`
+  },
+  
+  // Address autocomplete (more restrictive)
+  autocomplete: {
+    limit: 20,
+    windowMs: 60 * 1000, // 1 minute
+    keyGenerator: (req: NextRequest) => `autocomplete:${req.ip || 'unknown'}`
+  },
+  
+  // Authentication (very restrictive)
+  auth: {
+    limit: 5,
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    keyGenerator: (req: NextRequest) => `auth:${req.ip || 'unknown'}`
+  }
+};

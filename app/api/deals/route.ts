@@ -1,19 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { rateLimit, rateLimitConfigs } from '@/lib/rate-limit';
+import { validateRequest, schemas } from '@/lib/validation';
 
 // Force dynamic rendering for deals API
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
+    // Apply rate limiting
+    const rateLimitResult = rateLimit(request, rateLimitConfigs.api);
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': rateLimitResult.resetTime.toString(),
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
+          }
+        }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const offset = parseInt(searchParams.get('offset') || '0');
-    const search = searchParams.get('search') || '';
-    const cuisine = searchParams.get('cuisine') || '';
-    const maxDistance = parseFloat(searchParams.get('maxDistance') || '10');
-    const minDiscount = parseInt(searchParams.get('minDiscount') || '0');
-    const openNow = searchParams.get('openNow') === 'true';
+    
+    // Validate input parameters
+    const validation = validateRequest(schemas.dealSearch, {
+      search: searchParams.get('search'),
+      limit: searchParams.get('limit'),
+      offset: searchParams.get('offset'),
+      cuisine: searchParams.get('cuisine'),
+      maxDistance: searchParams.get('maxDistance'),
+      minDiscount: searchParams.get('minDiscount'),
+      openNow: searchParams.get('openNow')
+    });
+
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Invalid parameters', details: validation.errors },
+        { status: 400 }
+      );
+    }
+
+    const { search, limit, offset, cuisine, maxDistance, minDiscount, openNow } = validation.data;
 
     // Build where clause
     const where: any = {

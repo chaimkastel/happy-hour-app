@@ -1,17 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitConfigs } from '@/lib/rate-limit';
+import { validateRequest, schemas, validateSearchQuery } from '@/lib/validation';
 
 // Force dynamic rendering for autocomplete API
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
+    // Apply rate limiting
+    const rateLimitResult = rateLimit(request, rateLimitConfigs.autocomplete);
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': rateLimitResult.resetTime.toString(),
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
+          }
+        }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('query');
 
-    if (!query || query.length < 3) {
+    // Validate input
+    if (!query) {
       return NextResponse.json(
         { predictions: [], status: 'ZERO_RESULTS' },
         { status: 200 }
+      );
+    }
+
+    try {
+      const validatedQuery = validateSearchQuery(query);
+      
+      if (validatedQuery.length < 3) {
+        return NextResponse.json(
+          { predictions: [], status: 'ZERO_RESULTS' },
+          { status: 200 }
+        );
+      }
+    } catch (error) {
+      return NextResponse.json(
+        { error: 'Invalid search query' },
+        { status: 400 }
       );
     }
 
