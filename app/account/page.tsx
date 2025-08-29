@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { getSampleDeals, getSampleStats, getSampleNotifications, getSampleReviews } from '../../utils/sampleData';
 import { Deal, UserStats } from '@/types';
+import UnifiedLayout from '@/components/UnifiedLayout';
 
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -110,17 +111,19 @@ export default function AccountPage() {
   // Show loading state until client-side hydration is complete
   if (!isClient) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-900 dark:via-amber-900 dark:to-yellow-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <p className="text-slate-600 dark:text-slate-400">Loading your account...</p>
+      <UnifiedLayout showBottomNav={true} title="Account" subtitle="Loading...">
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-600 mx-auto mb-4"></div>
+            <p className="text-white">Loading your account...</p>
+          </div>
         </div>
-      </div>
+      </UnifiedLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-900 dark:via-amber-900 dark:to-yellow-900">
+    <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-purple-600">
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="text-center mb-12">

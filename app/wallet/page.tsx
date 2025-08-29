@@ -16,6 +16,7 @@ import {
   Building2
 } from 'lucide-react';
 import Link from 'next/link';
+import UnifiedLayout from '@/components/UnifiedLayout';
 
 interface Redemption {
   id: string;
@@ -174,28 +175,28 @@ export default function WalletPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-100 p-4">
-        <div className="max-w-7xl mx-auto">
+      <UnifiedLayout showBottomNav={true} title="Wallet" subtitle="Loading...">
+        <div className="px-4 py-4">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
+            <div className="h-8 bg-white/20 rounded w-1/4 mb-8"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-24 bg-gray-200 rounded-lg"></div>
+                <div key={i} className="h-24 bg-white/20 rounded-lg"></div>
               ))}
             </div>
             <div className="space-y-4">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
+                <div key={i} className="h-32 bg-white/20 rounded-lg"></div>
               ))}
             </div>
           </div>
         </div>
-      </div>
+      </UnifiedLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-100">
+    <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-purple-600">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

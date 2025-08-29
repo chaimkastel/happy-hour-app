@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { Heart, Star, MapPin, Tag, Clock, ArrowLeft } from 'lucide-react';
+import UnifiedLayout from '@/components/UnifiedLayout';
 
 interface Deal {
   id: string;
@@ -92,7 +93,7 @@ export default function FavoritesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-900 dark:via-amber-900 dark:to-yellow-900">
+    <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-purple-600">
       {/* Header */}
       <div className="text-center mb-12">
         <div className="w-20 h-20 bg-gradient-to-r from-pink-500 to-red-500 rounded-3xl flex items-center justify-center mx-auto mb-6">
