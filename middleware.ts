@@ -10,23 +10,32 @@ export function middleware(request: NextRequest) {
     // Only redirect if the request is HTTP and not already HTTPS
     if (protocol === 'http' && !hostname.includes('localhost')) {
       const httpsUrl = `https://${hostname}${request.nextUrl.pathname}${request.nextUrl.search}`;
-      return NextResponse.redirect(httpsUrl, 301);
+      return NextResponse.redirect(httpsUrl, 308); // Use 308 for permanent redirect
     }
   }
 
   // Add security headers
   const response = NextResponse.next();
   
-  // Force HTTPS
-  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  // Force HTTPS with preload
+  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   
-  // Prevent mixed content
-  response.headers.set('Content-Security-Policy', "upgrade-insecure-requests");
+  // Prevent mixed content with basic CSP
+  response.headers.set('Content-Security-Policy', 
+    "upgrade-insecure-requests; " +
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-eval' 'unsafe-inline'; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+    "font-src 'self' https://fonts.gstatic.com; " +
+    "img-src 'self' data: https:; " +
+    "connect-src 'self' https://nominatim.openstreetmap.org;"
+  );
   
   // Additional security headers
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()');
   
   return response;
 }
