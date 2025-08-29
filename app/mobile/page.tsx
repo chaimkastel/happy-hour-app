@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { 
   Search, 
   MapPin, 
@@ -22,6 +23,12 @@ import {
   Award,
   Zap
 } from 'lucide-react';
+import MobileHeader from '@/components/mobile/MobileHeader';
+import MobileBottomNav from '@/components/mobile/MobileBottomNav';
+import FiltersBottomSheet from '@/components/mobile/FiltersBottomSheet';
+import DealCardSkeleton from '@/components/mobile/DealCardSkeleton';
+import LocationSelector from '@/components/mobile/LocationSelector';
+import ViewToggle from '@/components/mobile/ViewToggle';
 
 interface Deal {
   id: string;
@@ -46,6 +53,13 @@ export default function MobilePage() {
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [appliedFilters, setAppliedFilters] = useState({
+    category: 'All',
+    priceRange: 'all',
+    distance: 5,
+    timeWindow: 'now'
+  });
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   useEffect(() => {
     fetchDeals();
@@ -74,6 +88,12 @@ export default function MobilePage() {
     setShowMobileMenu(false);
   };
 
+  const handleApplyFilters = (filters: any) => {
+    setAppliedFilters(filters);
+    // Here you would typically refetch deals with the new filters
+    console.log('Applied filters:', filters);
+  };
+
   const filteredDeals = deals.filter(deal => {
     if (activeFilter === 'all') return true;
     if (activeFilter === 'near') return deal.distance.includes('0.5') || deal.distance.includes('0.3');
@@ -84,31 +104,37 @@ export default function MobilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen relative bg-gradient-to-br from-orange-500 via-red-500 to-purple-600">
-        {/* Hero Background Image - Simple approach */}
-        <div 
-          className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
-          style={{ 
-            backgroundImage: 'url(/images/hero-food-deals.png)',
-            zIndex: 1
-          }}
-        ></div>
+      <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-purple-600 relative overflow-hidden md:hidden">
+        {/* Enhanced Background */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900/70 via-slate-800/60 to-slate-900/70"></div>
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/5 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        </div>
         
-        {/* Enhanced overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 backdrop-blur-[1px]" style={{ zIndex: 2 }}></div>
-        
-        <div className="relative z-10 flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4 shadow-lg"></div>
-            <p className="text-white/90 font-medium drop-shadow-lg">Loading amazing deals...</p>
+        {/* Mobile Header */}
+        <MobileHeader
+          title="Happy Hour"
+          subtitle="Find amazing deals"
+        />
+
+        {/* Loading Content */}
+        <div className="px-4 py-4 relative z-10">
+          <div className="space-y-4">
+            {[...Array(6)].map((_, index) => (
+              <DealCardSkeleton key={index} />
+            ))}
           </div>
         </div>
+
+        {/* Bottom Navigation */}
+        <MobileBottomNav />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-purple-600 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-purple-600 relative overflow-hidden md:hidden">
       {/* Enhanced Background */}
       <div className="absolute inset-0">
         <div 
@@ -123,35 +149,26 @@ export default function MobilePage() {
       </div>
       
       {/* Mobile Header */}
-      <div className="sticky top-0 z-50 bg-white/10 backdrop-blur-xl border-b border-white/20">
-        <div className="px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-lg">🍺</span>
-              </div>
-              <div>
-                <h1 className="text-white font-bold text-xl drop-shadow-lg">Happy Hour</h1>
-                <p className="text-white/70 text-xs">Find amazing deals</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button className="p-2 rounded-lg bg-white/15 backdrop-blur-sm text-white hover:bg-white/25 transition-colors">
-                <Bell className="w-5 h-5" />
-              </button>
-              <button 
-                onClick={() => setShowMobileMenu(!showMobileMenu)}
-                className="p-2 rounded-lg bg-white/15 backdrop-blur-sm text-white hover:bg-white/25 transition-colors"
-              >
-                {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <MobileHeader
+        title="Happy Hour"
+        subtitle="Find amazing deals"
+        onMenuToggle={() => setShowMobileMenu(!showMobileMenu)}
+        isMenuOpen={showMobileMenu}
+      />
 
       {/* Enhanced Search Section */}
       <div className="px-4 py-4 relative z-10">
+        {/* Location Selector */}
+        <div className="mb-4">
+          <LocationSelector
+            onLocationChange={(addressData) => {
+              console.log('Location changed:', addressData);
+              // Here you would typically update the deals based on location
+            }}
+            placeholder="Enter your location..."
+          />
+        </div>
+
         <div className="relative mb-4">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
           <input
@@ -160,11 +177,18 @@ export default function MobilePage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-12 pr-12 py-4 bg-white/15 backdrop-blur-xl border border-white/30 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 focus:bg-white/20 transition-all duration-200 shadow-lg text-base"
+            aria-label="Search for restaurants, cuisines, and deals"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck="false"
           />
           {searchQuery && (
             <button 
+              type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400/50 focus:ring-offset-2 focus:ring-offset-transparent rounded-full p-1"
+              aria-label="Clear search"
             >
               <X className="w-5 h-5" />
             </button>
@@ -175,8 +199,9 @@ export default function MobilePage() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
             <button 
+              type="button"
               onClick={() => setActiveFilter('all')}
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 focus:ring-offset-2 focus:ring-offset-transparent ${
                 activeFilter === 'all' 
                   ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg' 
                   : 'bg-white/15 backdrop-blur-xl text-white border border-white/30 hover:bg-white/25'
@@ -186,6 +211,7 @@ export default function MobilePage() {
               All
             </button>
             <button 
+              type="button"
               onClick={() => setActiveFilter('near')}
               className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 activeFilter === 'near' 
@@ -197,6 +223,7 @@ export default function MobilePage() {
               Near Me
             </button>
             <button 
+              type="button"
               onClick={() => setActiveFilter('open')}
               className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 activeFilter === 'open' 
@@ -208,6 +235,7 @@ export default function MobilePage() {
               Open Now
             </button>
             <button 
+              type="button"
               onClick={() => setActiveFilter('top')}
               className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 activeFilter === 'top' 
@@ -220,16 +248,26 @@ export default function MobilePage() {
             </button>
           </div>
           <button 
+            type="button"
             onClick={() => setShowFilters(!showFilters)}
-            className="p-2 rounded-lg bg-white/15 backdrop-blur-xl text-white border border-white/30 hover:bg-white/25 transition-all duration-200"
+            className="p-2 rounded-lg bg-white/15 backdrop-blur-xl text-white border border-white/30 hover:bg-white/25 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 focus:ring-offset-2 focus:ring-offset-transparent"
+            aria-label="Open filters"
+            aria-expanded={showFilters}
+            aria-haspopup="dialog"
           >
             <Filter className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Results Count */}
-        <div className="text-white/70 text-sm mb-4">
-          {filteredDeals.length} {filteredDeals.length === 1 ? 'deal' : 'deals'} found
+        {/* Results Count and View Toggle */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-white/70 text-sm">
+            {filteredDeals.length} {filteredDeals.length === 1 ? 'deal' : 'deals'} found
+          </div>
+          <ViewToggle
+            onViewChange={setViewMode}
+            initialView={viewMode}
+          />
         </div>
       </div>
 
@@ -243,14 +281,23 @@ export default function MobilePage() {
             <h3 className="text-white font-semibold text-lg mb-2">No deals found</h3>
             <p className="text-white/70 text-sm">Try adjusting your filters or search terms</p>
           </div>
-        ) : (
+        ) : viewMode === 'list' ? (
           <div className="space-y-4">
             {filteredDeals.map((deal, index) => (
               <div 
                 key={deal.id} 
                 onClick={() => handleDealClick(deal.id)}
-                className="bg-white/15 backdrop-blur-xl rounded-2xl p-4 border border-white/30 hover:bg-white/20 transition-all duration-300 transform hover:scale-[1.02] shadow-xl active:scale-95 cursor-pointer"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleDealClick(deal.id);
+                  }
+                }}
+                className="bg-white/15 backdrop-blur-xl rounded-2xl p-4 border border-white/30 hover:bg-white/20 transition-all duration-300 transform hover:scale-[1.02] shadow-xl active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-yellow-400/50 focus:ring-offset-2 focus:ring-offset-transparent"
                 style={{ animationDelay: `${index * 100}ms` }}
+                tabIndex={0}
+                role="button"
+                aria-label={`View deal: ${deal.title} at ${deal.venue.name}`}
               >
                 {/* Deal Image */}
                 <div className="relative h-36 mb-4 rounded-xl overflow-hidden">
@@ -308,50 +355,36 @@ export default function MobilePage() {
               </div>
             ))}
           </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="bg-white/15 backdrop-blur-xl rounded-2xl p-6 border border-white/30 text-center">
+              <MapPin className="w-12 h-12 text-white/60 mx-auto mb-4" />
+              <h3 className="text-white font-semibold text-lg mb-2">Map View</h3>
+              <p className="text-white/70 text-sm mb-4">
+                Interactive map view coming soon! For now, use the list view to browse deals.
+              </p>
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-200"
+              >
+                Switch to List View
+              </button>
+            </div>
+          </div>
         )}
       </div>
 
-      {/* Enhanced Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/10 backdrop-blur-xl border-t border-white/20 safe-area-pb z-50">
-        <div className="flex items-center justify-around py-3">
-          <button 
-            onClick={() => handleNavigation('/mobile')}
-            className="flex flex-col items-center py-2 px-3 text-yellow-400 transform hover:scale-110 transition-all duration-200"
-          >
-            <div className="w-8 h-8 bg-yellow-400/20 rounded-full flex items-center justify-center mb-1">
-              <Grid className="w-5 h-5" />
-            </div>
-            <span className="text-xs font-bold">Explore</span>
-          </button>
-          <button 
-            onClick={() => handleNavigation('/explore')}
-            className="flex flex-col items-center py-2 px-3 text-white/70 hover:text-white transform hover:scale-110 transition-all duration-200"
-          >
-            <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center mb-1">
-              <MapPin className="w-5 h-5" />
-            </div>
-            <span className="text-xs font-medium">Map</span>
-          </button>
-          <button 
-            onClick={() => handleNavigation('/mobile/favorites')}
-            className="flex flex-col items-center py-2 px-3 text-white/70 hover:text-white transform hover:scale-110 transition-all duration-200"
-          >
-            <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center mb-1">
-              <Heart className="w-5 h-5" />
-            </div>
-            <span className="text-xs font-medium">Favorites</span>
-          </button>
-          <button 
-            onClick={() => handleNavigation('/mobile/account')}
-            className="flex flex-col items-center py-2 px-3 text-white/70 hover:text-white transform hover:scale-110 transition-all duration-200"
-          >
-            <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center mb-1">
-              <User className="w-5 h-5" />
-            </div>
-            <span className="text-xs font-medium">Profile</span>
-          </button>
-        </div>
-      </div>
+      {/* Bottom Navigation */}
+      <MobileBottomNav />
+
+      {/* Filters Bottom Sheet */}
+      <FiltersBottomSheet
+        isOpen={showFilters}
+        onClose={() => setShowFilters(false)}
+        onApply={handleApplyFilters}
+        initialFilters={appliedFilters}
+      />
 
       {/* Enhanced Mobile Menu */}
       {showMobileMenu && (

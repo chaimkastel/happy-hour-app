@@ -102,7 +102,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative hidden md:block">
       {/* Hero Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"

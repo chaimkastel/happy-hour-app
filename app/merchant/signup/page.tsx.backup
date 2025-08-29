@@ -150,7 +150,6 @@ export default function MerchantSignupPage() {
                 </div>
               </div>
             </div>
-              </div>
 
             {/* Signup Form */}
             <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-3xl p-8 shadow-2xl">

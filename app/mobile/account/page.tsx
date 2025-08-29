@@ -49,7 +49,7 @@ export default function MobileAccountPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-purple-600 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-purple-600 relative overflow-hidden md:hidden">
       {/* Enhanced Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900/70 via-slate-800/60 to-slate-900/70"></div>
@@ -132,6 +132,7 @@ export default function MobileAccountPage() {
             return (
               <button
                 key={index}
+                type="button"
                 onClick={() => handleNavigation(item.href)}
                 className="w-full bg-white/15 backdrop-blur-xl border border-white/30 rounded-2xl p-4 flex items-center justify-between hover:bg-white/20 transition-all duration-300 transform hover:scale-[1.02] shadow-lg"
               >
