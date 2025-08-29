@@ -1,7 +1,6 @@
 'use client';
 
 import { ArrowLeft, ArrowRight, Star, MapPin, Clock, Users, Shield, Award, Smartphone, CreditCard, CheckCircle, Sparkles, Flame, Gift, Target, Rocket, Crown, Diamond, Heart, Zap, TrendingUp, Globe, Timer, Search, Bell, Bookmark } from 'lucide-react';
-import MobileShell from '@/components/mobile/MobileShell';
 
 export default function MobileHowItWorksPage() {
   const handleBack = () => {
@@ -13,23 +12,26 @@ export default function MobileHowItWorksPage() {
   };
 
   return (
-    <MobileShell
-      forceMobile={true}
-      headerProps={{
-        showSearch: false,
-        showLocation: false,
-        title: 'How It Works',
-        rightElement: (
-          <button
-            onClick={handleBack}
-            className="p-2 rounded-lg bg-white/20 backdrop-blur-xl border border-white/30 text-white hover:bg-white/30 transition-all duration-300"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-        )
-      }}
-    >
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Mobile Header */}
+      <div className="sticky top-0 z-50 bg-white/10 backdrop-blur-xl border-b border-white/20">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleBack}
+                className="p-2 rounded-lg bg-white/20 backdrop-blur-xl border border-white/30 text-white hover:bg-white/30 transition-all duration-300"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+                <span className="text-black font-bold text-lg">🍺</span>
+              </div>
+              <span className="text-white font-bold text-lg">How It Works</span>
+            </div>
+          </div>
+        </div>
+      </div>
         {/* Hero Section */}
         <div className="relative px-6 py-12 text-center">
           <div className="mb-8">
@@ -358,6 +360,6 @@ export default function MobileHowItWorksPage() {
           </p>
         </div>
       </div>
-    </MobileShell>
+    </div>
   );
 }
