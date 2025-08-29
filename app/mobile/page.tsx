@@ -62,17 +62,22 @@ export default function MobilePage() {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   useEffect(() => {
+    console.log('Mobile page mounted, fetching deals...');
     fetchDeals();
   }, []);
 
   const fetchDeals = async (searchTerm = '') => {
     try {
+      console.log('fetchDeals called with searchTerm:', searchTerm);
       const url = searchTerm 
         ? `/api/deals/search?search=${encodeURIComponent(searchTerm)}`
         : '/api/deals/search';
+      console.log('Fetching from URL:', url);
       const response = await fetch(url);
+      console.log('Response status:', response.status);
       if (response.ok) {
         const data = await response.json();
+        console.log('API response:', data);
         // Transform the API data to match the expected interface
         const transformedDeals = (data.deals || []).map((deal: any) => ({
           id: deal.id,
@@ -90,11 +95,15 @@ export default function MobilePage() {
           rating: deal.venue?.rating || 4.0,
           isOpen: true // Mock open status for now
         }));
+        console.log('Transformed deals:', transformedDeals);
         setDeals(transformedDeals);
+      } else {
+        console.error('API response not ok:', response.status);
       }
     } catch (error) {
       console.error('Error fetching deals:', error);
     } finally {
+      console.log('Setting loading to false');
       setLoading(false);
     }
   };
