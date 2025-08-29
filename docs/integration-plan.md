@@ -1,4 +1,4 @@
-# Happy Hour Ultra - EatClub Integration Plan
+# Happy Hour - EatClub Integration Plan
 
 ## SAFETY & AUDIT SUMMARY
 

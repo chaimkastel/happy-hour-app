@@ -132,7 +132,7 @@ export function PremiumHeader() {
             <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">🍺</span>
             </div>
-            <h1 className="text-white font-bold text-lg">HappyHour</h1>
+            <h1 className="text-white font-bold text-lg">Happy Hour</h1>
           </div>
           <button className="p-2 rounded-lg bg-white/10 text-white">
             <Filter className="w-5 h-5" />

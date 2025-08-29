@@ -101,7 +101,7 @@ export default function MobilePage() {
               <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-sm">🍺</span>
               </div>
-              <h1 className="text-white font-bold text-lg drop-shadow-lg">HappyHour</h1>
+              <h1 className="text-white font-bold text-lg drop-shadow-lg">Happy Hour</h1>
             </div>
             <button 
               onClick={() => setShowMobileMenu(!showMobileMenu)}

@@ -82,7 +82,9 @@ export default function EnhancedMerchantDashboard() {
         id: venue.id,
         name: venue.name,
         address: venue.address,
-        businessType: venue.businessType,
+        businessType: typeof venue.businessType === 'string' ? 
+          JSON.parse(venue.businessType)[0] || 'Restaurant' : 
+          venue.businessType?.[0] || 'Restaurant',
         priceRange: venue.priceTier || '$$',
         isOpen: true,
         avgRating: venue.rating || 0,
@@ -224,7 +226,7 @@ export default function EnhancedMerchantDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-slate-800">
-                🏪 Happy Hour Ultra
+                🏪 Happy Hour
               </h1>
               <p className="text-slate-600 mt-1">Merchant Dashboard</p>
             </div>

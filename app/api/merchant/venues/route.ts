@@ -15,10 +15,31 @@ type SessionWithUser = {
 // GET /api/merchant/venues - Get merchant's venues
 export async function GET(request: NextRequest) {
   try {
+    // For demo purposes, return sample venues if no session
     const session = await getServerSession(authOptions) as SessionWithUser | null;
     
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      // Demo mode - return sample venues
+      const sampleVenues = [
+        {
+          id: 'demo-1',
+          name: 'Demo Restaurant',
+          address: '123 Demo Street, New York, NY',
+          businessType: '["Restaurant"]',
+          priceTier: 'MODERATE',
+          rating: 4.5,
+          isVerified: true,
+          photos: '[]',
+          hours: '{}',
+          latitude: 40.7128,
+          longitude: -74.0060
+        }
+      ];
+      
+      return NextResponse.json({ 
+        venues: sampleVenues,
+        total: sampleVenues.length 
+      });
     }
 
     // Get the merchant for this user
@@ -47,7 +68,28 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions) as SessionWithUser | null;
     
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      // Demo mode - simulate venue creation
+      const venueData = await request.json();
+      
+      const demoVenue = {
+        id: `demo-${Date.now()}`,
+        name: venueData.name,
+        address: venueData.address,
+        businessType: JSON.stringify(venueData.businessType || []),
+        priceTier: venueData.priceTier || 'MODERATE',
+        rating: 0,
+        isVerified: false,
+        photos: '[]',
+        hours: '{}',
+        latitude: 40.7128,
+        longitude: -74.0060,
+        createdAt: new Date().toISOString()
+      };
+      
+      return NextResponse.json({ 
+        venue: demoVenue,
+        message: 'Demo venue created successfully!'
+      }, { status: 201 });
     }
 
     // Handle both JSON and FormData
