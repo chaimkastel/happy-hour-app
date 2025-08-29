@@ -64,7 +64,7 @@ export default function DealCard({
       onClick={handleView}
     >
       {/* Image Section */}
-      <div className="relative aspect-[4/3] bg-gray-100">
+      <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
         {deal.imageUrl ? (
           <Image
             src={deal.imageUrl}
@@ -74,8 +74,16 @@ export default function DealCard({
             sizes="(max-width: 640px) 100vw, 50vw"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center">
-            <span className="text-4xl">🍔</span>
+          <div className="w-full h-full bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center relative">
+            {/* Food-themed background pattern */}
+            <div className="absolute inset-0 opacity-20">
+              <div className="absolute top-4 left-4 text-2xl">🍔</div>
+              <div className="absolute top-4 right-4 text-2xl">🍕</div>
+              <div className="absolute bottom-4 left-4 text-2xl">🍺</div>
+              <div className="absolute bottom-4 right-4 text-2xl">🥗</div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-4xl">🍽️</div>
+            </div>
+            <span className="text-4xl relative z-10">🍔</span>
           </div>
         )}
         
@@ -127,11 +135,31 @@ export default function DealCard({
           <span>{deal.distance}</span>
         </div>
 
+        {/* Delivery Info */}
+        {(deal.deliveryTime || deal.deliveryFee) && (
+          <div className="flex items-center gap-4 mb-3 text-sm">
+            {deal.deliveryTime && (
+              <div className="flex items-center gap-1 text-gray-600">
+                <Clock size={12} />
+                <span>{deal.deliveryTime}</span>
+              </div>
+            )}
+            {deal.deliveryFee && (
+              <div className="flex items-center gap-1 text-gray-600">
+                <span className="font-medium">{deal.deliveryFee} delivery</span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Rating and Status */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-1">
             <Star size={14} className="text-yellow-400 fill-yellow-400" />
             <span className="text-sm font-medium text-gray-700">{deal.rating}</span>
+            {deal.reviewCount && (
+              <span className="text-sm text-gray-500">({deal.reviewCount})</span>
+            )}
           </div>
           <div className="flex items-center gap-1 text-sm text-gray-500">
             <Clock size={14} />
