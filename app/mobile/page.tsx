@@ -65,12 +65,32 @@ export default function MobilePage() {
     fetchDeals();
   }, []);
 
-  const fetchDeals = async () => {
+  const fetchDeals = async (searchTerm = '') => {
     try {
-      const response = await fetch('/api/deals/search');
+      const url = searchTerm 
+        ? `/api/deals/search?search=${encodeURIComponent(searchTerm)}`
+        : '/api/deals/search';
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
-        setDeals(data.deals || []);
+        // Transform the API data to match the expected interface
+        const transformedDeals = (data.deals || []).map((deal: any) => ({
+          id: deal.id,
+          title: deal.title,
+          description: deal.description,
+          percentOff: deal.percentOff,
+          venue: {
+            name: deal.venue?.name || 'Restaurant',
+            address: deal.venue?.address || 'Address not available'
+          },
+          cuisine: Array.isArray(deal.venue?.businessType) 
+            ? deal.venue.businessType[0] 
+            : deal.venue?.businessType || 'Restaurant',
+          distance: '0.5 mi', // Mock distance for now
+          rating: deal.venue?.rating || 4.0,
+          isOpen: true // Mock open status for now
+        }));
+        setDeals(transformedDeals);
       }
     } catch (error) {
       console.error('Error fetching deals:', error);
@@ -92,6 +112,14 @@ export default function MobilePage() {
     setAppliedFilters(filters);
     // Here you would typically refetch deals with the new filters
     console.log('Applied filters:', filters);
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    if (query.length > 2 || query.length === 0) {
+      setLoading(true);
+      fetchDeals(query);
+    }
   };
 
   const filteredDeals = deals.filter(deal => {
@@ -175,7 +203,7 @@ export default function MobilePage() {
             type="text"
             placeholder="Search restaurants, cuisines, deals..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             className="w-full pl-12 pr-12 py-4 bg-white/15 backdrop-blur-xl border border-white/30 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 focus:bg-white/20 transition-all duration-200 shadow-lg text-base"
             aria-label="Search for restaurants, cuisines, and deals"
             autoComplete="off"
@@ -186,7 +214,11 @@ export default function MobilePage() {
           {searchQuery && (
             <button 
               type="button"
-              onClick={() => setSearchQuery('')}
+              onClick={() => {
+                setSearchQuery('');
+                setLoading(true);
+                fetchDeals('');
+              }}
               className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400/50 focus:ring-offset-2 focus:ring-offset-transparent rounded-full p-1"
               aria-label="Clear search"
             >
