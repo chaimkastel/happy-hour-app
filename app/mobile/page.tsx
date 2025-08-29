@@ -57,19 +57,24 @@ export default function MobilePage() {
   if (loading) {
     return (
       <div className="min-h-screen relative">
-        {/* Hero Background Image - Mobile Optimized */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: 'url(/images/hero-food-deals.png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center center',
-            backgroundAttachment: 'scroll'
+        {/* Hero Background Image - Mobile Optimized with IMG tag */}
+        <img 
+          src="/images/hero-food-deals.png"
+          alt="Hero background"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ zIndex: -2 }}
+          onError={(e) => {
+            // Fallback to gradient if image fails to load
+            e.currentTarget.style.display = 'none';
+            const fallback = document.createElement('div');
+            fallback.className = 'absolute inset-0 bg-gradient-to-br from-orange-600 via-red-600 to-purple-600';
+            fallback.style.zIndex = '-2';
+            e.currentTarget.parentNode?.appendChild(fallback);
           }}
-        ></div>
+        />
         
         {/* Enhanced overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 backdrop-blur-[1px]"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 backdrop-blur-[1px]" style={{ zIndex: -1 }}></div>
         
         <div className="relative z-10 flex items-center justify-center min-h-screen">
           <div className="text-center">
@@ -83,19 +88,37 @@ export default function MobilePage() {
 
   return (
     <div className="min-h-screen relative overflow-x-hidden">
-      {/* Hero Background Image - Mobile Optimized */}
+      {/* Hero Background Image - Mobile Optimized with IMG tag */}
+      <img 
+        src="/images/hero-food-deals.png"
+        alt="Hero background"
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ zIndex: -2 }}
+        onLoad={() => console.log('Hero image loaded successfully')}
+        onError={(e) => {
+          console.log('Hero image failed to load, using fallback');
+          // Fallback to gradient if image fails to load
+          e.currentTarget.style.display = 'none';
+          const fallback = document.createElement('div');
+          fallback.className = 'absolute inset-0 bg-gradient-to-br from-orange-600 via-red-600 to-purple-600';
+          fallback.style.zIndex = '-2';
+          e.currentTarget.parentNode?.appendChild(fallback);
+        }}
+      />
+      
+      {/* Debug: Test with external image as backup - TEMPORARILY VISIBLE */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: 'url(/images/hero-food-deals.png)',
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ 
+          zIndex: -3,
+          backgroundImage: 'url(https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=800&h=600&fit=crop&crop=center&auto=format&q=80)',
           backgroundSize: 'cover',
-          backgroundPosition: 'center center',
-          backgroundAttachment: 'scroll' // Changed from fixed for mobile performance
+          backgroundPosition: 'center'
         }}
       ></div>
       
       {/* Enhanced overlay for better text readability */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 backdrop-blur-[1px]"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 backdrop-blur-[1px]" style={{ zIndex: -1 }}></div>
       
       {/* Mobile Header */}
       <div className="sticky top-0 z-50 bg-white/15 backdrop-blur-xl border-b border-white/30">
