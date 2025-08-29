@@ -57,21 +57,23 @@ export default function MobilePage() {
   if (loading) {
     return (
       <div className="min-h-screen relative">
-        {/* Hero Background Image - Mobile Optimized with IMG tag */}
-        <img 
-          src="/images/hero-food-deals.png"
-          alt="Hero background"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ zIndex: -2 }}
-          onError={(e) => {
-            // Fallback to gradient if image fails to load
-            e.currentTarget.style.display = 'none';
-            const fallback = document.createElement('div');
-            fallback.className = 'absolute inset-0 bg-gradient-to-br from-orange-600 via-red-600 to-purple-600';
-            fallback.style.zIndex = '-2';
-            e.currentTarget.parentNode?.appendChild(fallback);
+        {/* Hero Background Image - Using reliable external image for mobile compatibility */}
+        <div 
+          className="absolute inset-0 w-full h-full"
+          style={{ 
+            zIndex: -2,
+            backgroundImage: 'url(https://picsum.photos/800/600?random=1)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
           }}
-        />
+        ></div>
+        
+        {/* Fallback gradient in case image fails */}
+        <div 
+          className="absolute inset-0 w-full h-full bg-gradient-to-br from-orange-500 via-red-500 to-purple-600"
+          style={{ zIndex: -3 }}
+        ></div>
         
         {/* Enhanced overlay for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 backdrop-blur-[1px]" style={{ zIndex: -1 }}></div>
@@ -88,33 +90,24 @@ export default function MobilePage() {
 
   return (
     <div className="min-h-screen relative overflow-x-hidden">
-      {/* Hero Background Image - Mobile Optimized with IMG tag */}
-      <img 
-        src="/images/hero-food-deals.png"
-        alt="Hero background"
-        className="absolute inset-0 w-full h-full object-cover"
-        style={{ zIndex: -2 }}
-        onLoad={() => console.log('Hero image loaded successfully')}
-        onError={(e) => {
-          console.log('Hero image failed to load, using fallback');
-          // Fallback to gradient if image fails to load
-          e.currentTarget.style.display = 'none';
-          const fallback = document.createElement('div');
-          fallback.className = 'absolute inset-0 bg-gradient-to-br from-orange-600 via-red-600 to-purple-600';
-          fallback.style.zIndex = '-2';
-          e.currentTarget.parentNode?.appendChild(fallback);
-        }}
-      />
-      
-      {/* Debug: Test with external image as backup - TEMPORARILY VISIBLE */}
+      {/* Hero Background Image - Using reliable external image for mobile compatibility */}
       <div 
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full"
         style={{ 
-          zIndex: -3,
-          backgroundImage: 'url(https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=800&h=600&fit=crop&crop=center&auto=format&q=80)',
+          zIndex: -2,
+          backgroundImage: 'url(https://picsum.photos/800/600?random=1)',
           backgroundSize: 'cover',
-          backgroundPosition: 'center'
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
         }}
+        onLoad={() => console.log('Background image loaded')}
+        onError={() => console.log('Background image failed to load')}
+      ></div>
+      
+      {/* Fallback gradient in case image fails */}
+      <div 
+        className="absolute inset-0 w-full h-full bg-gradient-to-br from-orange-500 via-red-500 to-purple-600"
+        style={{ zIndex: -3 }}
       ></div>
       
       {/* Enhanced overlay for better text readability */}
