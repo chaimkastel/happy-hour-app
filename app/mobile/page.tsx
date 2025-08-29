@@ -57,19 +57,20 @@ export default function MobilePage() {
   if (loading) {
     return (
       <div className="min-h-screen relative">
-        {/* Hero Background Image - Using reliable external image for mobile compatibility */}
-        <div 
-          className="absolute inset-0 w-full h-full"
-          style={{ 
-            zIndex: -2,
-            backgroundImage: 'url(https://picsum.photos/800/600?random=1)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
+        {/* Hero Background Image - Using our uploaded local image with IMG tag for mobile */}
+        <img 
+          src="/images/hero-food-deals.png"
+          alt="Hero background"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ zIndex: -2 }}
+          onLoad={() => console.log('Local hero image loaded successfully')}
+          onError={(e) => {
+            console.log('Local hero image failed to load');
+            e.currentTarget.style.display = 'none';
           }}
-        ></div>
+        />
         
-        {/* Fallback gradient in case image fails */}
+        {/* Fallback gradient in case local image fails */}
         <div 
           className="absolute inset-0 w-full h-full bg-gradient-to-br from-orange-500 via-red-500 to-purple-600"
           style={{ zIndex: -3 }}
@@ -90,21 +91,20 @@ export default function MobilePage() {
 
   return (
     <div className="min-h-screen relative overflow-x-hidden">
-      {/* Hero Background Image - Using reliable external image for mobile compatibility */}
-      <div 
-        className="absolute inset-0 w-full h-full"
-        style={{ 
-          zIndex: -2,
-          backgroundImage: 'url(https://picsum.photos/800/600?random=1)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+      {/* Hero Background Image - Using our uploaded local image with IMG tag for mobile */}
+      <img 
+        src="/images/hero-food-deals.png"
+        alt="Hero background"
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ zIndex: -2 }}
+        onLoad={() => console.log('Local hero image loaded successfully')}
+        onError={(e) => {
+          console.log('Local hero image failed to load');
+          e.currentTarget.style.display = 'none';
         }}
-        onLoad={() => console.log('Background image loaded')}
-        onError={() => console.log('Background image failed to load')}
-      ></div>
+      />
       
-      {/* Fallback gradient in case image fails */}
+      {/* Fallback gradient in case local image fails */}
       <div 
         className="absolute inset-0 w-full h-full bg-gradient-to-br from-orange-500 via-red-500 to-purple-600"
         style={{ zIndex: -3 }}
