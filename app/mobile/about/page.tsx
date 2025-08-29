@@ -1,64 +1,156 @@
 'use client';
 
-import React from 'react';
-import { ArrowLeft, Star, Users, MapPin, Clock, Shield, Award, Globe, Heart, Zap, TrendingUp, Gift, Target, Rocket, Crown, Diamond } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, Star, Users, MapPin, Clock, Shield, Award, Globe, Heart, Zap, TrendingUp, Gift, Target, Rocket, Crown, Diamond, Menu, X } from 'lucide-react';
 
 export default function MobileAboutPage() {
+  const [showMenu, setShowMenu] = useState(false);
+  
   const handleBack = () => {
     window.history.back();
   };
 
   const handleGetStarted = () => {
-    window.location.href = '/signup';
+    window.location.href = '/mobile/signup';
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Mobile Header */}
-      <div className="sticky top-0 z-50 bg-white/10 backdrop-blur-xl border-b border-white/20">
-        <div className="px-4 py-3">
+      <div className="sticky top-0 z-50 bg-black/20 backdrop-blur-2xl border-b border-white/10">
+        <div className="px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
                 onClick={handleBack}
-                className="p-2 rounded-lg bg-white/20 backdrop-blur-xl border border-white/30 text-white hover:bg-white/30 transition-all duration-300"
+                className="p-2 rounded-xl bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white/20 transition-all duration-300 shadow-lg"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
-              <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
-                <span className="text-black font-bold text-lg">🍺</span>
+              <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-black font-bold text-xl">🍺</span>
               </div>
-              <span className="text-white font-bold text-lg">About Happy Hour</span>
+              <span className="text-white font-bold text-xl">About Happy Hour</span>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => window.location.href = '/mobile/explore'}
-                className="px-3 py-1.5 bg-white/20 backdrop-blur-xl border border-white/30 text-white text-sm font-medium rounded-lg hover:bg-white/30 transition-all duration-300"
+                className="px-4 py-2 bg-white/10 backdrop-blur-xl border border-white/20 text-white text-sm font-semibold rounded-xl hover:bg-white/20 transition-all duration-300 shadow-lg"
               >
                 Explore
               </button>
               <button
-                onClick={() => window.location.href = '/mobile/favorites'}
-                className="px-3 py-1.5 bg-white/20 backdrop-blur-xl border border-white/30 text-white text-sm font-medium rounded-lg hover:bg-white/30 transition-all duration-300"
-              >
-                Favorites
-              </button>
-              <button
                 onClick={() => window.location.href = '/mobile/login'}
-                className="px-3 py-1.5 bg-white/20 backdrop-blur-xl border border-white/30 text-white text-sm font-medium rounded-lg hover:bg-white/30 transition-all duration-300"
+                className="px-4 py-2 bg-white/10 backdrop-blur-xl border border-white/20 text-white text-sm font-semibold rounded-xl hover:bg-white/20 transition-all duration-300 shadow-lg"
               >
                 Sign In
               </button>
               <button
                 onClick={() => window.location.href = '/mobile/signup'}
-                className="px-3 py-1.5 bg-white/20 backdrop-blur-xl border border-white/30 text-white text-sm font-medium rounded-lg hover:bg-white/30 transition-all duration-300"
+                className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-sm font-bold rounded-xl hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-lg"
               >
                 Sign Up
+              </button>
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                className="p-2 rounded-xl bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white/20 transition-all duration-300 shadow-lg"
+              >
+                {showMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Uber Eats-inspired Dropdown Menu */}
+      {showMenu && (
+        <div className="absolute top-16 left-4 right-4 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
+          <div className="p-4">
+            {/* Top Section - Sign Up & Log In */}
+            <div className="space-y-3 mb-6">
+              <button
+                onClick={() => window.location.href = '/mobile/signup'}
+                className="w-full bg-black text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-all duration-300"
+              >
+                Sign up
+              </button>
+              <button
+                onClick={() => window.location.href = '/mobile/login'}
+                className="w-full bg-white text-black border border-gray-300 py-3 px-4 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-300"
+              >
+                Log in
+              </button>
+            </div>
+
+            {/* Middle Section - Menu Links */}
+            <div className="space-y-1 mb-6">
+              <button
+                onClick={() => {
+                  window.location.href = '/mobile/favorites';
+                  setShowMenu(false);
+                }}
+                className="w-full text-left py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-300"
+              >
+                Favorites
+              </button>
+              <button
+                onClick={() => {
+                  window.location.href = '/mobile/deals';
+                  setShowMenu(false);
+                }}
+                className="w-full text-left py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-300"
+              >
+                All Deals
+              </button>
+              <button
+                onClick={() => {
+                  window.location.href = '/mobile/how-it-works';
+                  setShowMenu(false);
+                }}
+                className="w-full text-left py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-300"
+              >
+                How It Works
+              </button>
+              <button
+                onClick={() => {
+                  window.location.href = '/mobile/faq';
+                  setShowMenu(false);
+                }}
+                className="w-full text-left py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-300"
+              >
+                FAQ
+              </button>
+              <button
+                onClick={() => {
+                  window.location.href = '/mobile/contact';
+                  setShowMenu(false);
+                }}
+                className="w-full text-left py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-300"
+              >
+                Contact Us
+              </button>
+            </div>
+
+            {/* Bottom Section - App Promotion */}
+            <div className="border-t border-gray-200 pt-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+                  <span className="text-black font-bold text-sm">🍺</span>
+                </div>
+                <span className="text-gray-700 font-medium">There's more to love in the app.</span>
+              </div>
+              <div className="flex gap-2">
+                <button className="flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-all duration-300">
+                  iPhone
+                </button>
+                <button className="flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-all duration-300">
+                  Android
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Hero Section */}
       <div className="relative px-6 py-12 text-center">

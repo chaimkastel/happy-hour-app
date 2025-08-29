@@ -1,416 +1,577 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Star, MapPin, Clock, Users, Shield, Award, Smartphone, CreditCard, CheckCircle, Sparkles, Flame, Gift, Target, Rocket, Crown, Diamond, Heart, Zap, TrendingUp, Globe, Timer } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { 
+  Search, 
+  MapPin, 
+  Clock, 
+  Star, 
+  Heart, 
+  Filter, 
+  Grid, 
+  List,
+  ArrowRight,
+  Menu,
+  X,
+  User,
+  Bell,
+  Settings,
+  LogOut,
+  TrendingUp,
+  Award,
+  Zap,
+  CreditCard,
+  Building2
+} from 'lucide-react';
+import MobileHeader from '@/components/mobile/MobileHeader';
+import MobileBottomNav from '@/components/mobile/MobileBottomNav';
+import FiltersBottomSheet from '@/components/mobile/FiltersBottomSheet';
+import DealCardSkeleton from '@/components/mobile/DealCardSkeleton';
+import LocationSelector from '@/components/mobile/LocationSelector';
+import ViewToggle from '@/components/mobile/ViewToggle';
 
-export default function MobileLandingPage() {
-  const [currentSection, setCurrentSection] = useState(0);
+interface Deal {
+  id: string;
+  title: string;
+  description: string;
+  percentOff: number;
+  venue: {
+    name: string;
+    address: string;
+  };
+  cuisine: string;
+  distance: string;
+  rating: number;
+  isOpen: boolean;
+}
 
-  const handleSignUp = () => {
-    window.location.href = '/signup';
+export default function MobilePage() {
+  const router = useRouter();
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [showFilters, setShowFilters] = useState(false);
+  const [appliedFilters, setAppliedFilters] = useState({
+    category: 'All',
+    priceRange: 'all',
+    distance: 5,
+    timeWindow: 'now'
+  });
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+
+  useEffect(() => {
+    console.log('Mobile page mounted, fetching deals...');
+    // Add a small delay to ensure component is fully mounted
+    const timer = setTimeout(() => {
+      fetchDeals();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const fetchDeals = async (searchTerm = '') => {
+    try {
+      console.log('fetchDeals called with searchTerm:', searchTerm);
+      const url = searchTerm 
+        ? `/api/deals/search?search=${encodeURIComponent(searchTerm)}`
+        : '/api/deals/search';
+      console.log('Fetching from URL:', url);
+      const response = await fetch(url);
+      console.log('Response status:', response.status);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('API response:', data);
+        // Transform the API data to match the expected interface
+        const transformedDeals = (data.deals || []).map((deal: any) => ({
+          id: deal.id,
+          title: deal.title,
+          description: deal.description,
+          percentOff: deal.percentOff,
+          venue: {
+            name: deal.venue?.name || 'Restaurant',
+            address: deal.venue?.address || 'Address not available'
+          },
+          cuisine: Array.isArray(deal.venue?.businessType) 
+            ? deal.venue.businessType[0] 
+            : deal.venue?.businessType || 'Restaurant',
+          distance: '0.5 mi', // Mock distance for now
+          rating: deal.venue?.rating || 4.0,
+          isOpen: true // Mock open status for now
+        }));
+        console.log('Transformed deals:', transformedDeals);
+        setDeals(transformedDeals);
+      } else {
+        console.error('API response not ok:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching deals:', error);
+      // Fallback to mock data if API fails
+      const mockDeals = [
+        {
+          id: 'mock-1',
+          title: 'Happy Hour Special',
+          description: '50% off all drinks and appetizers',
+          percentOff: 50,
+          venue: {
+            name: 'Sample Restaurant',
+            address: '123 Main St, City, State'
+          },
+          cuisine: 'American',
+          distance: '0.5 mi',
+          rating: 4.5,
+          isOpen: true
+        },
+        {
+          id: 'mock-2',
+          title: 'Lunch Deal',
+          description: '30% off lunch entrees',
+          percentOff: 30,
+          venue: {
+            name: 'Another Place',
+            address: '456 Oak Ave, City, State'
+          },
+          cuisine: 'Italian',
+          distance: '0.8 mi',
+          rating: 4.2,
+          isOpen: true
+        }
+      ];
+      setDeals(mockDeals);
+    } finally {
+      console.log('Setting loading to false');
+      setLoading(false);
+    }
   };
 
-  const handleSignIn = () => {
-    window.location.href = '/login';
+  const handleDealClick = (dealId: string) => {
+    router.push(`/deal/${dealId}/view`);
   };
 
-  const handleGetStarted = () => {
-    window.location.href = '/signup';
+  const handleNavigation = (path: string) => {
+    router.push(path);
+    setShowMobileMenu(false);
   };
+
+  const handleApplyFilters = (filters: any) => {
+    setAppliedFilters(filters);
+    // Here you would typically refetch deals with the new filters
+    console.log('Applied filters:', filters);
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    if (query.length > 2 || query.length === 0) {
+      setLoading(true);
+      fetchDeals(query);
+    }
+  };
+
+  const filteredDeals = deals.filter(deal => {
+    if (activeFilter === 'all') return true;
+    if (activeFilter === 'near') return deal.distance.includes('0.5') || deal.distance.includes('0.3');
+    if (activeFilter === 'open') return deal.isOpen;
+    if (activeFilter === 'top') return deal.rating >= 4.5;
+    return true;
+  });
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-purple-600 relative overflow-hidden md:hidden">
+        {/* Enhanced Background */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900/70 via-slate-800/60 to-slate-900/70"></div>
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/5 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        </div>
+        
+        {/* Mobile Header */}
+        <MobileHeader
+          title="Happy Hour"
+        />
+
+        {/* Loading Content */}
+        <div className="px-4 py-4 relative z-10">
+          <div className="space-y-4">
+            {[...Array(6)].map((_, index) => (
+              <DealCardSkeleton key={index} />
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom Navigation */}
+        <MobileBottomNav />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Mobile Header */}
-      <div className="sticky top-0 z-50 bg-white/10 backdrop-blur-xl border-b border-white/20">
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
-                <span className="text-black font-bold text-lg">🍺</span>
-              </div>
-              <span className="text-white font-bold text-lg">Happy Hour</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => window.location.href = '/mobile/explore'}
-                className="px-3 py-1.5 bg-white/20 backdrop-blur-xl border border-white/30 text-white text-sm font-medium rounded-lg hover:bg-white/30 transition-all duration-300"
-              >
-                Explore
-              </button>
-              <button
-                onClick={() => window.location.href = '/mobile/favorites'}
-                className="px-3 py-1.5 bg-white/20 backdrop-blur-xl border border-white/30 text-white text-sm font-medium rounded-lg hover:bg-white/30 transition-all duration-300"
-              >
-                Favorites
-              </button>
-              <button
-                onClick={handleSignIn}
-                className="px-3 py-1.5 bg-white/20 backdrop-blur-xl border border-white/30 text-white text-sm font-medium rounded-lg hover:bg-white/30 transition-all duration-300"
-              >
-                Sign In
-              </button>
-              <button
-                onClick={handleSignUp}
-                className="px-3 py-1.5 bg-white/20 backdrop-blur-xl border border-white/30 text-white text-sm font-medium rounded-lg hover:bg-white/30 transition-all duration-300"
-              >
-                Sign Up
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Hero Section with Background Image */}
-      <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Image */}
+    <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-purple-600 relative overflow-hidden md:hidden">
+      {/* Enhanced Background */}
+      <div className="absolute inset-0">
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: 'url(/images/hero-food-deals.png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
+          style={{ 
+            backgroundImage: 'url(/images/hero-food-deals.png)'
           }}
-        />
-        
-        {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-black/60" />
-        
-        {/* Content */}
-        <div className="relative z-10 text-center px-6 py-12">
-          {/* Social Proof Badge */}
-          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-xl border border-white/30 rounded-full px-4 py-2 mb-6">
-            <div className="flex -space-x-1">
-              <div className="w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full border-2 border-white"></div>
-              <div className="w-6 h-6 bg-gradient-to-r from-pink-400 to-red-500 rounded-full border-2 border-white"></div>
-              <div className="w-6 h-6 bg-gradient-to-r from-green-400 to-blue-500 rounded-full border-2 border-white"></div>
-            </div>
-            <span className="text-white font-semibold text-sm">10,000+ Happy Customers</span>
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-3 h-3 text-yellow-400 fill-current" />
-              ))}
-            </div>
-          </div>
+        ></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/70 via-slate-800/60 to-slate-900/70"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/5 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      </div>
+      
+      {/* Mobile Header */}
+      <MobileHeader
+        title="Happy Hour"
+        rightElement={
+          <button
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
+            className="p-2 rounded-lg bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors shadow-lg"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        }
+      />
 
-          {/* Main Brand */}
-          <div className="mb-8">
-            <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-400 to-red-400 mb-4 leading-tight">
-              Happy Hour
-            </h1>
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <div className="w-8 h-1 bg-gradient-to-r from-yellow-300 to-orange-400 rounded-full"></div>
-              <Sparkles className="w-6 h-6 text-yellow-300 animate-spin" />
-              <div className="w-8 h-1 bg-gradient-to-r from-orange-400 to-red-400 rounded-full"></div>
-            </div>
-            <p className="text-xl text-white/90 font-medium mb-2">
-              Find Amazing Deals
-            </p>
-            <p className="text-lg text-white/80">
-              Restaurants flip the switch when they're quiet. You get instant deals nearby.
-            </p>
-          </div>
+      {/* Enhanced Search Section */}
+      <div className="px-4 py-4 relative z-10">
+        {/* Location Selector */}
+        <div className="mb-4">
+          <LocationSelector
+            onLocationChange={(addressData) => {
+              console.log('Location changed:', addressData);
+              // Here you would typically update the deals based on location
+            }}
+            placeholder="Enter your location..."
+          />
+        </div>
 
-          {/* CTA Buttons */}
-          <div className="space-y-4 mb-8">
-            <button
-              onClick={handleGetStarted}
-              className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold py-4 px-8 rounded-2xl text-lg shadow-2xl hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+        <div className="relative mb-4">
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
+          <input
+            type="text"
+            placeholder="Search restaurants, cuisines, deals..."
+            value={searchQuery}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="w-full pl-12 pr-12 py-4 bg-white/15 backdrop-blur-xl border border-white/30 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 focus:bg-white/20 transition-all duration-200 shadow-lg text-base"
+            aria-label="Search for restaurants, cuisines, and deals"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck="false"
+          />
+          {searchQuery && (
+            <button 
+              type="button"
+              onClick={() => {
+                setSearchQuery('');
+                setLoading(true);
+                fetchDeals('');
+              }}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400/50 focus:ring-offset-2 focus:ring-offset-transparent rounded-full p-1"
+              aria-label="Clear search"
             >
-              <Rocket className="w-5 h-5" />
-              Get Started Free
-              <ArrowRight className="w-5 h-5" />
+              <X className="w-5 h-5" />
             </button>
-            
-            <div className="flex gap-3">
-              <button
-                onClick={handleSignIn}
-                className="flex-1 bg-white/20 backdrop-blur-xl border border-white/30 text-white font-semibold py-3 px-6 rounded-xl hover:bg-white/30 transition-all duration-300"
-              >
-                Sign In
-              </button>
-              <button
-                onClick={handleSignUp}
-                className="flex-1 bg-white/20 backdrop-blur-xl border border-white/30 text-white font-semibold py-3 px-6 rounded-xl hover:bg-white/30 transition-all duration-300"
-              >
-                Sign Up
-              </button>
-            </div>
-          </div>
-
-          {/* Trust Indicators */}
-          <div className="flex items-center justify-center gap-6 text-white/70 text-sm">
-            <div className="flex items-center gap-1">
-              <Shield className="w-4 h-4" />
-              <span>Secure</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Award className="w-4 h-4" />
-              <span>Trusted</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Globe className="w-4 h-4" />
-              <span>Local</span>
-            </div>
-          </div>
+          )}
         </div>
-      </div>
 
-      {/* Quick Navigation */}
-      <div className="px-6 py-8 bg-white">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Learn More
-          </h2>
-          <p className="text-gray-600">
-            Everything you need to know about Happy Hour
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            onClick={() => window.location.href = '/mobile/how-it-works'}
-            className="p-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 text-left"
+        {/* Smart Filters */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
+            <button 
+              type="button"
+              onClick={() => setActiveFilter('all')}
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 focus:ring-offset-2 focus:ring-offset-transparent ${
+                activeFilter === 'all' 
+                  ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg' 
+                  : 'bg-white/15 backdrop-blur-xl text-white border border-white/30 hover:bg-white/25'
+              }`}
+            >
+              <Grid className="w-4 h-4 inline mr-1" />
+              All
+            </button>
+            <button 
+              type="button"
+              onClick={() => setActiveFilter('near')}
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                activeFilter === 'near' 
+                  ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg' 
+                  : 'bg-white/15 backdrop-blur-xl text-white border border-white/30 hover:bg-white/25'
+              }`}
+            >
+              <MapPin className="w-4 h-4 inline mr-1" />
+              Near Me
+            </button>
+            <button 
+              type="button"
+              onClick={() => setActiveFilter('open')}
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                activeFilter === 'open' 
+                  ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg' 
+                  : 'bg-white/15 backdrop-blur-xl text-white border border-white/30 hover:bg-white/25'
+              }`}
+            >
+              <Clock className="w-4 h-4 inline mr-1" />
+              Open Now
+            </button>
+            <button 
+              type="button"
+              onClick={() => setActiveFilter('top')}
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                activeFilter === 'top' 
+                  ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg' 
+                  : 'bg-white/15 backdrop-blur-xl text-white border border-white/30 hover:bg-white/25'
+              }`}
+            >
+              <Star className="w-4 h-4 inline mr-1" />
+              Top Rated
+            </button>
+          </div>
+          <button 
+            type="button"
+            onClick={() => setShowFilters(!showFilters)}
+            className="p-2 rounded-lg bg-white/15 backdrop-blur-xl text-white border border-white/30 hover:bg-white/25 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 focus:ring-offset-2 focus:ring-offset-transparent"
+            aria-label="Open filters"
+            aria-expanded={showFilters}
+            aria-haspopup="dialog"
           >
-            <div className="flex items-center gap-3 mb-2">
-              <Rocket className="w-5 h-5" />
-              <span className="font-semibold">How It Works</span>
-            </div>
-            <p className="text-sm text-blue-100">
-              Step-by-step guide to getting started
-            </p>
-          </button>
-          
-          <button
-            onClick={() => window.location.href = '/mobile/about'}
-            className="p-4 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-xl hover:from-green-600 hover:to-teal-700 transition-all duration-300 text-left"
-          >
-            <div className="flex items-center gap-3 mb-2">
-              <Heart className="w-5 h-5" />
-              <span className="font-semibold">About Us</span>
-            </div>
-            <p className="text-sm text-green-100">
-              Our mission and story
-            </p>
+            <Filter className="w-5 h-5" />
           </button>
         </div>
-        
-        <div className="mt-4">
-          <button
-            onClick={() => window.location.href = '/mobile/faq'}
-            className="w-full p-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-300 text-left"
-          >
-            <div className="flex items-center gap-3 mb-2">
-              <Sparkles className="w-5 h-5" />
-              <span className="font-semibold">FAQ</span>
-            </div>
-            <p className="text-sm text-orange-100">
-              Common questions and answers
-            </p>
-          </button>
+
+        {/* Results Count and View Toggle */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-white/70 text-sm">
+            {filteredDeals.length} {filteredDeals.length === 1 ? 'deal' : 'deals'} found
+          </div>
+          <ViewToggle
+            onViewChange={setViewMode}
+            initialView={viewMode}
+          />
         </div>
       </div>
 
-      {/* Features Section */}
-      <div className="px-6 py-16 bg-gray-50">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Why Choose Happy Hour?
-          </h2>
-          <p className="text-lg text-gray-600">
-            Discover amazing deals from restaurants near you
-          </p>
-        </div>
-
-        <div className="space-y-8">
-          {/* Feature 1 */}
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
-              <MapPin className="w-6 h-6 text-white" />
+      {/* Enhanced Deals List */}
+      <div className="px-4 pb-24 relative z-10">
+        {filteredDeals.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search className="w-10 h-10 text-white/60" />
             </div>
-            <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Find Deals Near You
-              </h3>
-              <p className="text-gray-600">
-                Discover amazing restaurant deals within walking distance. No more searching through endless options.
-              </p>
-            </div>
+            <h3 className="text-white font-semibold text-lg mb-2">No deals found</h3>
+            <p className="text-white/70 text-sm">Try adjusting your filters or search terms</p>
           </div>
-
-          {/* Feature 2 */}
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Clock className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Real-Time Availability
-              </h3>
-              <p className="text-gray-600">
-                See which deals are active right now. No more showing up to find the deal has ended.
-              </p>
-            </div>
-          </div>
-
-          {/* Feature 3 */}
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Heart className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Save Your Favorites
-              </h3>
-              <p className="text-gray-600">
-                Keep track of your favorite restaurants and never miss their best deals.
-              </p>
-            </div>
-          </div>
-
-          {/* Feature 4 */}
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Zap className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Instant Notifications
-              </h3>
-              <p className="text-gray-600">
-                Get notified when your favorite restaurants launch new deals or when deals are about to expire.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* How It Works Section */}
-      <div className="px-6 py-16 bg-white">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            How It Works
-          </h2>
-          <p className="text-lg text-gray-600">
-            Get started in just 3 simple steps
-          </p>
-        </div>
-
-        <div className="space-y-8">
-          {/* Step 1 */}
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-              1
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                Sign Up Free
-              </h3>
-              <p className="text-gray-600">
-                Create your account in seconds. No credit card required.
-              </p>
-            </div>
-          </div>
-
-          {/* Step 2 */}
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-              2
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                Set Your Location
-              </h3>
-              <p className="text-gray-600">
-                Allow location access to find deals near you automatically.
-              </p>
-            </div>
-          </div>
-
-          {/* Step 3 */}
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-              3
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                Discover & Save
-              </h3>
-              <p className="text-gray-600">
-                Browse amazing deals, save your favorites, and enjoy great food.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Section */}
-      <div className="px-6 py-16 bg-gradient-to-r from-blue-600 to-purple-700">
-        <div className="text-center text-white">
-          <h2 className="text-3xl font-bold mb-12">
-            Join Thousands of Happy Customers
-          </h2>
-          
-          <div className="grid grid-cols-2 gap-8">
-            <div className="text-center">
-              <div className="text-4xl font-bold mb-2">10K+</div>
-              <div className="text-blue-100">Active Users</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold mb-2">500+</div>
-              <div className="text-blue-100">Restaurants</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold mb-2">50K+</div>
-              <div className="text-blue-100">Deals Redeemed</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold mb-2">$2M+</div>
-              <div className="text-blue-100">Saved</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Final CTA Section */}
-      <div className="px-6 py-16 bg-white">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Ready to Start Saving?
-          </h2>
-          <p className="text-lg text-gray-600 mb-8">
-            Join thousands of people who are already saving money on great food
-          </p>
-          
+        ) : viewMode === 'list' ? (
           <div className="space-y-4">
-            <button
-              onClick={handleGetStarted}
-              className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold py-4 px-8 rounded-2xl text-lg shadow-2xl hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
-            >
-              <Rocket className="w-5 h-5" />
-              Get Started Free
-              <ArrowRight className="w-5 h-5" />
-            </button>
-            
-            <p className="text-sm text-gray-500">
-              No credit card required • Free forever • Cancel anytime
-            </p>
+            {filteredDeals.map((deal, index) => (
+              <div 
+                key={deal.id} 
+                onClick={() => handleDealClick(deal.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleDealClick(deal.id);
+                  }
+                }}
+                className="bg-white/15 backdrop-blur-xl rounded-2xl p-4 border border-white/30 hover:bg-white/20 transition-all duration-300 transform hover:scale-[1.02] shadow-xl active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-yellow-400/50 focus:ring-offset-2 focus:ring-offset-transparent"
+                style={{ animationDelay: `${index * 100}ms` }}
+                tabIndex={0}
+                role="button"
+                aria-label={`View deal: ${deal.title} at ${deal.venue.name}`}
+              >
+                {/* Deal Image */}
+                <div className="relative h-36 mb-4 rounded-xl overflow-hidden">
+                  <div 
+                    className="w-full h-full bg-cover bg-center"
+                    style={{
+                      backgroundImage: `url(https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop&crop=center&auto=format&q=80)`
+                    }}
+                  ></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-black/20 to-black/40"></div>
+                  <div className="absolute top-3 right-3">
+                    <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                      {deal.percentOff}% OFF
+                    </span>
+                  </div>
+                  <div className="absolute bottom-3 left-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="flex items-center bg-black/30 backdrop-blur-sm rounded-full px-2 py-1">
+                        <Star className="w-3 h-3 text-yellow-300 mr-1" />
+                        <span className="text-white text-xs font-medium">{deal.rating}</span>
+                      </div>
+                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        deal.isOpen 
+                          ? 'bg-green-500/80 text-white' 
+                          : 'bg-red-500/80 text-white'
+                      }`}>
+                        {deal.isOpen ? 'Open' : 'Closed'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="text-white font-bold text-lg mb-1 drop-shadow-sm line-clamp-1">{deal.title}</h3>
+                    <p className="text-white/80 text-sm font-medium">{deal.venue.name}</p>
+                    <p className="text-white/60 text-xs mt-1 line-clamp-2">{deal.description}</p>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex items-center text-white/70 text-xs">
+                        <MapPin className="w-3 h-3 mr-1" />
+                        <span>{deal.distance}</span>
+                      </div>
+                      <span className="bg-white/20 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs font-medium border border-white/30">
+                        {deal.cuisine}
+                      </span>
+                    </div>
+                    <button className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg transform hover:scale-110 transition-all duration-200">
+                      <ArrowRight className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="bg-white/15 backdrop-blur-xl rounded-2xl p-6 border border-white/30 text-center">
+              <MapPin className="w-12 h-12 text-white/60 mx-auto mb-4" />
+              <h3 className="text-white font-semibold text-lg mb-2">Map View</h3>
+              <p className="text-white/70 text-sm mb-4">
+                Interactive map view coming soon! For now, use the list view to browse deals.
+              </p>
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-200"
+              >
+                Switch to List View
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Footer */}
-      <div className="px-6 py-8 bg-gray-900 text-center">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
-            <span className="text-black font-bold text-lg">🍺</span>
+      {/* Bottom Navigation */}
+      <MobileBottomNav />
+
+      {/* Filters Bottom Sheet */}
+      <FiltersBottomSheet
+        isOpen={showFilters}
+        onClose={() => setShowFilters(false)}
+        onApply={handleApplyFilters}
+        initialFilters={appliedFilters}
+      />
+
+      {/* Enhanced Mobile Menu */}
+      {showMobileMenu && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="absolute top-0 right-0 w-80 h-full bg-white/15 backdrop-blur-xl border-l border-white/30 animate-in slide-in-from-right duration-300">
+            <div className="p-6 h-full flex flex-col">
+              {/* Menu Header */}
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-white text-xl font-bold drop-shadow-lg">Menu</h2>
+                  <p className="text-white/70 text-sm">Navigate & manage</p>
+                </div>
+                <button 
+                  onClick={() => setShowMobileMenu(false)}
+                  className="p-2 rounded-lg bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors shadow-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* User Profile Section */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 mb-6 border border-white/20">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                    <User className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-semibold">Welcome!</h3>
+                    <p className="text-white/70 text-sm">Sign in to save favorites</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Menu Items */}
+              <div className="flex-1 space-y-3">
+                <button 
+                  onClick={() => handleNavigation('/explore')}
+                  className="w-full text-left text-white py-4 px-4 rounded-xl bg-white/15 backdrop-blur-sm hover:bg-white/25 transition-all duration-200 transform hover:scale-105 border border-white/20 shadow-lg"
+                >
+                  <div className="flex items-center">
+                    <Grid className="w-5 h-5 mr-3" />
+                    <span className="font-medium">Explore</span>
+                  </div>
+                </button>
+                <button 
+                  onClick={() => handleNavigation('/mobile/favorites')}
+                  className="w-full text-left text-white py-4 px-4 rounded-xl bg-white/15 backdrop-blur-sm hover:bg-white/25 transition-all duration-200 transform hover:scale-105 border border-white/20 shadow-lg"
+                >
+                  <div className="flex items-center">
+                    <Heart className="w-5 h-5 mr-3" />
+                    <span className="font-medium">Favorites</span>
+                  </div>
+                </button>
+                <button 
+                  onClick={() => handleNavigation('/mobile/account')}
+                  className="w-full text-left text-white py-4 px-4 rounded-xl bg-white/15 backdrop-blur-sm hover:bg-white/25 transition-all duration-200 transform hover:scale-105 border border-white/20 shadow-lg"
+                >
+                  <div className="flex items-center">
+                    <User className="w-5 h-5 mr-3" />
+                    <span className="font-medium">Account</span>
+                  </div>
+                </button>
+                <button 
+                  onClick={() => handleNavigation('/wallet')}
+                  className="w-full text-left text-white py-4 px-4 rounded-xl bg-white/15 backdrop-blur-sm hover:bg-white/25 transition-all duration-200 transform hover:scale-105 border border-white/20 shadow-lg"
+                >
+                  <div className="flex items-center">
+                    <CreditCard className="w-5 h-5 mr-3" />
+                    <span className="font-medium">Wallet</span>
+                  </div>
+                </button>
+                <button 
+                  onClick={() => handleNavigation('/partner')}
+                  className="w-full text-left text-white py-4 px-4 rounded-xl bg-white/15 backdrop-blur-sm hover:bg-white/25 transition-all duration-200 transform hover:scale-105 border border-white/20 shadow-lg"
+                >
+                  <div className="flex items-center">
+                    <Award className="w-5 h-5 mr-3" />
+                    <span className="font-medium">Partner</span>
+                  </div>
+                </button>
+                <button 
+                  onClick={() => handleNavigation('/merchant')}
+                  className="w-full text-left text-white py-4 px-4 rounded-xl bg-white/15 backdrop-blur-sm hover:bg-white/25 transition-all duration-200 transform hover:scale-105 border border-white/20 shadow-lg"
+                >
+                  <div className="flex items-center">
+                    <Building2 className="w-5 h-5 mr-3" />
+                    <span className="font-medium">For Restaurants</span>
+                  </div>
+                </button>
+              </div>
+
+              {/* Menu Footer */}
+              <div className="mt-6 pt-4 border-t border-white/20">
+                <button 
+                  onClick={() => handleNavigation('/login')}
+                  className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-3 px-4 rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-200"
+                >
+                  Sign In
+                </button>
+              </div>
+            </div>
           </div>
-          <span className="text-white font-bold text-lg">Happy Hour</span>
         </div>
-        <p className="text-gray-400 text-sm">
-          © 2025 Happy Hour. Find amazing deals near you.
-        </p>
-      </div>
+      )}
     </div>
   );
 }

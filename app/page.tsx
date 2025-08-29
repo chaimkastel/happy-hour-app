@@ -1,12 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { MapPin, Clock, Users, Filter, Grid, List, Search, Star, TrendingUp, Zap, Heart, ArrowRight, Shield, Award, Globe, Smartphone, CreditCard, Timer, CheckCircle, Sparkles, Flame, Gift, Target, Rocket, Crown, Diamond } from 'lucide-react';
-import DealCard from '../components/DealCard';
-import MapWithClusters from '../components/MapWithClusters';
-import SortFilterBar from '../components/SortFilterBar';
-import { useMobileDetection } from '../lib/mobile';
+import React, { useState, useEffect } from 'react';
+import { ArrowRight, Star, MapPin, Clock, Users, Shield, Award, Smartphone, CreditCard, CheckCircle, Sparkles, Flame, Gift, Target, Rocket, Crown, Diamond, Heart, Zap, TrendingUp, Globe, Timer, Menu, X, Search, Filter, Grid, List } from 'lucide-react';
+import Image from 'next/image';
 
 interface Deal {
   id: string;
@@ -18,49 +14,36 @@ interface Deal {
     latitude: number;
     longitude: number;
     name: string;
+    address: string;
   };
 }
 
-interface Filters {
-  cuisine: string;
-  maxDistance: number;
-  minDiscount: number;
-  openNow: boolean;
-}
-
 export default function HomePage() {
-  const router = useRouter();
-  const { isMobile, isHydrated } = useMobileDetection();
+  const [currentSection, setCurrentSection] = useState(0);
+  const [showMenu, setShowMenu] = useState(false);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [view, setView] = useState<'grid' | 'map'>('grid');
-  const [filters, setFilters] = useState<Filters>({
-    cuisine: '',
-    maxDistance: 10,
-    minDiscount: 0,
-    openNow: false
-  });
 
-  useEffect(() => {
-    fetchDeals();
-  }, []);
+  const handleSignUp = () => {
+    window.location.href = '/signup';
+  };
 
-  // Redirect mobile users to mobile page
-  useEffect(() => {
-    if (isHydrated && isMobile) {
-      router.replace('/mobile');
-    }
-  }, [isMobile, isHydrated, router]);
+  const handleSignIn = () => {
+    window.location.href = '/login';
+  };
+
+  const handleGetStarted = () => {
+    window.location.href = '/signup';
+  };
 
   const fetchDeals = async () => {
     try {
       const response = await fetch('/api/deals/search');
       if (response.ok) {
         const data = await response.json();
-        // The API returns { deals: [...] }, so we need to access data.deals
         const dealsData = data.deals || data;
-        // Transform the data to include venue information
         const transformedDeals = dealsData.map((deal: any) => ({
           ...deal,
           discount: deal.percentOff || deal.discount || 0,
@@ -75,173 +58,283 @@ export default function HomePage() {
         }));
         setDeals(transformedDeals);
       } else {
-        console.error('Failed to fetch deals:', response.status);
-        // Set some fallback data if API fails
         setDeals([]);
       }
     } catch (error) {
       console.error('Error fetching deals:', error);
-      // Set some fallback data if API fails
       setDeals([]);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchDeals();
+  }, []);
+
   const filteredDeals = deals.filter(deal => {
     const matchesSearch = deal.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          deal.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          deal.cuisine.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesCuisine = !filters.cuisine || deal.cuisine.toLowerCase() === filters.cuisine.toLowerCase();
-    const matchesDiscount = deal.discount >= filters.minDiscount;
-    
-    return matchesSearch && matchesCuisine && matchesDiscount;
+    return matchesSearch;
   });
 
-  // Show loading state while checking mobile or loading deals
-  if (!isHydrated || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-slate-600 dark:text-slate-400">
-            {!isHydrated ? 'Loading...' : 'Loading deals...'}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Don't render desktop content on mobile (redirect will happen)
-  if (isMobile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-slate-600 dark:text-slate-400">Redirecting to mobile...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen relative">
-      {/* Hero Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: 'url(/images/hero-food-deals.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed'
-        }}
-      ></div>
-      
-      {/* Enhanced overlay for better mobile readability */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900/50 via-slate-800/40 to-slate-900/50 backdrop-blur-[1px] md:backdrop-blur-sm"></div>
-      
-      {/* Subtle dark overlay for text readability */}
-      <div className="absolute inset-0 bg-black/20"></div>
-
-      {/* Hero Section - Exciting & Engaging */}
-      <div className="relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-24 lg:py-32">
-          <div className="text-center">
-            {/* Social Proof Badge */}
-            <div className="inline-flex items-center gap-2 bg-white/20 dark:bg-slate-800/40 backdrop-blur-xl border border-white/30 dark:border-slate-600/40 rounded-full px-4 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8 animate-fade-in shadow-2xl">
-              <div className="flex -space-x-1 sm:-space-x-2">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full border-2 border-white"></div>
-                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-pink-400 to-red-500 rounded-full border-2 border-white"></div>
-                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full border-2 border-white"></div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Mobile-First Header */}
+      <div className="sticky top-0 z-50 bg-black/20 backdrop-blur-2xl border-b border-white/10">
+        <div className="px-4 py-3 md:px-6 md:py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg md:rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-black font-bold text-lg md:text-xl">🍺</span>
               </div>
-              <span className="text-white font-semibold text-sm sm:text-base">10,000+ Happy Customers</span>
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 fill-current" />
-                ))}
-              </div>
+              <span className="text-white font-bold text-lg md:text-xl">Happy Hour</span>
             </div>
-
-            {/* Main Brand */}
-                        <div className="mb-6 sm:mb-8 animate-slide-in-down">
-              <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-400 to-red-400 mb-4 sm:mb-6 leading-tight drop-shadow-2xl">
-            Happy Hour
-          </h1>
-              <div className="flex items-center justify-center gap-2 sm:gap-4 mb-4">
-                <div className="w-8 sm:w-16 h-1 bg-gradient-to-r from-yellow-300 to-orange-400 rounded-full"></div>
-                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-300 animate-spin drop-shadow-lg" />
-                <div className="w-8 sm:w-16 h-1 bg-gradient-to-r from-orange-400 to-red-400 rounded-full"></div>
-              </div>
+            <div className="flex items-center gap-1 md:gap-2">
+              <button
+                onClick={() => window.location.href = '/explore'}
+                className="px-3 py-1.5 md:px-4 md:py-2 bg-white/10 backdrop-blur-xl border border-white/20 text-white text-xs md:text-sm font-semibold rounded-lg md:rounded-xl hover:bg-white/20 transition-all duration-300 shadow-lg"
+              >
+                Explore
+              </button>
+              <button
+                onClick={handleSignIn}
+                className="px-3 py-1.5 md:px-4 md:py-2 bg-white/10 backdrop-blur-xl border border-white/20 text-white text-xs md:text-sm font-semibold rounded-lg md:rounded-xl hover:bg-white/20 transition-all duration-300 shadow-lg"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={handleSignUp}
+                className="px-3 py-1.5 md:px-4 md:py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs md:text-sm font-bold rounded-lg md:rounded-xl hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-lg"
+              >
+                Sign Up
+              </button>
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                className="p-1.5 md:p-2 rounded-lg md:rounded-xl bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white/20 transition-all duration-300 shadow-lg"
+              >
+                {showMenu ? <X className="w-4 h-4 md:w-5 md:h-5" /> : <Menu className="w-4 h-4 md:w-5 md:h-5" />}
+              </button>
             </div>
-            
-            {/* Compelling Headlines */}
-                        <div className="mb-8 sm:mb-12 animate-slide-in-up">
-              <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight drop-shadow-2xl">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-400 drop-shadow-2xl">Instant Deals</span> at Restaurants Near You
-              </h2>
-              <p className="text-lg sm:text-xl md:text-2xl text-white max-w-4xl mx-auto leading-relaxed mb-6 sm:mb-8 drop-shadow-lg">
-                Save up to <span className="font-bold text-yellow-300 drop-shadow-lg">70% OFF</span> when restaurants are quiet! 
-                <br />
-                <span className="text-base sm:text-lg text-white/95 drop-shadow-md">Real-time deals • Instant savings • No waiting</span>
-              </p>
           </div>
+        </div>
+      </div>
 
-            {/* Live Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto mb-8 sm:mb-12 animate-fade-in">
-              <div className="bg-white/20 dark:bg-slate-800/40 backdrop-blur-xl border border-white/30 dark:border-slate-600/40 rounded-2xl p-4 sm:p-6 hover:bg-white/30 dark:hover:bg-slate-800/60 transition-all duration-300 shadow-2xl">
-                <div className="text-2xl sm:text-3xl font-bold text-slate-200 dark:text-slate-100 mb-2 drop-shadow-lg">1,247</div>
-                <div className="text-slate-300 dark:text-slate-300 text-sm sm:text-base">Live Deals Right Now</div>
-              </div>
-              <div className="bg-white/20 dark:bg-slate-800/40 backdrop-blur-xl border border-white/30 dark:border-slate-600/40 rounded-2xl p-4 sm:p-6 hover:bg-white/30 dark:hover:bg-slate-800/60 transition-all duration-300 shadow-2xl">
-                <div className="text-2xl sm:text-3xl font-bold text-slate-200 dark:text-slate-100 mb-2 drop-shadow-lg">12.3k</div>
-                <div className="text-slate-300 dark:text-slate-300 text-sm sm:text-base">Deals Claimed Today</div>
-              </div>
-              <div className="bg-white/20 dark:bg-slate-800/40 backdrop-blur-xl border border-white/30 dark:border-slate-600/40 rounded-2xl p-4 sm:p-6 hover:bg-white/30 dark:hover:bg-slate-800/60 transition-all duration-300 shadow-2xl">
-                <div className="text-2xl sm:text-3xl font-bold text-slate-200 dark:text-slate-100 mb-2 drop-shadow-lg">$47</div>
-                <div className="text-slate-300 dark:text-slate-300 text-sm sm:text-base">Average Savings</div>
-              </div>
+      {/* Uber Eats-inspired Dropdown Menu */}
+      {showMenu && (
+        <div className="absolute top-16 md:top-20 left-3 right-3 md:left-4 md:right-4 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
+          <div className="p-4">
+            {/* Top Section - Sign Up & Log In */}
+            <div className="space-y-3 mb-6">
+              <button
+                onClick={handleSignUp}
+                className="w-full bg-black text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-all duration-300"
+              >
+                Sign up
+              </button>
+              <button
+                onClick={handleSignIn}
+                className="w-full bg-white text-black border border-gray-300 py-3 px-4 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-300"
+              >
+                Log in
+              </button>
             </div>
-            
-            {/* Search Bar */}
-            <div className="max-w-3xl mx-auto mb-8 sm:mb-12 animate-scale-in">
-              <div className="relative">
-                <Search className="absolute left-4 sm:left-6 top-1/2 transform -translate-y-1/2 text-slate-600 dark:text-slate-300 w-5 h-5 sm:w-6 sm:h-6" />
-                <input
-                  type="text"
-                  placeholder="Enter your address or city to find amazing deals..."
-                  className="w-full pl-12 sm:pl-16 pr-24 sm:pr-32 py-4 sm:py-6 text-lg sm:text-xl bg-white/30 dark:bg-slate-800/60 backdrop-blur-xl border-2 border-white/40 dark:border-slate-600/50 rounded-2xl sm:rounded-3xl focus:border-white/60 dark:focus:border-slate-500 focus:outline-none transition-all duration-300 text-slate-900 dark:text-slate-100 placeholder-slate-600 dark:placeholder-slate-300 shadow-2xl font-medium"
-                />
-                <button 
-                  type="button"
-                  aria-label="Search for deals"
-                  className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-white/30 dark:bg-slate-800/60 backdrop-blur-sm text-slate-800 dark:text-slate-200 px-4 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-lg hover:bg-white/40 dark:hover:bg-slate-800/70 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 border border-white/40 dark:border-slate-600/50">
-                  <span className="hidden sm:inline">Find Deals</span>
-                  <span className="sm:hidden">Search</span>
+
+            {/* Middle Section - Menu Links */}
+            <div className="space-y-1 mb-6">
+              <button
+                onClick={() => {
+                  window.location.href = '/favorites';
+                  setShowMenu(false);
+                }}
+                className="w-full text-left py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-300"
+              >
+                Favorites
+              </button>
+              <button
+                onClick={() => {
+                  window.location.href = '/deals';
+                  setShowMenu(false);
+                }}
+                className="w-full text-left py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-300"
+              >
+                All Deals
+              </button>
+              <button
+                onClick={() => {
+                  window.location.href = '/about';
+                  setShowMenu(false);
+                }}
+                className="w-full text-left py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-300"
+              >
+                About Us
+              </button>
+              <button
+                onClick={() => {
+                  window.location.href = '/how-it-works';
+                  setShowMenu(false);
+                }}
+                className="w-full text-left py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-300"
+              >
+                How It Works
+              </button>
+              <button
+                onClick={() => {
+                  window.location.href = '/faq';
+                  setShowMenu(false);
+                }}
+                className="w-full text-left py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-300"
+              >
+                FAQ
+              </button>
+              <button
+                onClick={() => {
+                  window.location.href = '/contact';
+                  setShowMenu(false);
+                }}
+                className="w-full text-left py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-300"
+              >
+                Contact Us
+              </button>
+            </div>
+
+            {/* Bottom Section - App Promotion */}
+            <div className="border-t border-gray-200 pt-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+                  <span className="text-black font-bold text-sm">🍺</span>
+                </div>
+                <span className="text-gray-700 font-medium">There's more to love in the app.</span>
+              </div>
+              <div className="flex gap-2">
+                <button className="flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-all duration-300">
+                  iPhone
+                </button>
+                <button className="flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-all duration-300">
+                  Android
                 </button>
               </div>
             </div>
-            
-            {/* Primary CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-12 sm:mb-16 animate-fade-in">
+          </div>
+        </div>
+      )}
+
+      {/* Hero Section with Background Image */}
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/images/hero-food-deals.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed'
+          }}
+        ></div>
+        
+        {/* Enhanced overlay for better mobile readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/50 via-slate-800/40 to-slate-900/50 backdrop-blur-[1px] md:backdrop-blur-sm"></div>
+        
+        {/* Subtle dark overlay for text readability */}
+        <div className="absolute inset-0 bg-black/20"></div>
+
+        {/* Hero Content */}
+        <div className="relative z-10 px-6 py-12 md:py-24 text-center max-w-7xl mx-auto">
+          {/* Social Proof Badge */}
+          <div className="inline-flex items-center gap-2 bg-white/20 dark:bg-slate-800/40 backdrop-blur-xl border border-white/30 dark:border-slate-600/40 rounded-full px-4 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8 animate-fade-in shadow-2xl">
+            <div className="flex -space-x-1 sm:-space-x-2">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full border-2 border-white"></div>
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-pink-400 to-red-500 rounded-full border-2 border-white"></div>
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full border-2 border-white"></div>
+            </div>
+            <span className="text-white font-semibold text-sm sm:text-base">10,000+ Happy Customers</span>
+            <div className="flex items-center gap-1">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 fill-current" />
+              ))}
+            </div>
+          </div>
+
+          {/* Main Brand */}
+          <div className="mb-6 sm:mb-8 animate-slide-in-down">
+            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-400 to-red-400 mb-4 sm:mb-6 leading-tight drop-shadow-2xl">
+              Happy Hour
+            </h1>
+            <div className="flex items-center justify-center gap-2 sm:gap-4 mb-4">
+              <div className="w-8 sm:w-16 h-1 bg-gradient-to-r from-yellow-300 to-orange-400 rounded-full"></div>
+              <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-300 animate-spin drop-shadow-lg" />
+              <div className="w-8 sm:w-16 h-1 bg-gradient-to-r from-orange-400 to-red-400 rounded-full"></div>
+            </div>
+          </div>
+          
+          {/* Compelling Headlines */}
+          <div className="mb-8 sm:mb-12 animate-slide-in-up">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight drop-shadow-2xl">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-400 drop-shadow-2xl">Instant Deals</span> at Restaurants Near You
+            </h2>
+            <p className="text-lg sm:text-xl md:text-2xl text-white max-w-4xl mx-auto leading-relaxed mb-6 sm:mb-8 drop-shadow-lg">
+              Save up to <span className="font-bold text-yellow-300 drop-shadow-lg">70% OFF</span> when restaurants are quiet! 
+              <br />
+              <span className="text-base sm:text-lg text-white/95 drop-shadow-md">Real-time deals • Instant savings • No waiting</span>
+            </p>
+          </div>
+
+          {/* Live Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto mb-8 sm:mb-12 animate-fade-in">
+            <div className="bg-white/20 dark:bg-slate-800/40 backdrop-blur-xl border border-white/30 dark:border-slate-600/40 rounded-2xl p-4 sm:p-6 hover:bg-white/30 dark:hover:bg-slate-800/60 transition-all duration-300 shadow-2xl">
+              <div className="text-2xl sm:text-3xl font-bold text-slate-200 dark:text-slate-100 mb-2 drop-shadow-lg">1,247</div>
+              <div className="text-slate-300 dark:text-slate-300 text-sm sm:text-base">Live Deals Right Now</div>
+            </div>
+            <div className="bg-white/20 dark:bg-slate-800/40 backdrop-blur-xl border border-white/30 dark:border-slate-600/40 rounded-2xl p-4 sm:p-6 hover:bg-white/30 dark:hover:bg-slate-800/60 transition-all duration-300 shadow-2xl">
+              <div className="text-2xl sm:text-3xl font-bold text-slate-200 dark:text-slate-100 mb-2 drop-shadow-lg">12.3k</div>
+              <div className="text-slate-300 dark:text-slate-300 text-sm sm:text-base">Deals Claimed Today</div>
+            </div>
+            <div className="bg-white/20 dark:bg-slate-800/40 backdrop-blur-xl border border-white/30 dark:border-slate-600/40 rounded-2xl p-4 sm:p-6 hover:bg-white/30 dark:hover:bg-slate-800/60 transition-all duration-300 shadow-2xl">
+              <div className="text-2xl sm:text-3xl font-bold text-slate-200 dark:text-slate-100 mb-2 drop-shadow-lg">$47</div>
+              <div className="text-slate-300 dark:text-slate-300 text-sm sm:text-base">Average Savings</div>
+            </div>
+          </div>
+          
+          {/* Search Bar */}
+          <div className="max-w-3xl mx-auto mb-8 sm:mb-12 animate-scale-in">
+            <div className="relative">
+              <Search className="absolute left-4 sm:left-6 top-1/2 transform -translate-y-1/2 text-slate-600 dark:text-slate-300 w-5 h-5 sm:w-6 sm:h-6" />
+              <input
+                type="text"
+                placeholder="Enter your address or city to find amazing deals..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 sm:pl-16 pr-24 sm:pr-32 py-4 sm:py-6 text-lg sm:text-xl bg-white/30 dark:bg-slate-800/60 backdrop-blur-xl border-2 border-white/40 dark:border-slate-600/50 rounded-2xl sm:rounded-3xl focus:border-white/60 dark:focus:border-slate-500 focus:outline-none transition-all duration-300 text-slate-900 dark:text-slate-100 placeholder-slate-600 dark:placeholder-slate-300 shadow-2xl font-medium"
+              />
               <button 
                 type="button"
-                aria-label="Explore deals and offers"
-                onClick={() => router.push('/explore')}
-                className="group bg-white/30 dark:bg-slate-800/60 backdrop-blur-sm text-slate-800 dark:text-slate-200 px-8 sm:px-12 py-4 sm:py-6 rounded-2xl sm:rounded-3xl font-black text-lg sm:text-2xl hover:bg-white/40 dark:hover:bg-slate-800/70 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 flex items-center gap-3 sm:gap-4 border border-white/40 dark:border-slate-600/50"
-              >
-                <Rocket className="w-6 h-6 sm:w-8 sm:h-8 group-hover:animate-bounce" />
-                <span className="hidden sm:inline">Explore Deals</span>
-                <span className="sm:hidden">Explore</span>
-                <ArrowRight className="w-6 h-6 sm:w-8 sm:h-8 group-hover:translate-x-2 transition-transform" />
+                aria-label="Search for deals"
+                className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-white/30 dark:bg-slate-800/60 backdrop-blur-sm text-slate-800 dark:text-slate-200 px-4 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-lg hover:bg-white/40 dark:hover:bg-slate-800/70 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 border border-white/40 dark:border-slate-600/50">
+                <span className="hidden sm:inline">Find Deals</span>
+                <span className="sm:hidden">Search</span>
               </button>
-
             </div>
+          </div>
+          
+          {/* Primary CTAs */}
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-12 sm:mb-16 animate-fade-in">
+            <button 
+              type="button"
+              aria-label="Explore deals and offers"
+              onClick={() => window.location.href = '/explore'}
+              className="group bg-white/30 dark:bg-slate-800/60 backdrop-blur-sm text-slate-800 dark:text-slate-200 px-8 sm:px-12 py-4 sm:py-6 rounded-2xl sm:rounded-3xl font-black text-lg sm:text-2xl hover:bg-white/40 dark:hover:bg-slate-800/70 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 flex items-center gap-3 sm:gap-4 border border-white/40 dark:border-slate-600/50"
+            >
+              <Rocket className="w-6 h-6 sm:w-8 sm:h-8 group-hover:animate-bounce" />
+              <span className="hidden sm:inline">Explore Deals</span>
+              <span className="sm:hidden">Explore</span>
+              <ArrowRight className="w-6 h-6 sm:w-8 sm:h-8 group-hover:translate-x-2 transition-transform" />
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Live Deals Preview - Exciting */}
+      {/* Live Deals Preview */}
       <div className="py-20 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 relative overflow-hidden">
         {/* Background Effects */}
         <div className="absolute inset-0">
@@ -257,14 +350,14 @@ export default function HomePage() {
             </div>
             <h2 className="text-4xl md:text-5xl font-black text-slate-800 mb-6">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500">Hot Deals</span> Near You
-          </h2>
+            </h2>
             <p className="text-xl text-slate-600 max-w-3xl mx-auto">
               These deals are <span className="text-orange-500 font-bold">flying off the shelves</span>! 
               Don't miss out on incredible savings.
-          </p>
-        </div>
+            </p>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredDeals.slice(0, 6).map((deal, index) => (
               <div 
                 key={deal.id} 
@@ -316,7 +409,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Deal Info */}
-            <div className="p-6">
+                <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-yellow-400" />
@@ -348,7 +441,7 @@ export default function HomePage() {
           {/* View All Deals CTA */}
           <div className="text-center mt-12">
             <button 
-              onClick={() => router.push('/deals')}
+              onClick={() => window.location.href = '/deals'}
               className="group bg-gradient-to-r from-orange-500 to-red-500 text-white px-12 py-6 rounded-3xl font-black text-xl hover:from-orange-600 hover:to-red-600 transition-all duration-300 shadow-2xl hover:shadow-orange-500/25 hover:scale-105 flex items-center gap-4 mx-auto"
             >
               <Gift className="w-6 h-6 group-hover:animate-bounce" />
@@ -359,314 +452,18 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Interactive Deals Explorer */}
-      <div className="py-20 bg-gradient-to-br from-white via-blue-50 to-purple-50 dark:from-slate-900 dark:via-blue-900 dark:to-purple-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-blue-500/30 rounded-full px-6 py-3 mb-6">
-              <Target className="w-5 h-5 text-blue-500" />
-              <span className="text-blue-500 font-bold">EXPLORE & DISCOVER</span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-6">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600">Interactive</span> Deals Explorer
-            </h2>
-            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
-              Switch between <span className="font-bold text-blue-500">grid view</span> and <span className="font-bold text-purple-500">interactive map</span> to find the perfect deals near you!
-            </p>
+      {/* Footer */}
+      <div className="px-6 py-8 bg-gray-900 text-center">
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+            <span className="text-black font-bold text-lg">🍺</span>
           </div>
-
-          {/* Enhanced View Toggle */}
-          <div className="flex justify-center mb-12">
-            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-3xl p-2 flex gap-2 shadow-2xl">
-              <button
-                type="button"
-                aria-label="Switch to grid view"
-                onClick={() => setView('grid')}
-                className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 flex items-center gap-3 ${
-                  view === 'grid'
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg scale-105'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/50 dark:hover:bg-slate-700/50'
-                }`}
-              >
-                <Grid className="w-6 h-6" />
-                Grid View
-              </button>
-              <button
-                type="button"
-                aria-label="Switch to map view"
-                onClick={() => setView('map')}
-                className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 flex items-center gap-3 ${
-                  view === 'map'
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg scale-105'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/50 dark:hover:bg-slate-700/50'
-                }`}
-              >
-                <MapPin className="w-6 h-6" />
-                Map View
-              </button>
-            </div>
-          </div>
-
-          {/* Enhanced Search and Filters */}
-          <div className="max-w-5xl mx-auto mb-12">
-            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-3xl p-6 shadow-2xl">
-              <SortFilterBar
-                filters={filters}
-                onFiltersChange={setFilters}
-                dealsCount={filteredDeals.length}
-              />
-            </div>
-          </div>
-
-          {/* Content with Enhanced Styling */}
-          {view === 'grid' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredDeals.map((deal, index) => (
-                <div 
-                  key={deal.id}
-                  className="transform transition-all duration-300 hover:scale-105"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <DealCard d={deal} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="h-[700px] rounded-3xl overflow-hidden shadow-2xl border-4 border-white/20 dark:border-slate-700/20">
-              <MapWithClusters deals={filteredDeals} />
-            </div>
-          )}
-
-          {filteredDeals.length === 0 && (
-            <div className="text-center py-20">
-              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center animate-bounce">
-                <span className="text-4xl text-white">!</span>
-              </div>
-              <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-6">
-                No deals found in your area
-              </h3>
-              <p className="text-xl text-slate-600 dark:text-slate-400 mb-8 max-w-2xl mx-auto">
-                Don't worry! Try expanding your search radius or adjusting your filters to discover amazing deals nearby.
-              </p>
-              <button
-                type="button"
-                aria-label="Reset search and filters"
-                onClick={() => {
-                  setSearchQuery('');
-                  setFilters({
-                    cuisine: '',
-                    maxDistance: 10,
-                    minDiscount: 0,
-                    openNow: false
-                  });
-                }}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
-              >
-                Reset Filters
-              </button>
-            </div>
-          )}
+          <span className="text-white font-bold text-lg">Happy Hour</span>
         </div>
-      </div>
-
-      {/* How It Works - Exciting */}
-      <div className="py-20 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-emerald-900 dark:via-teal-900 dark:to-cyan-900 relative overflow-hidden">
-        {/* Background Effects */}
-        <div className="absolute inset-0">
-          <div className="absolute top-20 right-20 w-40 h-40 bg-emerald-400/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 left-20 w-32 h-32 bg-teal-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-emerald-500/20 backdrop-blur-sm border border-emerald-500/30 rounded-full px-6 py-3 mb-6">
-              <Rocket className="w-5 h-5 text-emerald-500" />
-              <span className="text-emerald-500 font-bold">SUPER SIMPLE</span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-6">
-              How <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-600">Happy Hour</span> Works
-            </h2>
-            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
-              Get amazing deals in just <span className="font-bold text-emerald-500">3 simple steps</span>! 
-              It's so easy, you'll be saving money in seconds.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <div className="text-center group">
-              <div className="relative mb-8">
-                <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-2xl group-hover:scale-110 transition-all duration-300">
-                  <Search className="w-12 h-12 text-white" />
-                </div>
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                  1
-                </div>
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Find Amazing Deals</h3>
-              <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
-                Browse real-time deals from restaurants near you. Our smart algorithm shows you the best offers first!
-              </p>
-            </div>
-            
-            <div className="text-center group">
-              <div className="relative mb-8">
-                <div className="w-24 h-24 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-2xl group-hover:scale-110 transition-all duration-300">
-                  <Smartphone className="w-12 h-12 text-white" />
-                </div>
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                  2
-                </div>
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Claim & Save</h3>
-              <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
-                Tap to claim your deal instantly! Get your unique code and start saving money right away.
-              </p>
-            </div>
-            
-            <div className="text-center group">
-              <div className="relative mb-8">
-                <div className="w-24 h-24 bg-gradient-to-br from-pink-400 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-2xl group-hover:scale-110 transition-all duration-300">
-                  <CheckCircle className="w-12 h-12 text-white" />
-                </div>
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                  3
-                </div>
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Enjoy & Save</h3>
-              <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
-                Show your code at the restaurant and enjoy your delicious meal while saving big bucks!
-              </p>
-                </div>
-              </div>
-              
-          {/* CTA Section */}
-          <div className="text-center mt-16">
-            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-3xl p-8 shadow-2xl max-w-4xl mx-auto">
-              <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
-                Ready to Start Saving?
-              </h3>
-              <p className="text-xl text-slate-600 dark:text-slate-300 mb-8">
-                Join thousands of smart diners who are already saving money every day!
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button 
-                  type="button"
-                  aria-label="Start saving with deals"
-                  onClick={() => router.push('/deals')}
-                  className="group bg-gradient-to-r from-orange-500 to-red-500 text-white px-10 py-5 rounded-2xl font-bold text-xl hover:from-orange-600 hover:to-red-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-3"
-                >
-                  <Diamond className="w-6 h-6 group-hover:animate-spin" />
-                  Start Saving Now
-                  <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
-                </button>
-
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* For Restaurants Section - Exciting */}
-      <div className="py-20 bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 relative overflow-hidden">
-        {/* Background Effects */}
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-20 w-40 h-40 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-32 h-32 bg-white/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-white mb-16">
-            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-6 py-3 mb-6">
-              <Crown className="w-5 h-5 text-white" />
-              <span className="text-white font-bold">FOR RESTAURANTS</span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-black mb-6">
-              Turn <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">Quiet Hours</span> into <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">Revenue Gold</span>
-          </h2>
-            <p className="text-xl text-white/90 max-w-4xl mx-auto leading-relaxed">
-              Join <span className="font-bold text-yellow-300">500+ restaurants</span> already using Happy Hour to fill empty tables and boost revenue during slow periods!
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            <div className="text-center text-white group">
-              <div className="relative mb-8">
-                <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 shadow-2xl group-hover:scale-110 transition-all duration-300">
-                  <TrendingUp className="w-12 h-12 text-white" />
-                </div>
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                  💰
-                </div>
-              </div>
-              <h3 className="text-2xl font-bold mb-4">Boost Revenue by 40%</h3>
-              <p className="text-white/80 text-lg leading-relaxed">
-                Fill empty tables during slow periods and increase your average order value with targeted deals
-              </p>
-            </div>
-            
-            <div className="text-center text-white group">
-              <div className="relative mb-8">
-                <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 shadow-2xl group-hover:scale-110 transition-all duration-300">
-                  <Users className="w-12 h-12 text-white" />
-                </div>
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                  👥
-                </div>
-              </div>
-              <h3 className="text-2xl font-bold mb-4">Attract New Customers</h3>
-              <p className="text-white/80 text-lg leading-relaxed">
-                Reach food lovers in your area who are actively looking for great deals and new places to try
-              </p>
-            </div>
-            
-            <div className="text-center text-white group">
-              <div className="relative mb-8">
-                <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 shadow-2xl group-hover:scale-110 transition-all duration-300">
-                  <Zap className="w-12 h-12 text-white" />
-                </div>
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                  3
-                </div>
-              </div>
-              <h3 className="text-2xl font-bold mb-4">Instant Activation</h3>
-              <p className="text-white/80 text-lg leading-relaxed">
-                Create and activate deals in seconds. No complicated setup, no waiting, just instant results
-              </p>
-            </div>
-          </div>
-          
-          <div className="text-center">
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl p-8 shadow-2xl max-w-4xl mx-auto">
-              <h3 className="text-3xl font-bold text-white mb-4">
-                Ready to Transform Your Business?
-              </h3>
-              <p className="text-xl text-white/90 mb-8">
-                Join the restaurant revolution! Start your free trial today and see the difference in just 24 hours.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button 
-                  type="button"
-                  aria-label="Start free trial for restaurants"
-                  className="group bg-white text-orange-600 px-12 py-6 rounded-3xl font-black text-xl hover:bg-white/90 transition-all duration-300 shadow-2xl hover:shadow-white/25 hover:scale-105 flex items-center gap-3">
-                  <Rocket className="w-6 h-6 group-hover:animate-bounce" />
-                  Start Free Trial
-                  <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
-                </button>
-                                  <button 
-                                    type="button"
-                                    aria-label="Watch success stories"
-                                    className="group bg-white/20 backdrop-blur-sm border-2 border-white/30 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/30 transition-all duration-300 flex items-center gap-3">
-                    <span className="text-2xl">▶</span>
-                    Watch Success Stories
-            </button>
-              </div>
-              <p className="text-white/80 mt-6 text-sm">
-                No setup fees • Cancel anytime • 30-day money-back guarantee
-              </p>
-            </div>
-          </div>
-        </div>
+        <p className="text-gray-400 text-sm">
+          © 2025 Happy Hour. Find amazing deals near you.
+        </p>
       </div>
     </div>
   );
-}// Force deployment Thu Aug 28 01:24:27 EDT 2025
+}
