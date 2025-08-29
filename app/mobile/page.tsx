@@ -1,373 +1,386 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, MapPin, ChevronDown, SlidersHorizontal, Heart, Star, Clock, Eye } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowRight, Star, MapPin, Clock, Users, Shield, Award, Smartphone, CreditCard, CheckCircle, Sparkles, Flame, Gift, Target, Rocket, Crown, Diamond, Heart, Zap, TrendingUp, Globe, Timer } from 'lucide-react';
 import MobileShell from '@/components/mobile/MobileShell';
-import DealCard from '@/components/mobile/DealCard';
-import FiltersSheet, { FilterState } from '@/components/mobile/FiltersSheet';
-import LocationPicker from '@/components/mobile/LocationPicker';
-import { AddressComponents } from '@/components/mobile/AddressAutocomplete';
+import Image from 'next/image';
 
-// Types
-interface Deal {
-  id: string;
-  title: string;
-  description: string;
-  percentOff: number;
-  venue: {
-    name: string;
-    address: string;
+export default function MobileLandingPage() {
+  const [currentSection, setCurrentSection] = useState(0);
+
+  const handleSignUp = () => {
+    window.location.href = '/signup';
   };
-  distance: string;
-  rating: number;
-  isOpen: boolean;
-  category: string;
-  imageUrl?: string;
-  validUntil?: string;
-  featured?: boolean;
-  priceRange?: string;
-  cuisine?: string;
-  deliveryTime?: string;
-  deliveryFee?: string;
-  reviewCount?: string;
-}
 
-// Enhanced mock data with hero-worthy content
-const mockDeals: Deal[] = [
-  {
-    id: '1',
-    title: 'Happy Hour Special',
-    description: '50% off all drinks and appetizers during happy hour',
-    percentOff: 50,
-    venue: {
-      name: 'The Local Pub',
-      address: '123 Main St, Downtown'
-    },
-    distance: '0.3 mi',
-    rating: 4.5,
-    isOpen: true,
-    category: 'Drinks',
-    validUntil: '7:00 PM',
-    featured: true,
-    priceRange: '$$',
-    cuisine: 'American',
-    deliveryTime: '15 min',
-    deliveryFee: '$0',
-    reviewCount: '1,200+'
-  },
-  {
-    id: '2',
-    title: 'Lunch Deal',
-    description: '30% off lunch entrees and sides',
-    percentOff: 30,
-    venue: {
-      name: 'Bella Vista',
-      address: '456 Oak Ave, Midtown'
-    },
-    distance: '0.7 mi',
-    rating: 4.2,
-    isOpen: true,
-    category: 'Food',
-    validUntil: '3:00 PM',
-    priceRange: '$$$',
-    cuisine: 'Italian',
-    deliveryTime: '25 min',
-    deliveryFee: '$2.99',
-    reviewCount: '850+'
-  },
-  {
-    id: '3',
-    title: 'Dinner Special',
-    description: 'Buy one get one free on select entrees',
-    percentOff: 50,
-    venue: {
-      name: 'Spice Garden',
-      address: '789 Pine St, Uptown'
-    },
-    distance: '1.2 mi',
-    rating: 4.8,
-    isOpen: false,
-    category: 'Food',
-    validUntil: '10:00 PM',
-    priceRange: '$$',
-    cuisine: 'Indian',
-    deliveryTime: '35 min',
-    deliveryFee: '$0',
-    reviewCount: '2,100+'
-  },
-  {
-    id: '4',
-    title: 'Weekend Brunch',
-    description: '25% off brunch items and bottomless mimosas',
-    percentOff: 25,
-    venue: {
-      name: 'Sunrise Cafe',
-      address: '321 Elm St, Riverside'
-    },
-    distance: '0.9 mi',
-    rating: 4.3,
-    isOpen: true,
-    category: 'Brunch',
-    validUntil: '2:00 PM',
-    priceRange: '$$',
-    cuisine: 'American',
-    deliveryTime: '20 min',
-    deliveryFee: '$1.99',
-    reviewCount: '650+'
-  },
-  {
-    id: '5',
-    title: 'Late Night Bites',
-    description: '40% off late night menu after 10pm',
-    percentOff: 40,
-    venue: {
-      name: 'Midnight Diner',
-      address: '654 Maple Ave, Eastside'
-    },
-    distance: '1.5 mi',
-    rating: 4.1,
-    isOpen: true,
-    category: 'Food',
-    validUntil: '2:00 AM',
-    priceRange: '$',
-    cuisine: 'Diner',
-    deliveryTime: '30 min',
-    deliveryFee: '$0',
-    reviewCount: '420+'
-  },
-  {
-    id: '6',
-    title: 'Cocktail Hour',
-    description: 'Premium cocktails at happy hour prices',
-    percentOff: 35,
-    venue: {
-      name: 'Sky Lounge',
-      address: '999 High St, Skyline'
-    },
-    distance: '2.1 mi',
-    rating: 4.7,
-    isOpen: true,
-    category: 'Drinks',
-    validUntil: '8:00 PM',
-    priceRange: '$$$',
-    cuisine: 'Cocktail Bar',
-    deliveryTime: '45 min',
-    deliveryFee: '$3.99',
-    reviewCount: '1,800+'
-  }
-];
+  const handleSignIn = () => {
+    window.location.href = '/login';
+  };
 
-export default function MobileExplorePage() {
-  const [deals, setDeals] = useState<Deal[]>(mockDeals);
-  const [filteredDeals, setFilteredDeals] = useState<Deal[]>(mockDeals);
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState('explore');
-  const [showFilters, setShowFilters] = useState(false);
-  const [showLocationPicker, setShowLocationPicker] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState("Brooklyn, New York");
-  const [filters, setFilters] = useState<FilterState>({
-    categories: ['All'],
-    priceRange: 'All',
-    distance: 5,
-    timeWindow: 'Now',
-    isOpen: false
-  });
-
-  // Filter deals based on current filters
-  useEffect(() => {
-    let filtered = deals;
-
-    // Category filter
-    if (!filters.categories.includes('All')) {
-      filtered = filtered.filter(deal => filters.categories.includes(deal.category));
-    }
-
-    // Open now filter
-    if (filters.isOpen) {
-      filtered = filtered.filter(deal => deal.isOpen);
-    }
-
-    // Distance filter (simplified - in real app would use actual coordinates)
-    const maxDistance = filters.distance;
-    filtered = filtered.filter(deal => {
-      const distance = parseFloat(deal.distance);
-      return distance <= maxDistance;
-    });
-
-    setFilteredDeals(filtered);
-  }, [deals, filters]);
-
-  const handleFavorite = useCallback((dealId: string) => {
-    setFavorites(prev => {
-      const newFavorites = new Set(prev);
-      if (newFavorites.has(dealId)) {
-        newFavorites.delete(dealId);
-      } else {
-        newFavorites.add(dealId);
-      }
-      return newFavorites;
-    });
-  }, []);
-
-  const handleViewDeal = useCallback((dealId: string) => {
-    // Navigate to deal detail page
-    window.location.href = `/deal/${dealId}`;
-  }, []);
-
-  const handleFiltersChange = useCallback((newFilters: FilterState) => {
-    setFilters(newFilters);
-  }, []);
-
-  const handleLocationSelect = useCallback((address: AddressComponents) => {
-    setCurrentLocation(address.formatted_address);
-    // In a real app, you would update the deals based on the new location
-  }, []);
-
-  const handleSearchClick = () => {
-    // Navigate to search page
-    window.location.href = '/mobile/search';
+  const handleGetStarted = () => {
+    window.location.href = '/signup';
   };
 
   return (
     <MobileShell
+      forceMobile={true}
       headerProps={{
-        showSearch: true,
-        showLocation: true,
-        onSearchClick: handleSearchClick,
-        onLocationClick: () => setShowLocationPicker(true),
-        locationText: currentLocation
+        showSearch: false,
+        showLocation: false,
+        title: 'Happy Hour'
       }}
     >
-      <div className="p-4 space-y-6">
-        {/* Hero Section - Inspired by Uber Eats */}
-        <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6 text-white relative overflow-hidden">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-4 right-4 text-6xl">🍔</div>
-            <div className="absolute bottom-4 left-4 text-4xl">🍺</div>
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-8xl opacity-20">🍕</div>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        {/* Hero Section with Background Image */}
+        <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+          {/* Background Image */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: 'url(/images/hero-food-deals.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
+          />
           
-          <div className="relative z-10">
-            <h2 className="text-2xl font-bold mb-2">Enjoy Amazing Deals?</h2>
-            <p className="text-orange-100 mb-4">Fans of great food also love these deals</p>
-            
-            {/* Featured Deal Preview */}
-            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white/30 rounded-lg flex items-center justify-center">
-                  <span className="text-2xl">🍺</span>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg">The Local Pub</h3>
-                  <p className="text-orange-100 text-sm">50% off drinks & appetizers</p>
-                </div>
-                <div className="text-right">
-                  <div className="bg-white text-orange-500 px-3 py-1 rounded-full text-sm font-bold">
-                    50% OFF
-                  </div>
-                  <p className="text-orange-100 text-xs mt-1">15 min</p>
-                </div>
+          {/* Dark Overlay */}
+          <div className="absolute inset-0 bg-black/60" />
+          
+          {/* Content */}
+          <div className="relative z-10 text-center px-6 py-12">
+            {/* Social Proof Badge */}
+            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-xl border border-white/30 rounded-full px-4 py-2 mb-6">
+              <div className="flex -space-x-1">
+                <div className="w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full border-2 border-white"></div>
+                <div className="w-6 h-6 bg-gradient-to-r from-pink-400 to-red-500 rounded-full border-2 border-white"></div>
+                <div className="w-6 h-6 bg-gradient-to-r from-green-400 to-blue-500 rounded-full border-2 border-white"></div>
+              </div>
+              <span className="text-white font-semibold text-sm">10,000+ Happy Customers</span>
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-3 h-3 text-yellow-400 fill-current" />
+                ))}
+              </div>
+            </div>
+
+            {/* Main Brand */}
+            <div className="mb-8">
+              <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-400 to-red-400 mb-4 leading-tight">
+                Happy Hour
+              </h1>
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <div className="w-8 h-1 bg-gradient-to-r from-yellow-300 to-orange-400 rounded-full"></div>
+                <Sparkles className="w-6 h-6 text-yellow-300 animate-spin" />
+                <div className="w-8 h-1 bg-gradient-to-r from-orange-400 to-red-400 rounded-full"></div>
+              </div>
+              <p className="text-xl text-white/90 font-medium mb-2">
+                Find Amazing Deals
+              </p>
+              <p className="text-lg text-white/80">
+                Restaurants flip the switch when they're quiet. You get instant deals nearby.
+              </p>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="space-y-4 mb-8">
+              <button
+                onClick={handleGetStarted}
+                className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold py-4 px-8 rounded-2xl text-lg shadow-2xl hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+              >
+                <Rocket className="w-5 h-5" />
+                Get Started Free
+                <ArrowRight className="w-5 h-5" />
+              </button>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={handleSignIn}
+                  className="flex-1 bg-white/20 backdrop-blur-xl border border-white/30 text-white font-semibold py-3 px-6 rounded-xl hover:bg-white/30 transition-all duration-300"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={handleSignUp}
+                  className="flex-1 bg-white/20 backdrop-blur-xl border border-white/30 text-white font-semibold py-3 px-6 rounded-xl hover:bg-white/30 transition-all duration-300"
+                >
+                  Sign Up
+                </button>
+              </div>
+            </div>
+
+            {/* Trust Indicators */}
+            <div className="flex items-center justify-center gap-6 text-white/70 text-sm">
+              <div className="flex items-center gap-1">
+                <Shield className="w-4 h-4" />
+                <span>Secure</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Award className="w-4 h-4" />
+                <span>Trusted</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Globe className="w-4 h-4" />
+                <span>Local</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Category Filter Chips */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {['All', 'Food', 'Drinks', 'Brunch', 'Pizza', 'Sushi', 'Mexican', 'Italian'].map((category) => (
+        {/* Quick Navigation */}
+        <div className="px-6 py-8 bg-white">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Learn More
+            </h2>
+            <p className="text-gray-600">
+              Everything you need to know about Happy Hour
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
             <button
-              key={category}
-              type="button"
-              onClick={() => {
-                const newCategories = category === 'All' ? ['All'] : [category];
-                setFilters(prev => ({ ...prev, categories: newCategories }));
-              }}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                filters.categories.includes(category)
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-              }`}
+              onClick={() => window.location.href = '/mobile/how-it-works'}
+              className="p-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 text-left"
             >
-              {category}
+              <div className="flex items-center gap-3 mb-2">
+                <Rocket className="w-5 h-5" />
+                <span className="font-semibold">How It Works</span>
+              </div>
+              <p className="text-sm text-blue-100">
+                Step-by-step guide to getting started
+              </p>
             </button>
-          ))}
+            
+            <button
+              onClick={() => window.location.href = '/mobile/about'}
+              className="p-4 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-xl hover:from-green-600 hover:to-teal-700 transition-all duration-300 text-left"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <Heart className="w-5 h-5" />
+                <span className="font-semibold">About Us</span>
+              </div>
+              <p className="text-sm text-green-100">
+                Our mission and story
+              </p>
+            </button>
+          </div>
+          
+          <div className="mt-4">
+            <button
+              onClick={() => window.location.href = '/mobile/faq'}
+              className="w-full p-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-300 text-left"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <Sparkles className="w-5 h-5" />
+                <span className="font-semibold">FAQ</span>
+              </div>
+              <p className="text-sm text-orange-100">
+                Common questions and answers
+              </p>
+            </button>
+          </div>
         </div>
 
-        {/* Results Header */}
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <h2 className="text-xl font-semibold text-gray-900">
-              {filteredDeals.length} deals near you
+        {/* Features Section */}
+        <div className="px-6 py-16 bg-gray-50">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Why Choose Happy Hour?
             </h2>
-            <div className="text-xl animate-bounce">🍔</div>
+            <p className="text-lg text-gray-600">
+              Discover amazing deals from restaurants near you
+            </p>
           </div>
-          <p className="text-sm text-gray-600">
-            {!filters.categories.includes('All') && `Filtered by ${filters.categories.join(', ').toLowerCase()}`}
-            {filters.isOpen && ' • Open now'}
+
+          <div className="space-y-8">
+            {/* Feature 1 */}
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                <MapPin className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Find Deals Near You
+                </h3>
+                <p className="text-gray-600">
+                  Discover amazing restaurant deals within walking distance. No more searching through endless options.
+                </p>
+              </div>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Clock className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Real-Time Availability
+                </h3>
+                <p className="text-gray-600">
+                  See which deals are active right now. No more showing up to find the deal has ended.
+                </p>
+              </div>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Heart className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Save Your Favorites
+                </h3>
+                <p className="text-gray-600">
+                  Keep track of your favorite restaurants and never miss their best deals.
+                </p>
+              </div>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Instant Notifications
+                </h3>
+                <p className="text-gray-600">
+                  Get notified when your favorite restaurants launch new deals or when deals are about to expire.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* How It Works Section */}
+        <div className="px-6 py-16 bg-gray-50">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              How It Works
+            </h2>
+            <p className="text-lg text-gray-600">
+              Get started in just 3 simple steps
+            </p>
+          </div>
+
+          <div className="space-y-8">
+            {/* Step 1 */}
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                1
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                  Sign Up Free
+                </h3>
+                <p className="text-gray-600">
+                  Create your account in seconds. No credit card required.
+                </p>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                2
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                  Set Your Location
+                </h3>
+                <p className="text-gray-600">
+                  Allow location access to find deals near you automatically.
+                </p>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                3
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                  Discover & Save
+                </h3>
+                <p className="text-gray-600">
+                  Browse amazing deals, save your favorites, and enjoy great food.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Section */}
+        <div className="px-6 py-16 bg-gradient-to-r from-blue-600 to-purple-700">
+          <div className="text-center text-white">
+            <h2 className="text-3xl font-bold mb-12">
+              Join Thousands of Happy Customers
+            </h2>
+            
+            <div className="grid grid-cols-2 gap-8">
+              <div className="text-center">
+                <div className="text-4xl font-bold mb-2">10K+</div>
+                <div className="text-blue-100">Active Users</div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-bold mb-2">500+</div>
+                <div className="text-blue-100">Restaurants</div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-bold mb-2">50K+</div>
+                <div className="text-blue-100">Deals Redeemed</div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-bold mb-2">$2M+</div>
+                <div className="text-blue-100">Saved</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Final CTA Section */}
+        <div className="px-6 py-16 bg-white">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Ready to Start Saving?
+            </h2>
+            <p className="text-lg text-gray-600 mb-8">
+              Join thousands of people who are already saving money on great food
+            </p>
+            
+            <div className="space-y-4">
+              <button
+                onClick={handleGetStarted}
+                className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold py-4 px-8 rounded-2xl text-lg shadow-2xl hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+              >
+                <Rocket className="w-5 h-5" />
+                Get Started Free
+                <ArrowRight className="w-5 h-5" />
+              </button>
+              
+              <p className="text-sm text-gray-500">
+                No credit card required • Free forever • Cancel anytime
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-8 bg-gray-900 text-center">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+              <span className="text-black font-bold text-lg">🍺</span>
+            </div>
+            <span className="text-white font-bold text-lg">Happy Hour</span>
+          </div>
+          <p className="text-gray-400 text-sm">
+            © 2025 Happy Hour. Find amazing deals near you.
           </p>
         </div>
-        
-        {/* Deals List */}
-        <div className="space-y-4">
-          {filteredDeals.map((deal) => (
-            <DealCard 
-              key={deal.id} 
-              deal={deal} 
-              onFavorite={handleFavorite}
-              onView={handleViewDeal}
-              isFavorited={favorites.has(deal.id)}
-              variant={deal.featured ? 'featured' : 'standard'}
-            />
-          ))}
-        </div>
-
-        {/* Empty State */}
-        {filteredDeals.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🔍</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No deals found
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Try adjusting your filters to see more results
-            </p>
-            <button
-              type="button"
-              onClick={() => setShowFilters(true)}
-              className="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors"
-            >
-              Adjust Filters
-            </button>
-          </div>
-        )}
       </div>
-
-      {/* Filters FAB */}
-      <button
-        type="button"
-        onClick={() => setShowFilters(true)}
-        className="fixed bottom-24 right-4 w-14 h-14 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors flex items-center justify-center z-40"
-        aria-label="Open filters"
-      >
-        <Plus size={24} />
-      </button>
-
-      {/* Filters Bottom Sheet */}
-      <FiltersSheet 
-        isOpen={showFilters}
-        onClose={() => setShowFilters(false)}
-        filters={filters}
-        onFiltersChange={handleFiltersChange}
-      />
-
-      {/* Location Picker */}
-      <LocationPicker
-        isOpen={showLocationPicker}
-        onClose={() => setShowLocationPicker(false)}
-        onLocationSelect={handleLocationSelect}
-        currentLocation={currentLocation}
-      />
     </MobileShell>
   );
-}// Deployment trigger Fri Aug 29 01:57:57 EDT 2025
+}

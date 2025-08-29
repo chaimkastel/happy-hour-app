@@ -17,16 +17,23 @@ interface MobileShellProps {
   };
   showBottomNav?: boolean;
   className?: string;
+  forceMobile?: boolean; // When true, always show mobile UI regardless of viewport
 }
 
 export default function MobileShell({ 
   children, 
   headerProps = {},
   showBottomNav = true,
-  className = ''
+  className = '',
+  forceMobile = false
 }: MobileShellProps) {
+  // When forceMobile is true, always show mobile UI regardless of viewport
+  const containerClasses = forceMobile 
+    ? `min-h-screen bg-gray-50 ${className}`
+    : `min-h-screen bg-gray-50 md:hidden ${className}`;
+    
   return (
-    <div className={`min-h-screen bg-gray-50 md:hidden ${className}`}>
+    <div className={containerClasses}>
       {/* Mobile Header */}
       <MobileHeader {...headerProps} />
       
