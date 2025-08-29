@@ -6,6 +6,7 @@ import { MapPin, Clock, Users, Filter, Grid, List, Search, Star, TrendingUp, Zap
 import DealCard from '../components/DealCard';
 import MapWithClusters from '../components/MapWithClusters';
 import SortFilterBar from '../components/SortFilterBar';
+import { useMobileDetection } from '../lib/mobile';
 
 interface Deal {
   id: string;
@@ -29,6 +30,7 @@ interface Filters {
 
 export default function HomePage() {
   const router = useRouter();
+  const { isMobile, isHydrated } = useMobileDetection();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -43,6 +45,13 @@ export default function HomePage() {
   useEffect(() => {
     fetchDeals();
   }, []);
+
+  // Redirect mobile users to mobile page
+  useEffect(() => {
+    if (isHydrated && isMobile) {
+      router.replace('/mobile');
+    }
+  }, [isMobile, isHydrated, router]);
 
   const fetchDeals = async () => {
     try {
@@ -90,19 +99,34 @@ export default function HomePage() {
     return matchesSearch && matchesCuisine && matchesDiscount;
   });
 
-  if (loading) {
-  return (
+  // Show loading state while checking mobile or loading deals
+  if (!isHydrated || loading) {
+    return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-slate-600 dark:text-slate-400">Loading deals...</p>
+          <p className="text-slate-600 dark:text-slate-400">
+            {!isHydrated ? 'Loading...' : 'Loading deals...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render desktop content on mobile (redirect will happen)
+  if (isMobile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-400">Redirecting to mobile...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen relative hidden md:block">
+    <div className="min-h-screen relative">
       {/* Hero Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
