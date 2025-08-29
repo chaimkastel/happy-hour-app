@@ -331,7 +331,7 @@ export default function EnhancedMerchantDashboard() {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-3xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-8">
-                <h2 className="text-3xl font-bold text-slate-800">Add New Restaurant</h2>
+                <h2 className="text-3xl font-bold text-slate-800">Add New Venue</h2>
                 <button
                   onClick={() => setShowRestaurantForm(false)}
                   className="text-slate-400 hover:text-slate-600 text-3xl transition-colors duration-200"
@@ -339,16 +339,165 @@ export default function EnhancedMerchantDashboard() {
                   ×
                 </button>
               </div>
-              <div className="bg-slate-50 rounded-2xl p-6 text-center">
-                <Building2 className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-                <p className="text-slate-600">Restaurant form component will be integrated here</p>
-                <button
-                  onClick={() => setShowRestaurantForm(false)}
-                  className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition-colors duration-200"
-                >
-                  Close
-                </button>
-              </div>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target as HTMLFormElement);
+                const data = {
+                  name: formData.get('name') as string,
+                  address: formData.get('address') as string,
+                  businessType: [formData.get('businessType') as string],
+                  priceTier: formData.get('priceTier') as string,
+                  description: formData.get('description') as string,
+                  contactInfo: {
+                    phone: formData.get('phone') as string,
+                    email: formData.get('email') as string,
+                    website: formData.get('website') as string
+                  },
+                  amenities: [],
+                  capacity: parseInt(formData.get('capacity') as string) || 50
+                };
+                handleRestaurantSubmit(data);
+              }} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                      Venue Name *
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      required
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                      placeholder="e.g., Bella Vista Restaurant"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                      Business Type *
+                    </label>
+                    <select
+                      name="businessType"
+                      required
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    >
+                      <option value="">Select type</option>
+                      <option value="Restaurant">Restaurant</option>
+                      <option value="Cafe">Cafe</option>
+                      <option value="Bar">Bar</option>
+                      <option value="Fast Food">Fast Food</option>
+                      <option value="Fine Dining">Fine Dining</option>
+                      <option value="Casual Dining">Casual Dining</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">
+                    Address *
+                  </label>
+                  <input
+                    type="text"
+                    name="address"
+                    required
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    placeholder="e.g., 123 Main St, New York, NY 10001"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                      Price Tier
+                    </label>
+                    <select
+                      name="priceTier"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    >
+                      <option value="BUDGET">Budget ($)</option>
+                      <option value="MODERATE">Moderate ($$)</option>
+                      <option value="EXPENSIVE">Expensive ($$$)</option>
+                      <option value="LUXURY">Luxury ($$$$)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                      Capacity
+                    </label>
+                    <input
+                      type="number"
+                      name="capacity"
+                      min="1"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                      placeholder="50"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    name="description"
+                    rows={3}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    placeholder="Describe your venue..."
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                      Phone
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                      placeholder="(555) 123-4567"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                      placeholder="contact@venue.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                      Website
+                    </label>
+                    <input
+                      type="url"
+                      name="website"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                      placeholder="https://venue.com"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-4 pt-6">
+                  <button
+                    type="button"
+                    onClick={() => setShowRestaurantForm(false)}
+                    className="px-6 py-3 bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300 transition-colors duration-200 font-semibold"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors duration-200 font-semibold"
+                  >
+                    Create Venue
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
