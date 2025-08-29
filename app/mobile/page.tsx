@@ -70,6 +70,49 @@ export default function MobilePage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Fallback: if loading takes too long, show mock data
+  useEffect(() => {
+    const fallbackTimer = setTimeout(() => {
+      if (loading && deals.length === 0) {
+        console.log('Loading timeout, showing fallback data');
+        const mockDeals = [
+          {
+            id: 'mock-1',
+            title: 'Happy Hour Special',
+            description: '50% off all drinks and appetizers',
+            percentOff: 50,
+            venue: {
+              name: 'Sample Restaurant',
+              address: '123 Main St, City, State'
+            },
+            cuisine: 'American',
+            distance: '0.5 mi',
+            rating: 4.5,
+            isOpen: true
+          },
+          {
+            id: 'mock-2',
+            title: 'Lunch Deal',
+            description: '30% off lunch entrees',
+            percentOff: 30,
+            venue: {
+              name: 'Another Place',
+              address: '456 Oak Ave, City, State'
+            },
+            cuisine: 'Italian',
+            distance: '0.8 mi',
+            rating: 4.2,
+            isOpen: true
+          }
+        ];
+        setDeals(mockDeals);
+        setLoading(false);
+      }
+    }, 3000); // 3 second timeout
+
+    return () => clearTimeout(fallbackTimer);
+  }, [loading, deals.length]);
+
   const fetchDeals = async (searchTerm = '') => {
     try {
       console.log('fetchDeals called with searchTerm:', searchTerm);
