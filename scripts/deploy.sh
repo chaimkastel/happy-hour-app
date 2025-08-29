@@ -1,90 +1,68 @@
 #!/bin/bash
 
-# Happy Hour App - Production Deployment Script
-# This script sets up the production database and runs migrations
+# 🚀 Split Deployment Script
+# Usage: ./scripts/deploy.sh [type] [message]
+# Types: fix, feature, core, ui
 
-set -e  # Exit on any error
+TYPE=${1:-"fix"}
+MESSAGE=${2:-"Update"}
 
-echo "🚀 Starting Happy Hour production deployment..."
+case $TYPE in
+  "fix")
+    EMOJI="🔧"
+    PREFIX="Fix"
+    ;;
+  "feature")
+    EMOJI="✨"
+    PREFIX="Feature"
+    ;;
+  "core")
+    EMOJI="🏗️"
+    PREFIX="Core"
+    ;;
+  "ui")
+    EMOJI="🎨"
+    PREFIX="UI"
+    ;;
+  *)
+    EMOJI="📝"
+    PREFIX="Update"
+    ;;
+esac
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+echo "🚀 Preparing deployment..."
+echo "Type: $TYPE"
+echo "Message: $MESSAGE"
 
-# Function to print colored output
-print_status() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
-
-print_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
-
-print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-# Check if we're in the right directory
-if [ ! -f "package.json" ]; then
-    print_error "Please run this script from the project root directory"
+# Check if there are changes to commit
+if [ -z "$(git status --porcelain)" ]; then
+    echo "❌ No changes to commit"
     exit 1
 fi
 
-# Check if .env.production exists
-if [ ! -f ".env.production" ]; then
-    print_warning ".env.production not found. Please create it with your production environment variables."
-    print_status "You can copy from env.production.example and fill in your values."
-    exit 1
-fi
+# Show what will be committed
+echo "📋 Files to be committed:"
+git status --porcelain
 
-# Load environment variables
-print_status "Loading production environment variables..."
-export $(cat .env.production | grep -v '^#' | xargs)
+# Count files
+FILE_COUNT=$(git status --porcelain | wc -l)
+echo "📊 Total files: $FILE_COUNT"
 
-# Check required environment variables
-required_vars=("DATABASE_URL" "REDIS_URL" "NEXTAUTH_SECRET" "NEXTAUTH_URL")
-for var in "${required_vars[@]}"; do
-    if [ -z "${!var}" ]; then
-        print_error "Required environment variable $var is not set"
+# Warn if too many files
+if [ $FILE_COUNT -gt 5 ]; then
+    echo "⚠️  WARNING: More than 5 files detected. Consider splitting into smaller commits."
+    read -p "Continue anyway? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "❌ Deployment cancelled"
         exit 1
     fi
-done
+fi
 
-print_success "Environment variables loaded successfully"
+# Commit and push
+git add .
+git commit -m "$EMOJI $PREFIX: $MESSAGE"
+git push origin main
 
-# Install dependencies
-print_status "Installing dependencies..."
-npm install
-
-# Generate Prisma client
-print_status "Generating Prisma client..."
-npm run db:generate
-
-# Run database migrations
-print_status "Running database migrations..."
-npm run db:deploy
-
-# Seed the database
-print_status "Seeding production database..."
-npm run db:seed:prod
-
-# Build the application
-print_status "Building the application..."
-npm run build
-
-print_success "🎉 Production deployment completed successfully!"
-print_status ""
-print_status "Next steps:"
-print_status "1. Push your code to GitHub"
-print_status "2. Import your repository to Vercel"
-print_status "3. Add environment variables in Vercel dashboard"
-print_status "4. Deploy!"
-print_status ""
-print_status "Your app is now ready for production! 🚀"
+echo "✅ Deployment triggered!"
+echo "🔗 Check status at: https://vercel.com/dashboard"
