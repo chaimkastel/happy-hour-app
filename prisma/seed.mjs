@@ -3,53 +3,97 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting database seed...');
+  console.log('🌱 Starting comprehensive database seed...');
 
-  // Create sample users
-  const user1 = await prisma.user.upsert({
-    where: { email: 'user@example.com' },
-    update: {},
-    create: {
-      email: 'user@example.com',
-      phone: '+1234567890',
-      role: 'USER',
-      preferredCities: JSON.stringify(['New York', 'Brooklyn'])
-    }
-  });
+  // Create comprehensive user base with realistic locations
+  const users = [
+    // Crown Heights residents
+    { email: 'sarah.johnson@email.com', phone: '+17185551234', role: 'USER', location: 'Crown Heights, Brooklyn, NY', preferredCities: ['Brooklyn', 'New York'] },
+    { email: 'mike.chen@email.com', phone: '+17185551235', role: 'USER', location: 'Crown Heights, Brooklyn, NY', preferredCities: ['Brooklyn', 'New York'] },
+    { email: 'jessica.rodriguez@email.com', phone: '+17185551236', role: 'USER', location: 'Crown Heights, Brooklyn, NY', preferredCities: ['Brooklyn', 'New York'] },
+    
+    // East Flatbush residents
+    { email: 'david.williams@email.com', phone: '+17185551237', role: 'USER', location: 'East Flatbush, Brooklyn, NY', preferredCities: ['Brooklyn', 'New York'] },
+    { email: 'amanda.brown@email.com', phone: '+17185551238', role: 'USER', location: 'East Flatbush, Brooklyn, NY', preferredCities: ['Brooklyn', 'New York'] },
+    
+    // Park Slope residents
+    { email: 'robert.davis@email.com', phone: '+17185551239', role: 'USER', location: 'Park Slope, Brooklyn, NY', preferredCities: ['Brooklyn', 'New York'] },
+    { email: 'lisa.miller@email.com', phone: '+17185551240', role: 'USER', location: 'Park Slope, Brooklyn, NY', preferredCities: ['Brooklyn', 'New York'] },
+    
+    // Williamsburg residents
+    { email: 'james.wilson@email.com', phone: '+17185551241', role: 'USER', location: 'Williamsburg, Brooklyn, NY', preferredCities: ['Brooklyn', 'New York'] },
+    { email: 'maria.garcia@email.com', phone: '+17185551242', role: 'USER', location: 'Williamsburg, Brooklyn, NY', preferredCities: ['Brooklyn', 'New York'] },
+    
+    // Manhattan residents
+    { email: 'thomas.moore@email.com', phone: '+17185551243', role: 'USER', location: 'East Village, Manhattan, NY', preferredCities: ['Manhattan', 'New York'] },
+    { email: 'jennifer.taylor@email.com', phone: '+17185551244', role: 'USER', location: 'Upper East Side, Manhattan, NY', preferredCities: ['Manhattan', 'New York'] },
+    { email: 'christopher.anderson@email.com', phone: '+17185551245', role: 'USER', location: 'SoHo, Manhattan, NY', preferredCities: ['Manhattan', 'New York'] },
+    
+    // Queens residents
+    { email: 'daniel.thomas@email.com', phone: '+17185551246', role: 'USER', location: 'Astoria, Queens, NY', preferredCities: ['Queens', 'New York'] },
+    { email: 'michelle.jackson@email.com', phone: '+17185551247', role: 'USER', location: 'Long Island City, Queens, NY', preferredCities: ['Queens', 'New York'] },
+    
+    // Bronx residents
+    { email: 'anthony.white@email.com', phone: '+17185551248', role: 'USER', location: 'South Bronx, Bronx, NY', preferredCities: ['Bronx', 'New York'] },
+    
+    // Merchants
+    { email: 'merchant@example.com', phone: '+1234567891', role: 'MERCHANT', location: 'Brooklyn, NY', preferredCities: ['Brooklyn', 'New York'] },
+    { email: 'restaurant.owner@email.com', phone: '+17185551249', role: 'MERCHANT', location: 'Crown Heights, Brooklyn, NY', preferredCities: ['Brooklyn', 'New York'] },
+    { email: 'spa.manager@email.com', phone: '+17185551250', role: 'MERCHANT', location: 'Park Slope, Brooklyn, NY', preferredCities: ['Brooklyn', 'New York'] }
+  ];
 
-  const merchant1 = await prisma.user.upsert({
-    where: { email: 'merchant@example.com' },
-    update: {},
-    create: {
-      email: 'merchant@example.com',
-      phone: '+1234567891',
-      role: 'MERCHANT',
-      preferredCities: JSON.stringify(['New York', 'Brooklyn'])
-    }
-  });
+  const createdUsers = [];
+  for (const userData of users) {
+    const user = await prisma.user.upsert({
+      where: { email: userData.email },
+      update: {},
+      create: {
+        email: userData.email,
+        phone: userData.phone,
+        role: userData.role,
+        preferredCities: JSON.stringify(userData.preferredCities),
+        location: userData.location
+      }
+    });
+    createdUsers.push(user);
+  }
 
-  console.log('✅ Users created');
+  console.log(`✅ Created ${createdUsers.length} users with diverse locations`);
 
-  // Create merchant profile
-  const merchantProfile = await prisma.merchant.upsert({
-    where: { userId: merchant1.id },
-    update: {},
-    create: {
-      userId: merchant1.id,
-      businessName: 'Brooklyn Hospitality Group',
-      abnOrEIN: '12-3456789',
-      kycStatus: 'VERIFIED'
-    }
-  });
+  // Create merchant profiles for all merchant users
+  const merchantUsers = createdUsers.filter(user => user.role === 'MERCHANT');
+  const merchantProfiles = [];
+  
+  for (let i = 0; i < merchantUsers.length; i++) {
+    const merchantUser = merchantUsers[i];
+    const businessNames = [
+      'Brooklyn Hospitality Group',
+      'Crown Heights Eatery',
+      'Park Slope Wellness Center'
+    ];
+    
+    const merchantProfile = await prisma.merchant.upsert({
+      where: { userId: merchantUser.id },
+      update: {},
+      create: {
+        userId: merchantUser.id,
+        businessName: businessNames[i] || `Business ${i + 1}`,
+        abnOrEIN: `12-345678${i}`,
+        kycStatus: 'VERIFIED'
+      }
+    });
+    merchantProfiles.push(merchantProfile);
+  }
 
-  console.log('✅ Merchant profile created');
+  console.log(`✅ Created ${merchantProfiles.length} merchant profiles`);
 
-  // Create sample venues with diverse business types
+  // Create comprehensive venues across different neighborhoods
   const venues = [
+    // Crown Heights venues
     {
       name: 'Crown Heights Trattoria',
       slug: 'crown-heights-trattoria',
-      address: '123 Nostrand Ave, Brooklyn, NY 11216',
+      address: '123 Nostrand Ave, Crown Heights, Brooklyn, NY 11216',
       latitude: 40.6681,
       longitude: -73.9442,
       businessType: JSON.stringify(['Restaurant', 'Italian', 'Mediterranean']),
@@ -71,9 +115,35 @@ async function main() {
       isVerified: true
     },
     {
+      name: 'Crown Heights Coffee Co.',
+      slug: 'crown-heights-coffee',
+      address: '456 Franklin Ave, Crown Heights, Brooklyn, NY 11216',
+      latitude: 40.6701,
+      longitude: -73.9502,
+      businessType: JSON.stringify(['Coffee', 'Cafe', 'Breakfast']),
+      priceTier: 'BUDGET',
+      hours: JSON.stringify({
+        monday: { open: '06:00', close: '18:00' },
+        tuesday: { open: '06:00', close: '18:00' },
+        wednesday: { open: '06:00', close: '18:00' },
+        thursday: { open: '06:00', close: '18:00' },
+        friday: { open: '06:00', close: '19:00' },
+        saturday: { open: '07:00', close: '19:00' },
+        sunday: { open: '07:00', close: '17:00' }
+      }),
+      rating: 4.3,
+      photos: JSON.stringify([
+        'https://picsum.photos/seed/coffee1/800/600',
+        'https://picsum.photos/seed/coffee2/800/600'
+      ]),
+      isVerified: true
+    },
+    
+    // Park Slope venues
+    {
       name: 'Serenity Spa & Wellness',
       slug: 'serenity-spa',
-      address: '456 Atlantic Ave, Brooklyn, NY 11217',
+      address: '456 7th Ave, Park Slope, Brooklyn, NY 11215',
       latitude: 40.6782,
       longitude: -73.9442,
       businessType: JSON.stringify(['Wellness', 'Spa', 'Massage']),
@@ -95,21 +165,47 @@ async function main() {
       isVerified: true
     },
     {
-      name: 'Zen Fitness Studio',
-      slug: 'zen-fitness',
-      address: '789 Ocean Ave, Brooklyn, NY 11226',
-      latitude: 40.7282,
-      longitude: -73.7949,
-      businessType: JSON.stringify(['Fitness', 'Wellness', 'Classes']),
+      name: 'Park Slope Bistro',
+      slug: 'park-slope-bistro',
+      address: '789 5th Ave, Park Slope, Brooklyn, NY 11215',
+      latitude: 40.6722,
+      longitude: -73.9782,
+      businessType: JSON.stringify(['Restaurant', 'French', 'Bistro']),
+      priceTier: 'PREMIUM',
+      hours: JSON.stringify({
+        monday: { open: '17:00', close: '23:00' },
+        tuesday: { open: '17:00', close: '23:00' },
+        wednesday: { open: '17:00', close: '23:00' },
+        thursday: { open: '17:00', close: '23:00' },
+        friday: { open: '17:00', close: '24:00' },
+        saturday: { open: '12:00', close: '24:00' },
+        sunday: { open: '12:00', close: '22:00' }
+      }),
+      rating: 4.6,
+      photos: JSON.stringify([
+        'https://picsum.photos/seed/bistro1/800/600',
+        'https://picsum.photos/seed/bistro2/800/600'
+      ]),
+      isVerified: true
+    },
+    
+    // Williamsburg venues
+    {
+      name: 'Williamsburg Fitness Hub',
+      slug: 'williamsburg-fitness',
+      address: '321 Bedford Ave, Williamsburg, Brooklyn, NY 11211',
+      latitude: 40.7081,
+      longitude: -73.9571,
+      businessType: JSON.stringify(['Fitness', 'Gym', 'Classes']),
       priceTier: 'MODERATE',
       hours: JSON.stringify({
-        monday: { open: '06:00', close: '22:00' },
-        tuesday: { open: '06:00', close: '22:00' },
-        wednesday: { open: '06:00', close: '22:00' },
-        thursday: { open: '06:00', close: '22:00' },
-        friday: { open: '06:00', close: '21:00' },
-        saturday: { open: '07:00', close: '20:00' },
-        sunday: { open: '07:00', close: '19:00' }
+        monday: { open: '05:00', close: '23:00' },
+        tuesday: { open: '05:00', close: '23:00' },
+        wednesday: { open: '05:00', close: '23:00' },
+        thursday: { open: '05:00', close: '23:00' },
+        friday: { open: '05:00', close: '22:00' },
+        saturday: { open: '07:00', close: '21:00' },
+        sunday: { open: '07:00', close: '20:00' }
       }),
       rating: 4.4,
       photos: JSON.stringify([
@@ -117,15 +213,43 @@ async function main() {
         'https://picsum.photos/seed/fitness2/800/600'
       ]),
       isVerified: true
+    },
+    
+    // East Flatbush venues
+    {
+      name: 'East Flatbush Market',
+      slug: 'east-flatbush-market',
+      address: '654 Utica Ave, East Flatbush, Brooklyn, NY 11203',
+      latitude: 40.6581,
+      longitude: -73.9342,
+      businessType: JSON.stringify(['Market', 'Grocery', 'Local']),
+      priceTier: 'BUDGET',
+      hours: JSON.stringify({
+        monday: { open: '08:00', close: '20:00' },
+        tuesday: { open: '08:00', close: '20:00' },
+        wednesday: { open: '08:00', close: '20:00' },
+        thursday: { open: '08:00', close: '20:00' },
+        friday: { open: '08:00', close: '21:00' },
+        saturday: { open: '08:00', close: '21:00' },
+        sunday: { open: '09:00', close: '19:00' }
+      }),
+      rating: 4.2,
+      photos: JSON.stringify([
+        'https://picsum.photos/seed/market1/800/600',
+        'https://picsum.photos/seed/market2/800/600'
+      ]),
+      isVerified: true
     }
   ];
 
   const createdVenues = [];
-  for (const venueData of venues) {
+  for (let i = 0; i < venues.length; i++) {
+    const venueData = venues[i];
+    const merchantIndex = i % merchantProfiles.length;
     const venue = await prisma.venue.create({
       data: {
         ...venueData,
-        merchantId: merchantProfile.id
+        merchantId: merchantProfiles[merchantIndex].id
       }
     });
     createdVenues.push(venue);
@@ -217,8 +341,57 @@ async function main() {
 
   console.log('✅ Dynamic pricing hints created');
 
-  console.log('🎉 Database seeding completed successfully!');
-  console.log(`Created ${createdVenues.length} venues and ${createdDeals.length} deals`);
+  // Create sample redemptions to show user activity
+  const userUsers = createdUsers.filter(user => user.role === 'USER');
+  const sampleRedemptions = [
+    { 
+      userId: userUsers[0].id, 
+      dealId: createdDeals[0].id, 
+      code: 'REDEEM001',
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+      status: 'CLAIMED'
+    },
+    { 
+      userId: userUsers[1].id, 
+      dealId: createdDeals[1].id, 
+      code: 'REDEEM002',
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      status: 'CLAIMED'
+    },
+    { 
+      userId: userUsers[2].id, 
+      dealId: createdDeals[0].id, 
+      code: 'REDEEM003',
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      status: 'CLAIMED'
+    },
+    { 
+      userId: userUsers[3].id, 
+      dealId: createdDeals[2].id, 
+      code: 'REDEEM004',
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      status: 'CLAIMED'
+    },
+    { 
+      userId: userUsers[4].id, 
+      dealId: createdDeals[1].id, 
+      code: 'REDEEM005',
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      status: 'CLAIMED'
+    },
+  ];
+
+  for (const redemptionData of sampleRedemptions) {
+    await prisma.redemption.create({
+      data: redemptionData
+    });
+  }
+
+  console.log(`✅ Created ${sampleRedemptions.length} sample redemptions`);
+
+  console.log('🎉 Comprehensive database seeding completed successfully!');
+  console.log(`Created ${createdUsers.length} users, ${createdVenues.length} venues, ${createdDeals.length} deals`);
+  console.log(`Added ${sampleRedemptions.length} redemptions`);
 }
 
 main()

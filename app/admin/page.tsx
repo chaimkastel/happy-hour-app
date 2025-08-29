@@ -679,6 +679,13 @@ export default function AdminDashboard() {
                 <Shield className="w-4 h-4" />
                 Admin Access
               </div>
+              <button
+                onClick={() => router.push('/admin/analytics')}
+                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+              >
+                <BarChart3 className="w-4 h-4" />
+                Analytics
+              </button>
               <button 
                 onClick={() => {
                   localStorage.removeItem('admin-authenticated');

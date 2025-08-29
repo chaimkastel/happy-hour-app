@@ -15,6 +15,7 @@ model User {
   role            String       @default("USER")
   walletCardId    String?
   preferredCities String       @default("[]")
+  location        String?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
   merchant        Merchant?

@@ -3,125 +3,174 @@ import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const timeRange = searchParams.get('range') || '24h';
-    
-    // Calculate time range
-    const now = new Date();
-    let startTime: Date;
-    
-    switch (timeRange) {
-      case '1h':
-        startTime = new Date(now.getTime() - 60 * 60 * 1000);
-        break;
-      case '24h':
-        startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-        break;
-      case '7d':
-        startTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        break;
-      case '30d':
-        startTime = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        break;
-      default:
-        startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    }
-
-    // Get user analytics
-    const userAnalytics = await prisma.user.groupBy({
-      by: ['role'],
-      _count: {
-        id: true
+    // Get user location analytics
+    const userLocations = await prisma.user.findMany({
+      where: {
+        role: 'USER',
+        location: { not: null }
+      },
+      select: {
+        location: true,
+        createdAt: true
       }
     });
 
-    // Get recent user registrations
-    const recentUsers = await prisma.user.count({
-      where: {
-        createdAt: {
-          gte: startTime
+    // Process location data
+    const locationStats = userLocations.reduce((acc, user) => {
+      if (user.location) {
+        const location = user.location;
+        if (!acc[location]) {
+          acc[location] = { count: 0, recent: 0 };
+        }
+        acc[location].count++;
+        
+        // Count recent users (last 30 days)
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        if (user.createdAt > thirtyDaysAgo) {
+          acc[location].recent++;
+        }
+      }
+      return acc;
+    }, {} as Record<string, { count: number; recent: number }>);
+
+    // Get redemption analytics by location
+    const redemptionsWithLocation = await prisma.redemption.findMany({
+      include: {
+        user: {
+          select: { location: true }
+        },
+        deal: {
+          include: {
+            venue: {
+              select: { name: true, address: true }
+            }
+          }
+        }
+      },
+      orderBy: { redeemedAt: 'desc' },
+      take: 50
+    });
+
+    // Get deal performance by venue
+    const dealPerformance = await prisma.deal.findMany({
+      include: {
+        venue: {
+          select: { name: true, address: true }
+        },
+        _count: {
+          select: { redemptions: true, favorites: true }
         }
       }
     });
 
+    // Get user growth over time
+    const userGrowth = await prisma.user.groupBy({
+      by: ['createdAt'],
+      where: {
+        role: 'USER',
+        createdAt: {
+          gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
+        }
+      },
+      _count: {
+        id: true
+      },
+      orderBy: {
+        createdAt: 'asc'
+      }
+    });
+
     // Get merchant analytics
-    const merchantAnalytics = await prisma.merchant.findMany({
+    const merchantStats = await prisma.merchant.findMany({
       include: {
-        _count: {
-          select: {
-            venues: true
+        user: {
+          select: { location: true, createdAt: true }
+        },
+        venues: {
+          include: {
+            deals: {
+              include: {
+                _count: {
+                  select: { redemptions: true, favorites: true }
+                }
+              }
+            }
           }
         }
       }
     });
 
-    // Get deal analytics
-    const dealAnalytics = await prisma.deal.groupBy({
-      by: ['status'],
-      _count: {
-        id: true
-      }
-    });
-
-    // Get venue analytics
-    const venueAnalytics = await prisma.venue.groupBy({
-      by: ['businessType'],
-      _count: {
-        id: true
-      }
-    });
-
-    // Calculate growth metrics
-    const totalUsers = await prisma.user.count();
+    // Calculate total stats
+    const totalUsers = await prisma.user.count({ where: { role: 'USER' } });
     const totalMerchants = await prisma.merchant.count();
-    const totalVenues = await prisma.venue.count();
     const totalDeals = await prisma.deal.count();
+    const totalRedemptions = await prisma.redemption.count();
+    const totalFavorites = await prisma.favorite.count();
 
-    // Get active deals
-    const activeDeals = await prisma.deal.count({
+    // Recent activity (last 24 hours)
+    const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const recentUsers = await prisma.user.count({
       where: {
-        status: 'LIVE'
+        role: 'USER',
+        createdAt: { gte: last24Hours }
       }
     });
-
-    // Get pending approvals
-    const pendingDeals = await prisma.deal.count({
-      where: {
-        status: 'PENDING_APPROVAL'
-      }
+    const recentRedemptions = await prisma.redemption.count({
+      where: { redeemedAt: { gte: last24Hours } }
     });
 
     return NextResponse.json({
-      status: 'success',
-      timestamp: new Date().toISOString(),
-      timeRange,
       overview: {
         totalUsers,
         totalMerchants,
-        totalVenues,
         totalDeals,
-        activeDeals,
-        pendingDeals,
-        recentRegistrations: recentUsers
+        totalRedemptions,
+        totalFavorites,
+        recentUsers,
+        recentRedemptions
       },
-      analytics: {
-        users: userAnalytics,
-        merchants: merchantAnalytics,
-        deals: dealAnalytics,
-        venues: venueAnalytics
+      locationAnalytics: {
+        userLocations: locationStats,
+        topLocations: Object.entries(locationStats)
+          .sort(([,a], [,b]) => b.count - a.count)
+          .slice(0, 10)
+          .map(([location, stats]) => ({ location, ...stats }))
       },
-      growth: {
-        newUsers: recentUsers,
-        growthRate: totalUsers > 0 ? (recentUsers / totalUsers) * 100 : 0
-      }
+      redemptionAnalytics: {
+        recentRedemptions: redemptionsWithLocation.slice(0, 20),
+        dealPerformance: dealPerformance.map(deal => ({
+          id: deal.id,
+          title: deal.title,
+          venue: deal.venue.name,
+          venueAddress: deal.venue.address,
+          redemptions: deal._count.redemptions,
+          favorites: deal._count.favorites,
+          status: deal.status
+        }))
+      },
+      merchantAnalytics: merchantStats.map(merchant => ({
+        id: merchant.id,
+        businessName: merchant.businessName,
+        location: merchant.user.location,
+        venueCount: merchant.venues.length,
+        totalDeals: merchant.venues.reduce((sum, venue) => sum + venue.deals.length, 0),
+        totalRedemptions: merchant.venues.reduce((sum, venue) => 
+          sum + venue.deals.reduce((dealSum, deal) => dealSum + deal._count.redemptions, 0), 0
+        ),
+        kycStatus: merchant.kycStatus
+      })),
+      userGrowth: userGrowth.map(day => ({
+        date: day.createdAt.toISOString().split('T')[0],
+        count: day._count.id
+      }))
     });
 
   } catch (error) {
-    console.error('Analytics error:', error);
-    return NextResponse.json({
-      status: 'error',
-      timestamp: new Date().toISOString(),
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    console.error('Analytics API error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch analytics data' },
+      { status: 500 }
+    );
   }
 }
