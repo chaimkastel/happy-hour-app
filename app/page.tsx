@@ -188,7 +188,9 @@ export default function HomePage() {
                   placeholder="Enter your address or city to find amazing deals..."
                   className="w-full pl-12 sm:pl-16 pr-24 sm:pr-32 py-4 sm:py-6 text-lg sm:text-xl bg-white/30 dark:bg-slate-800/60 backdrop-blur-xl border-2 border-white/40 dark:border-slate-600/50 rounded-2xl sm:rounded-3xl focus:border-white/60 dark:focus:border-slate-500 focus:outline-none transition-all duration-300 text-slate-900 dark:text-slate-100 placeholder-slate-600 dark:placeholder-slate-300 shadow-2xl font-medium"
                 />
-                <button className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-white/30 dark:bg-slate-800/60 backdrop-blur-sm text-slate-800 dark:text-slate-200 px-4 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-lg hover:bg-white/40 dark:hover:bg-slate-800/70 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 border border-white/40 dark:border-slate-600/50">
+                <button 
+                  type="button"
+                  className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-white/30 dark:bg-slate-800/60 backdrop-blur-sm text-slate-800 dark:text-slate-200 px-4 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-lg hover:bg-white/40 dark:hover:bg-slate-800/70 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 border border-white/40 dark:border-slate-600/50">
                   <span className="hidden sm:inline">Find Deals</span>
                   <span className="sm:hidden">Search</span>
                 </button>
@@ -198,6 +200,7 @@ export default function HomePage() {
             {/* Primary CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-12 sm:mb-16 animate-fade-in">
               <button 
+                type="button"
                 onClick={() => router.push('/explore')}
                 className="group bg-white/30 dark:bg-slate-800/60 backdrop-blur-sm text-slate-800 dark:text-slate-200 px-8 sm:px-12 py-4 sm:py-6 rounded-2xl sm:rounded-3xl font-black text-lg sm:text-2xl hover:bg-white/40 dark:hover:bg-slate-800/70 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 flex items-center gap-3 sm:gap-4 border border-white/40 dark:border-slate-600/50"
               >
@@ -261,7 +264,9 @@ export default function HomePage() {
                   </div>
 
                   {/* Favorite Button */}
-                  <button className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm text-white hover:text-orange-400 transition-colors p-3 rounded-full shadow-lg hover:bg-white/30">
+                  <button 
+                    type="button"
+                    className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm text-white hover:text-orange-400 transition-colors p-3 rounded-full shadow-lg hover:bg-white/30">
                     <Heart className="w-5 h-5" />
                   </button>
 
@@ -302,7 +307,9 @@ export default function HomePage() {
                     {deal.description || 'Special deal available now!'}
                   </p>
                   
-                  <button className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black py-4 rounded-2xl font-bold text-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl group-hover:scale-105">
+                  <button 
+                    type="button"
+                    className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black py-4 rounded-2xl font-bold text-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl group-hover:scale-105">
                     Claim This Deal
                   </button>
                 </div>
@@ -344,6 +351,7 @@ export default function HomePage() {
           <div className="flex justify-center mb-12">
             <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-3xl p-2 flex gap-2 shadow-2xl">
               <button
+                type="button"
                 onClick={() => setView('grid')}
                 className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 flex items-center gap-3 ${
                   view === 'grid'
@@ -355,6 +363,7 @@ export default function HomePage() {
                 Grid View
               </button>
               <button
+                type="button"
                 onClick={() => setView('map')}
                 className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 flex items-center gap-3 ${
                   view === 'map'
@@ -410,6 +419,7 @@ export default function HomePage() {
                 Don't worry! Try expanding your search radius or adjusting your filters to discover amazing deals nearby.
               </p>
               <button
+                type="button"
                 onClick={() => {
                   setSearchQuery('');
                   setFilters({
@@ -509,6 +519,7 @@ export default function HomePage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button 
+                  type="button"
                   onClick={() => router.push('/deals')}
                   className="group bg-gradient-to-r from-orange-500 to-red-500 text-white px-10 py-5 rounded-2xl font-bold text-xl hover:from-orange-600 hover:to-red-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-3"
                 >
@@ -601,12 +612,16 @@ export default function HomePage() {
                 Join the restaurant revolution! Start your free trial today and see the difference in just 24 hours.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button className="group bg-white text-orange-600 px-12 py-6 rounded-3xl font-black text-xl hover:bg-white/90 transition-all duration-300 shadow-2xl hover:shadow-white/25 hover:scale-105 flex items-center gap-3">
+                <button 
+                  type="button"
+                  className="group bg-white text-orange-600 px-12 py-6 rounded-3xl font-black text-xl hover:bg-white/90 transition-all duration-300 shadow-2xl hover:shadow-white/25 hover:scale-105 flex items-center gap-3">
                   <Rocket className="w-6 h-6 group-hover:animate-bounce" />
                   Start Free Trial
                   <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
                 </button>
-                                  <button className="group bg-white/20 backdrop-blur-sm border-2 border-white/30 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/30 transition-all duration-300 flex items-center gap-3">
+                                  <button 
+                                    type="button"
+                                    className="group bg-white/20 backdrop-blur-sm border-2 border-white/30 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/30 transition-all duration-300 flex items-center gap-3">
                     <span className="text-2xl">▶</span>
                     Watch Success Stories
             </button>
