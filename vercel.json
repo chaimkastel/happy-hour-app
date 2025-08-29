@@ -63,7 +63,7 @@
           "value": "http"
         }
       ],
-      "destination": "https://orderhappyhour.com/$1",
+      "destination": "https://happy-hour-aszat70iv-chaim-kastels-projects.vercel.app/$1",
       "permanent": true
     }
   ]
