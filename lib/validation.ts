@@ -62,7 +62,7 @@ export function validateRequest<T>(
     if (error instanceof z.ZodError) {
       return {
         success: false,
-        errors: error.errors.map(err => `${err.path.join('.')}: ${err.message}`)
+        errors: error.issues.map(err => `${err.path.join('.')}: ${err.message}`)
       };
     }
     return {
@@ -92,3 +92,13 @@ export function validateSearchQuery(query: string): string {
   }
   return sanitized;
 }
+
+// Export individual schemas for backward compatibility
+export const dealSchema = schemas.deal;
+export const venueSchema = schemas.venue;
+export const addressSchema = schemas.address;
+export const authSchema = schemas.auth;
+export const dealSearchSchema = schemas.dealSearch;
+
+// Alias for middleware compatibility
+export const validateInput = validateRequest;

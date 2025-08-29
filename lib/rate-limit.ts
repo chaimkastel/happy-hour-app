@@ -79,3 +79,18 @@ export const rateLimitConfigs = {
     keyGenerator: (req: NextRequest) => `auth:${req.ip || 'unknown'}`
   }
 };
+
+// Create a rate limiter function (for middleware compatibility)
+export function createRateLimiter(config: {
+  windowMs: number;
+  maxRequests: number;
+  keyGenerator?: (req: NextRequest) => string;
+}) {
+  return (request: NextRequest) => {
+    return rateLimit(request, {
+      limit: config.maxRequests,
+      windowMs: config.windowMs,
+      keyGenerator: config.keyGenerator
+    });
+  };
+}
