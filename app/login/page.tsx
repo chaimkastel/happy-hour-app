@@ -143,18 +143,7 @@ export default function LoginPage() {
                   Start Your Free Trial
                 </button>
               </div>
-              <div>
-                <p className="text-sm text-gray-600 mb-2">Want to try the demo?</p>
-                <button
-                  onClick={() => {
-                    setEmail('demo@example.com');
-                    setPassword('demo123');
-                  }}
-                  className="text-orange-600 hover:text-orange-700 font-medium text-sm"
-                >
-                  Use Demo Credentials
-                </button>
-              </div>
+
             </div>
           </div>
         </div>

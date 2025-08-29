@@ -21,18 +21,6 @@ export default function MerchantLoginPage() {
     setError('');
 
     try {
-      // For demo purposes, allow login with demo credentials
-      if (formData.email === 'merchant@demo.com' && formData.password === 'demo123') {
-        // Create a simple session for demo
-        localStorage.setItem('merchant_session', JSON.stringify({
-          email: formData.email,
-          businessName: 'Demo Restaurant',
-          isMerchant: true
-        }));
-        router.push('/merchant/dashboard');
-        return;
-      }
-
       const result = await signIn('credentials', {
         email: formData.email,
         password: formData.password,
@@ -116,7 +104,7 @@ export default function MerchantLoginPage() {
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     className="w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-sm border border-white/30 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-white/60 transition-all duration-300 text-sm"
-                    placeholder="merchant@demo.com"
+                    placeholder="your@email.com"
                   />
                 </div>
               </div>
@@ -133,7 +121,7 @@ export default function MerchantLoginPage() {
                     value={formData.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
                     className="w-full pl-10 pr-10 py-3 bg-white/10 backdrop-blur-sm border border-white/30 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-white/60 transition-all duration-300 text-sm"
-                    placeholder="demo123"
+                    placeholder="Enter your password"
                   />
                   <button
                     type="button"
@@ -164,14 +152,7 @@ export default function MerchantLoginPage() {
               </button>
             </form>
 
-            {/* Demo Credentials */}
-            <div className="mt-4 p-3 bg-white/10 rounded-xl border border-white/20">
-              <h3 className="text-white font-bold text-xs mb-2">Demo Credentials:</h3>
-              <div className="text-white/70 text-xs space-y-1">
-                <p><strong>Email:</strong> merchant@demo.com</p>
-                <p><strong>Password:</strong> demo123</p>
-              </div>
-            </div>
+
 
             <div className="mt-4 text-center">
               <p className="text-white/70 text-xs">

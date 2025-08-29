@@ -120,16 +120,13 @@ export default function PartnerPage() {
               Join thousands of restaurants already growing with Happy Hour.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex justify-center items-center">
               <button 
                 onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
                 className="bg-white text-indigo-600 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-gray-100 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 Get Started Free
                 <ArrowRight className="w-5 h-5 inline ml-2" />
-              </button>
-              <button className="border-2 border-white/30 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/10 transition-all duration-200 backdrop-blur-sm">
-                View Demo
               </button>
             </div>
 
@@ -420,12 +417,9 @@ export default function PartnerPage() {
           <p className="text-xl text-white/90 mb-8">
             Our partner success team is ready to help you get started and maximize your results.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex justify-center">
             <button className="bg-white text-indigo-600 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-gray-100 transition-all duration-200 shadow-lg hover:shadow-xl">
               Contact Support
-            </button>
-            <button className="border-2 border-white/30 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/10 transition-all duration-200 backdrop-blur-sm">
-              Schedule Demo
             </button>
           </div>
         </div>
