@@ -56,28 +56,18 @@ export default function MobilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen relative">
-        {/* Hero Background Image - Using our uploaded local image with IMG tag for mobile */}
-        <img 
-          src="/images/hero-food-deals.png"
-          alt="Hero background"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ zIndex: -2 }}
-          onLoad={() => console.log('Local hero image loaded successfully')}
-          onError={(e) => {
-            console.log('Local hero image failed to load');
-            e.currentTarget.style.display = 'none';
-          }}
-        />
-        
-        {/* Fallback gradient in case local image fails */}
+      <div className="min-h-screen relative bg-gradient-to-br from-orange-500 via-red-500 to-purple-600">
+        {/* Hero Background Image - Simple approach */}
         <div 
-          className="absolute inset-0 w-full h-full bg-gradient-to-br from-orange-500 via-red-500 to-purple-600"
-          style={{ zIndex: -3 }}
+          className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+          style={{ 
+            backgroundImage: 'url(/images/hero-food-deals.png)',
+            zIndex: 1
+          }}
         ></div>
         
         {/* Enhanced overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 backdrop-blur-[1px]" style={{ zIndex: -1 }}></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 backdrop-blur-[1px]" style={{ zIndex: 2 }}></div>
         
         <div className="relative z-10 flex items-center justify-center min-h-screen">
           <div className="text-center">
@@ -90,28 +80,18 @@ export default function MobilePage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden">
-      {/* Hero Background Image - Using our uploaded local image with IMG tag for mobile */}
-      <img 
-        src="/images/hero-food-deals.png"
-        alt="Hero background"
-        className="absolute inset-0 w-full h-full object-cover"
-        style={{ zIndex: -2 }}
-        onLoad={() => console.log('Local hero image loaded successfully')}
-        onError={(e) => {
-          console.log('Local hero image failed to load');
-          e.currentTarget.style.display = 'none';
-        }}
-      />
-      
-      {/* Fallback gradient in case local image fails */}
+    <div className="min-h-screen relative overflow-x-hidden bg-gradient-to-br from-orange-500 via-red-500 to-purple-600">
+      {/* Hero Background Image - Simple approach */}
       <div 
-        className="absolute inset-0 w-full h-full bg-gradient-to-br from-orange-500 via-red-500 to-purple-600"
-        style={{ zIndex: -3 }}
+        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+        style={{ 
+          backgroundImage: 'url(/images/hero-food-deals.png)',
+          zIndex: 1
+        }}
       ></div>
       
       {/* Enhanced overlay for better text readability */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 backdrop-blur-[1px]" style={{ zIndex: -1 }}></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 backdrop-blur-[1px]" style={{ zIndex: 2 }}></div>
       
       {/* Mobile Header */}
       <div className="sticky top-0 z-50 bg-white/15 backdrop-blur-xl border-b border-white/30">
