@@ -56,30 +56,60 @@ export default function MobilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white/80">Loading amazing deals...</p>
+      <div className="min-h-screen relative">
+        {/* Hero Background Image - Mobile Optimized */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/images/hero-food-deals.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center center',
+            backgroundAttachment: 'scroll'
+          }}
+        ></div>
+        
+        {/* Enhanced overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 backdrop-blur-[1px]"></div>
+        
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4 shadow-lg"></div>
+            <p className="text-white/90 font-medium drop-shadow-lg">Loading amazing deals...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 overflow-x-hidden">
+    <div className="min-h-screen relative overflow-x-hidden">
+      {/* Hero Background Image - Mobile Optimized */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: 'url(/images/hero-food-deals.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center center',
+          backgroundAttachment: 'scroll' // Changed from fixed for mobile performance
+        }}
+      ></div>
+      
+      {/* Enhanced overlay for better text readability */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60 backdrop-blur-[1px]"></div>
+      
       {/* Mobile Header */}
-      <div className="sticky top-0 z-50 bg-white/10 backdrop-blur-md border-b border-white/20">
+      <div className="sticky top-0 z-50 bg-white/15 backdrop-blur-xl border-b border-white/30">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">🔥</span>
+              <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-sm">🍺</span>
               </div>
-              <h1 className="text-white font-bold text-lg">HappyHour</h1>
+              <h1 className="text-white font-bold text-lg drop-shadow-lg">HappyHour</h1>
             </div>
             <button 
               onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+              className="p-2 rounded-lg bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors shadow-lg"
             >
               {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -88,20 +118,20 @@ export default function MobilePage() {
       </div>
 
       {/* Mobile Search Bar */}
-      <div className="px-4 py-4">
+      <div className="px-4 py-4 relative z-10">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-300 w-5 h-5" />
           <input
             type="text"
             placeholder="Search restaurants, cuisines..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 transition-all duration-200"
+            className="w-full pl-10 pr-4 py-3 bg-white/15 backdrop-blur-xl border border-white/30 rounded-2xl text-white placeholder-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 focus:bg-white/20 transition-all duration-200 shadow-lg"
           />
           {searchQuery && (
             <button 
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white transition-colors"
             >
               ×
             </button>
@@ -110,44 +140,57 @@ export default function MobilePage() {
       </div>
 
       {/* Mobile Quick Actions */}
-      <div className="px-4 pb-4">
+      <div className="px-4 pb-4 relative z-10">
         <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-hide">
           <button className="flex-shrink-0 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg transform hover:scale-105 transition-all duration-200">
             <MapPin className="w-4 h-4 inline mr-1" />
             Near Me
           </button>
-          <button className="flex-shrink-0 bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-medium border border-white/20 hover:bg-white/20 transition-all duration-200">
+          <button className="flex-shrink-0 bg-white/15 backdrop-blur-xl text-white px-4 py-2 rounded-full text-sm font-medium border border-white/30 hover:bg-white/25 transition-all duration-200 shadow-lg">
             <Clock className="w-4 h-4 inline mr-1" />
             Open Now
           </button>
-          <button className="flex-shrink-0 bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-medium border border-white/20 hover:bg-white/20 transition-all duration-200">
+          <button className="flex-shrink-0 bg-white/15 backdrop-blur-xl text-white px-4 py-2 rounded-full text-sm font-medium border border-white/30 hover:bg-white/25 transition-all duration-200 shadow-lg">
             <Star className="w-4 h-4 inline mr-1" />
             Top Rated
           </button>
-          <button className="flex-shrink-0 bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-medium border border-white/20 hover:bg-white/20 transition-all duration-200">
+          <button className="flex-shrink-0 bg-white/15 backdrop-blur-xl text-white px-4 py-2 rounded-full text-sm font-medium border border-white/30 hover:bg-white/25 transition-all duration-200 shadow-lg">
             💰 Best Deals
           </button>
         </div>
       </div>
 
       {/* Mobile Deals List */}
-      <div className="px-4 pb-20">
+      <div className="px-4 pb-20 relative z-10">
         <div className="space-y-4">
           {deals.map((deal, index) => (
             <div 
               key={deal.id} 
-              className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-300 transform hover:scale-[1.02] shadow-lg"
+              className="bg-white/15 backdrop-blur-xl rounded-2xl p-4 border border-white/30 hover:bg-white/20 transition-all duration-300 transform hover:scale-[1.02] shadow-xl"
               style={{ animationDelay: `${index * 100}ms` }}
             >
+              {/* Deal Image */}
+              <div className="relative h-32 mb-4 rounded-xl overflow-hidden">
+                <div 
+                  className="w-full h-full bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url(https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop&crop=center&auto=format&q=80)`
+                  }}
+                ></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-black/20 to-black/40"></div>
+                <div className="absolute top-2 right-2">
+                  <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                    {deal.percentOff}% OFF
+                  </span>
+                </div>
+              </div>
+              
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                  <h3 className="text-white font-semibold text-lg mb-1">{deal.title}</h3>
-                  <p className="text-gray-300 text-sm mb-2">{deal.venue.name}</p>
+                  <h3 className="text-white font-bold text-lg mb-1 drop-shadow-sm">{deal.title}</h3>
+                  <p className="text-gray-200 text-sm mb-2 font-medium">{deal.venue.name}</p>
                   <div className="flex items-center space-x-2 mb-3">
-                    <span className="bg-gradient-to-r from-yellow-400/20 to-orange-500/20 text-yellow-300 px-3 py-1 rounded-full text-xs font-medium border border-yellow-400/30">
-                      {deal.percentOff}% OFF
-                    </span>
-                    <span className="bg-white/10 text-gray-300 px-3 py-1 rounded-full text-xs border border-white/20">
+                    <span className="bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium border border-white/30">
                       {deal.cuisine}
                     </span>
                   </div>
@@ -158,20 +201,20 @@ export default function MobilePage() {
                   </button>
                 </div>
               </div>
-              <div className="flex items-center justify-between text-sm text-gray-300">
+              <div className="flex items-center justify-between text-sm text-gray-200">
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center">
-                    <MapPin className="w-4 h-4 mr-1 text-blue-400" />
-                    <span>{deal.distance}</span>
+                    <MapPin className="w-4 h-4 mr-1 text-blue-300" />
+                    <span className="font-medium">{deal.distance}</span>
                   </div>
                   <div className="flex items-center">
-                    <Clock className="w-4 h-4 mr-1 text-green-400" />
-                    <span>{deal.isOpen ? 'Open' : 'Closed'}</span>
+                    <Clock className="w-4 h-4 mr-1 text-green-300" />
+                    <span className="font-medium">{deal.isOpen ? 'Open' : 'Closed'}</span>
                   </div>
                 </div>
                 <div className="flex items-center">
-                  <Star className="w-4 h-4 mr-1 text-yellow-400" />
-                  <span className="font-medium">{deal.rating}</span>
+                  <Star className="w-4 h-4 mr-1 text-yellow-300" />
+                  <span className="font-bold">{deal.rating}</span>
                 </div>
               </div>
             </div>
@@ -180,55 +223,55 @@ export default function MobilePage() {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/10 backdrop-blur-md border-t border-white/20 safe-area-pb">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/15 backdrop-blur-xl border-t border-white/30 safe-area-pb z-50">
         <div className="flex items-center justify-around py-2">
           <button className="flex flex-col items-center py-2 px-3 text-yellow-400 transform hover:scale-110 transition-all duration-200">
-            <Grid className="w-6 h-6 mb-1" />
-            <span className="text-xs font-medium">Explore</span>
+            <Grid className="w-6 h-6 mb-1 drop-shadow-sm" />
+            <span className="text-xs font-bold">Explore</span>
           </button>
-          <button className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transform hover:scale-110 transition-all duration-200">
-            <MapPin className="w-6 h-6 mb-1" />
-            <span className="text-xs">Map</span>
+          <button className="flex flex-col items-center py-2 px-3 text-gray-200 hover:text-white transform hover:scale-110 transition-all duration-200">
+            <MapPin className="w-6 h-6 mb-1 drop-shadow-sm" />
+            <span className="text-xs font-medium">Map</span>
           </button>
-          <button className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transform hover:scale-110 transition-all duration-200">
-            <Heart className="w-6 h-6 mb-1" />
-            <span className="text-xs">Favorites</span>
+          <button className="flex flex-col items-center py-2 px-3 text-gray-200 hover:text-white transform hover:scale-110 transition-all duration-200">
+            <Heart className="w-6 h-6 mb-1 drop-shadow-sm" />
+            <span className="text-xs font-medium">Favorites</span>
           </button>
-          <button className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transform hover:scale-110 transition-all duration-200">
-            <Star className="w-6 h-6 mb-1" />
-            <span className="text-xs">Profile</span>
+          <button className="flex flex-col items-center py-2 px-3 text-gray-200 hover:text-white transform hover:scale-110 transition-all duration-200">
+            <Star className="w-6 h-6 mb-1 drop-shadow-sm" />
+            <span className="text-xs font-medium">Profile</span>
           </button>
         </div>
       </div>
 
       {/* Mobile Menu Overlay */}
       {showMobileMenu && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="absolute top-0 right-0 w-80 h-full bg-white/10 backdrop-blur-md border-l border-white/20 animate-in slide-in-from-right duration-300">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="absolute top-0 right-0 w-80 h-full bg-white/15 backdrop-blur-xl border-l border-white/30 animate-in slide-in-from-right duration-300">
             <div className="p-6">
               <div className="flex items-center justify-between mb-8">
-                <h2 className="text-white text-xl font-bold">Menu</h2>
+                <h2 className="text-white text-xl font-bold drop-shadow-lg">Menu</h2>
                 <button 
                   onClick={() => setShowMobileMenu(false)}
-                  className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+                  className="p-2 rounded-lg bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors shadow-lg"
                 >
                   ×
                 </button>
               </div>
               <div className="space-y-3">
-                <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 transform hover:scale-105">
+                <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/15 backdrop-blur-sm hover:bg-white/25 transition-all duration-200 transform hover:scale-105 border border-white/20 shadow-lg">
                   <Star className="w-5 h-5 inline mr-3" />
                   My Account
                 </button>
-                <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 transform hover:scale-105">
+                <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/15 backdrop-blur-sm hover:bg-white/25 transition-all duration-200 transform hover:scale-105 border border-white/20 shadow-lg">
                   <Heart className="w-5 h-5 inline mr-3" />
                   Favorites
                 </button>
-                <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 transform hover:scale-105">
+                <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/15 backdrop-blur-sm hover:bg-white/25 transition-all duration-200 transform hover:scale-105 border border-white/20 shadow-lg">
                   <MapPin className="w-5 h-5 inline mr-3" />
                   Wallet
                 </button>
-                <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 transform hover:scale-105">
+                <button className="w-full text-left text-white py-3 px-4 rounded-lg bg-white/15 backdrop-blur-sm hover:bg-white/25 transition-all duration-200 transform hover:scale-105 border border-white/20 shadow-lg">
                   <Clock className="w-5 h-5 inline mr-3" />
                   Settings
                 </button>

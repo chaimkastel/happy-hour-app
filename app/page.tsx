@@ -114,8 +114,8 @@ export default function HomePage() {
         }}
       ></div>
       
-      {/* Smoky glass overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900/40 via-slate-800/30 to-slate-900/40 backdrop-blur-sm"></div>
+      {/* Enhanced overlay for better mobile readability */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900/50 via-slate-800/40 to-slate-900/50 backdrop-blur-[1px] md:backdrop-blur-sm"></div>
       
       {/* Subtle dark overlay for text readability */}
       <div className="absolute inset-0 bg-black/20"></div>
