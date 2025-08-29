@@ -1,265 +1,176 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Building2, ArrowLeft, Shield, Users, BarChart3, CheckCircle } from 'lucide-react';
+import { signIn } from 'next-auth/react';
+import { ArrowLeft, Building2, Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function MerchantLoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { data: session } = useSession();
-
-  // Redirect if already logged in
-  if (session) {
-    // Check user role and redirect accordingly
-    const userRole = (session.user as any)?.role;
-    if (userRole === 'ADMIN') {
-      router.push('/admin');
-    } else if (userRole === 'MERCHANT') {
-      router.push('/merchant/dashboard');
-    } else {
-      router.push('/');
-    }
-    return null;
-  }
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
     try {
       const result = await signIn('credentials', {
-        email,
-        password,
+        email: formData.email,
+        password: formData.password,
         redirect: false,
       });
 
-      if (result?.ok) {
-        // Get user info to determine redirect
-        const userResponse = await fetch('/api/auth/session');
-        const userData = await userResponse.json();
-        const userRole = userData?.user?.role;
-        
-        if (userRole === 'ADMIN') {
-          router.push('/admin');
-        } else if (userRole === 'MERCHANT') {
+      if (result?.error) {
+        setError('Invalid email or password');
+      } else {
+        // Check if user is a merchant
+        const response = await fetch('/api/merchant/check');
+        if (response.ok) {
           router.push('/merchant/dashboard');
         } else {
-          router.push('/');
+          setError('This account is not registered as a merchant');
         }
-      } else {
-        alert('Login failed. Please check your credentials and try again.');
       }
     } catch (error) {
       console.error('Login error:', error);
-      alert('Login error occurred. Please try again.');
+      setError('Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (error) setError('');
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex">
-      {/* Left Side - Professional Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-20 w-32 h-32 bg-white rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-20 w-40 h-40 bg-blue-400 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-indigo-400 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="relative z-10 flex flex-col justify-center px-12 py-16">
-          <div className="mb-8">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6">
-              <Building2 className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-4xl font-black text-white mb-4">
-              Merchant Portal
-            </h1>
-            <p className="text-xl text-white/80 leading-relaxed">
-              Professional tools for restaurant owners to manage deals, track performance, and grow their business.
-            </p>
-          </div>
-
-          {/* Features */}
-          <div className="space-y-6">
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                <CheckCircle className="w-5 h-5 text-green-400" />
-              </div>
-              <div>
-                <h3 className="text-white font-semibold mb-1">Deal Management</h3>
-                <p className="text-white/70 text-sm">Create, schedule, and manage promotional deals with advanced targeting options.</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                <BarChart3 className="w-5 h-5 text-blue-400" />
-              </div>
-              <div>
-                <h3 className="text-white font-semibold mb-1">Analytics Dashboard</h3>
-                <p className="text-white/70 text-sm">Track performance metrics, customer engagement, and revenue insights.</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                <Users className="w-5 h-5 text-purple-400" />
-              </div>
-              <div>
-                <h3 className="text-white font-semibold mb-1">Customer Insights</h3>
-                <p className="text-white/70 text-sm">Understand your customers better with detailed analytics and behavior tracking.</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-orange-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                <Shield className="w-5 h-5 text-orange-400" />
-              </div>
-              <div>
-                <h3 className="text-white font-semibold mb-1">Secure & Reliable</h3>
-                <p className="text-white/70 text-sm">Bank-level security with 99.9% uptime guarantee for your business operations.</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="mt-12 grid grid-cols-2 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white mb-1">500+</div>
-              <div className="text-white/70 text-sm">Active Merchants</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white mb-1">$2.3M</div>
-              <div className="text-white/70 text-sm">Revenue Generated</div>
-            </div>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-purple-600 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
-      {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-8 py-16">
+      <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
         <div className="w-full max-w-md">
-          {/* Back to Home */}
-          <div className="mb-8">
-            <button
-              onClick={() => router.push('/')}
-              className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Home
-            </button>
-          </div>
-
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Building2 className="w-8 h-8 text-white" />
+            <button
+              onClick={() => router.push('/')}
+              className="inline-flex items-center text-white/80 hover:text-white mb-6 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Home
+            </button>
+            
+            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-4 py-2 mb-4">
+              <Building2 className="w-5 h-5 text-white" />
+              <span className="text-white font-bold text-sm">MERCHANT LOGIN</span>
             </div>
-            <h1 className="text-3xl font-black text-slate-900 mb-2">Merchant Login</h1>
-            <p className="text-slate-600">Access your business dashboard and manage your restaurant deals</p>
+            
+            <h1 className="text-4xl font-black text-white mb-2">
+              🍺 <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Welcome</span> Back
+            </h1>
+            <p className="text-white/80">Sign in to manage your deals and venues</p>
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-slate-700 mb-2">
-                Business Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                placeholder="your@business.com"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-slate-700 mb-2">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                placeholder="Enter your password"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-indigo-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-200"
-            >
-              {loading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                  Signing in...
-                </>
-              ) : (
-                <>
-                  Access Dashboard
-                  <ArrowRight className="w-4 h-4" />
-                </>
+          <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-3xl p-8 shadow-2xl">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4 flex items-center gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                  <span className="text-red-200 text-sm">{error}</span>
+                </div>
               )}
-            </button>
-          </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-8 p-4 bg-slate-50 rounded-xl border border-slate-200">
-            <p className="text-sm text-slate-600 mb-3 font-medium">Demo Credentials:</p>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-slate-500">Email:</span>
-                <span className="font-mono text-slate-700">demo@example.com</span>
+              <div>
+                <label className="block text-sm font-bold text-white/90 mb-3">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
+                  <input
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-sm border border-white/30 rounded-2xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-white/60 transition-all duration-300"
+                    placeholder="your@email.com"
+                  />
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Password:</span>
-                <span className="font-mono text-slate-700">demo123</span>
+
+              <div>
+                <label className="block text-sm font-bold text-white/90 mb-3">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={formData.password}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    className="w-full pl-12 pr-12 py-4 bg-white/10 backdrop-blur-sm border border-white/30 rounded-2xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-white/60 transition-all duration-300"
+                    placeholder="Enter your password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-black rounded-2xl font-bold hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 flex items-center justify-center gap-2 shadow-lg transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {loading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                    Signing In...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-5 h-5" />
+                    Sign In
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Demo Credentials */}
+            <div className="mt-6 p-4 bg-white/10 rounded-xl border border-white/20">
+              <h3 className="text-white font-bold text-sm mb-2">Demo Credentials:</h3>
+              <div className="text-white/70 text-sm space-y-1">
+                <p><strong>Email:</strong> merchant@demo.com</p>
+                <p><strong>Password:</strong> demo123</p>
               </div>
             </div>
-            <button
-              onClick={() => {
-                setEmail('demo@example.com');
-                setPassword('demo123');
-              }}
-              className="mt-3 w-full text-indigo-600 hover:text-indigo-700 font-medium text-sm transition-colors"
-            >
-              Use Demo Credentials
-            </button>
-          </div>
 
-          {/* Links */}
-          <div className="mt-8 text-center space-y-4">
-            <div>
-              <p className="text-sm text-slate-600 mb-2">Don't have a merchant account?</p>
-              <a
-                href="/merchant/signup"
-                className="text-indigo-600 hover:text-indigo-700 font-semibold text-sm transition-colors"
-              >
-                Start Your Free Trial
-              </a>
-            </div>
-            
-            <div className="border-t border-slate-200 pt-4">
-              <p className="text-sm text-slate-600 mb-2">Looking for customer deals?</p>
-              <a
-                href="/login"
-                className="text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors"
-              >
-                Customer Login
-              </a>
+            <div className="mt-6 text-center">
+              <p className="text-white/70 text-sm">
+                Don't have a merchant account?{' '}
+                <button
+                  onClick={() => router.push('/merchant/signup')}
+                  className="text-yellow-400 hover:text-yellow-300 font-semibold transition-colors"
+                >
+                  Sign up here
+                </button>
+              </p>
             </div>
           </div>
         </div>

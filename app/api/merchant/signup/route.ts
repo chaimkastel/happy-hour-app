@@ -6,10 +6,10 @@ import { hash } from 'bcryptjs';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { businessName, ownerName, email, phone, address, cuisine, password } = body;
+    const { businessName, email, phone, password, firstName, lastName } = body;
 
     // Validate required fields
-    if (!businessName || !ownerName || !email || !phone || !address || !cuisine || !password) {
+    if (!businessName || !email || !phone || !password || !firstName || !lastName) {
       return NextResponse.json(
         { error: 'All fields are required' },
         { status: 400 }
@@ -28,16 +28,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Geocode the address to get coordinates
-    const geocodeResult = await smartGeocode(address);
-    let latitude = 0;
-    let longitude = 0;
-
-    if ('latitude' in geocodeResult && 'longitude' in geocodeResult) {
-      latitude = geocodeResult.latitude;
-      longitude = geocodeResult.longitude;
-    }
-
     // Hash password
     const hashedPassword = await hash(password, 12);
 
@@ -46,7 +36,8 @@ export async function POST(request: NextRequest) {
       data: {
         email,
         role: 'MERCHANT',
-        password: hashedPassword
+        password: hashedPassword,
+        phone: phone
       }
     });
 
@@ -71,31 +62,7 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Create default venue
-    const venue = await prisma.venue.create({
-      data: {
-        merchantId: merchant.id,
-        name: businessName,
-        slug: businessName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
-        address,
-        latitude,
-        longitude,
-        businessType: JSON.stringify([cuisine]),
-        priceTier: 'MODERATE',
-        hours: JSON.stringify({
-          monday: { open: '11:00', close: '22:00' },
-          tuesday: { open: '11:00', close: '22:00' },
-          wednesday: { open: '11:00', close: '22:00' },
-          thursday: { open: '11:00', close: '22:00' },
-          friday: { open: '11:00', close: '23:00' },
-          saturday: { open: '11:00', close: '23:00' },
-          sunday: { open: '11:00', close: '22:00' }
-        }),
-        photos: JSON.stringify([]),
-        isVerified: false,
-        rating: 0,
-      }
-    });
+    // Note: Venues will be created separately by the merchant
 
     // Create admin notification for new merchant application
     await prisma.adminNotification.create({
@@ -132,13 +99,6 @@ export async function POST(request: NextRequest) {
         plan: subscription.plan,
         status: subscription.status,
         currentPeriodEnd: subscription.currentPeriodEnd
-      },
-      venue: {
-        id: venue.id,
-        name: venue.name,
-        address: venue.address,
-        latitude: venue.latitude,
-        longitude: venue.longitude
       }
     });
 

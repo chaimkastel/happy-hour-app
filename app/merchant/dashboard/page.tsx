@@ -61,16 +61,29 @@ export default function EnhancedMerchantDashboard() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [restaurantsRes, dealsRes] = await Promise.all([
-        fetch('/api/merchant/restaurant/list'),
-        fetch('/api/deals')
+      const [venuesRes, dealsRes] = await Promise.all([
+        fetch('/api/merchant/venues'),
+        fetch('/api/merchant/deals')
       ]);
       
-      const restaurantsData = await restaurantsRes.json();
+      const venuesData = await venuesRes.json();
       const dealsData = await dealsRes.json();
       
-      setRestaurants(restaurantsData.restaurants || []);
-      setDeals(dealsData.deals || dealsData.items || []);
+      // Transform venues to restaurants format
+      const transformedVenues = (venuesData.venues || []).map((venue: any) => ({
+        id: venue.id,
+        name: venue.name,
+        address: venue.address,
+        businessType: venue.businessType,
+        priceRange: venue.priceTier || '$$',
+        isOpen: true,
+        avgRating: venue.rating || 0,
+        ratingCount: 0,
+        deals: []
+      }));
+      
+      setRestaurants(transformedVenues);
+      setDeals(dealsData.deals || []);
     } catch (error) {
       console.error('Error loading data:', error);
       setMessage('Failed to load data');
@@ -81,7 +94,7 @@ export default function EnhancedMerchantDashboard() {
 
   const handleRestaurantSubmit = async (data: any) => {
     try {
-      const response = await fetch('/api/merchant/restaurant/add', {
+      const response = await fetch('/api/merchant/venues', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -90,31 +103,31 @@ export default function EnhancedMerchantDashboard() {
       const result = await response.json();
       
       if (response.ok) {
-        setMessage('✅ Restaurant created successfully!');
+        setMessage('✅ Venue created successfully!');
         setShowRestaurantForm(false);
         await loadData();
       } else {
-        setMessage(`❌ ${result.error || 'Failed to create restaurant'}`);
+        setMessage(`❌ ${result.error || 'Failed to create venue'}`);
       }
     } catch (error) {
-      console.error('Error creating restaurant:', error);
-      setMessage('❌ Failed to create restaurant');
+      console.error('Error creating venue:', error);
+      setMessage('❌ Failed to create venue');
     }
   };
 
   const handleDealSubmit = async (data: any) => {
     if (!selectedRestaurant) {
-      setMessage('❌ Please select a restaurant first');
+      setMessage('❌ Please select a venue first');
       return;
     }
 
     try {
-      const response = await fetch('/api/merchant/deal', {
+      const response = await fetch('/api/merchant/deals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...data,
-          restaurantId: selectedRestaurant.id || ''
+          venueId: selectedRestaurant.id || ''
         })
       });
 
