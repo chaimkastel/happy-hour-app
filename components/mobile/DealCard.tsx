@@ -20,6 +20,9 @@ interface Deal {
   imageUrl?: string;
   validUntil?: string;
   featured?: boolean;
+  deliveryTime?: string;
+  deliveryFee?: string;
+  reviewCount?: string;
 }
 
 interface DealCardProps {
