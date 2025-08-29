@@ -55,6 +55,14 @@ export default function EnhancedMerchantDashboard() {
   });
 
   useEffect(() => {
+    // Check if user is logged in
+    const merchantSession = localStorage.getItem('merchant_session');
+    if (!merchantSession) {
+      // Redirect to login if not authenticated
+      window.location.href = '/merchant/login';
+      return;
+    }
+    
     loadData();
   }, []);
 

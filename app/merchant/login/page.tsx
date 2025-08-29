@@ -21,6 +21,18 @@ export default function MerchantLoginPage() {
     setError('');
 
     try {
+      // For demo purposes, allow login with demo credentials
+      if (formData.email === 'merchant@demo.com' && formData.password === 'demo123') {
+        // Create a simple session for demo
+        localStorage.setItem('merchant_session', JSON.stringify({
+          email: formData.email,
+          businessName: 'Demo Restaurant',
+          isMerchant: true
+        }));
+        router.push('/merchant/dashboard');
+        return;
+      }
+
       const result = await signIn('credentials', {
         email: formData.email,
         password: formData.password,
@@ -59,13 +71,13 @@ export default function MerchantLoginPage() {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
-      <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
-        <div className="w-full max-w-md">
+      <div className="relative z-10 flex items-center justify-center min-h-screen px-4 py-8">
+        <div className="w-full max-w-md space-y-6">
           {/* Header */}
-          <div className="text-center mb-8">
+          <div className="text-center">
             <button
               onClick={() => router.push('/')}
-              className="inline-flex items-center text-white/80 hover:text-white mb-6 transition-colors"
+              className="inline-flex items-center text-white/80 hover:text-white mb-4 transition-colors"
             >
               <ArrowLeft className="w-5 h-5 mr-2" />
               Back to Home
@@ -76,15 +88,15 @@ export default function MerchantLoginPage() {
               <span className="text-white font-bold text-sm">MERCHANT LOGIN</span>
             </div>
             
-            <h1 className="text-4xl font-black text-white mb-2">
+            <h1 className="text-3xl md:text-4xl font-black text-white mb-2">
               🍺 <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Welcome</span> Back
             </h1>
-            <p className="text-white/80">Sign in to manage your deals and venues</p>
+            <p className="text-white/80 text-sm md:text-base">Sign in to manage your deals and venues</p>
           </div>
 
           {/* Login Form */}
-          <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-3xl p-8 shadow-2xl">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-3xl p-6 md:p-8 shadow-2xl">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
                 <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4 flex items-center gap-3">
                   <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
@@ -93,42 +105,42 @@ export default function MerchantLoginPage() {
               )}
 
               <div>
-                <label className="block text-sm font-bold text-white/90 mb-3">
+                <label className="block text-sm font-bold text-white/90 mb-2">
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-4 h-4" />
                   <input
                     type="email"
                     required
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-sm border border-white/30 rounded-2xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-white/60 transition-all duration-300"
-                    placeholder="your@email.com"
+                    className="w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-sm border border-white/30 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-white/60 transition-all duration-300 text-sm"
+                    placeholder="merchant@demo.com"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-white/90 mb-3">
+                <label className="block text-sm font-bold text-white/90 mb-2">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-4 h-4" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
                     value={formData.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
-                    className="w-full pl-12 pr-12 py-4 bg-white/10 backdrop-blur-sm border border-white/30 rounded-2xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-white/60 transition-all duration-300"
-                    placeholder="Enter your password"
+                    className="w-full pl-10 pr-10 py-3 bg-white/10 backdrop-blur-sm border border-white/30 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-white/60 transition-all duration-300 text-sm"
+                    placeholder="demo123"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
@@ -136,16 +148,16 @@ export default function MerchantLoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-black rounded-2xl font-bold hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 flex items-center justify-center gap-2 shadow-lg transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-black rounded-xl font-bold hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 flex items-center justify-center gap-2 shadow-lg transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm"
               >
                 {loading ? (
                   <>
-                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
                     Signing In...
                   </>
                 ) : (
                   <>
-                    <CheckCircle className="w-5 h-5" />
+                    <CheckCircle className="w-4 h-4" />
                     Sign In
                   </>
                 )}
@@ -153,16 +165,16 @@ export default function MerchantLoginPage() {
             </form>
 
             {/* Demo Credentials */}
-            <div className="mt-6 p-4 bg-white/10 rounded-xl border border-white/20">
-              <h3 className="text-white font-bold text-sm mb-2">Demo Credentials:</h3>
-              <div className="text-white/70 text-sm space-y-1">
+            <div className="mt-4 p-3 bg-white/10 rounded-xl border border-white/20">
+              <h3 className="text-white font-bold text-xs mb-2">Demo Credentials:</h3>
+              <div className="text-white/70 text-xs space-y-1">
                 <p><strong>Email:</strong> merchant@demo.com</p>
                 <p><strong>Password:</strong> demo123</p>
               </div>
             </div>
 
-            <div className="mt-6 text-center">
-              <p className="text-white/70 text-sm">
+            <div className="mt-4 text-center">
+              <p className="text-white/70 text-xs">
                 Don't have a merchant account?{' '}
                 <button
                   onClick={() => router.push('/merchant/signup')}
