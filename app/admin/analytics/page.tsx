@@ -20,7 +20,7 @@ interface AnalyticsData {
   redemptionAnalytics: {
     recentRedemptions: Array<{
       id: string;
-      redeemedAt: string;
+      createdAt: string;
       user: { location: string | null };
       deal: {
         title: string;
@@ -219,7 +219,7 @@ export default function AdminAnalytics() {
                     </div>
                     <div className="text-right flex-shrink-0 ml-2">
                       <p className="text-xs text-gray-500">
-                        {new Date(redemption.redeemedAt).toLocaleTimeString()}
+                        {new Date(redemption.createdAt).toLocaleTimeString()}
                       </p>
                     </div>
                   </div>

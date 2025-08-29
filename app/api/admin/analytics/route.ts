@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
           }
         }
       },
-      orderBy: { redeemedAt: 'desc' },
+      orderBy: { createdAt: 'desc' },
       take: 50
     });
 
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
           select: { name: true, address: true }
         },
         _count: {
-          select: { redemptions: true, favorites: true }
+          select: { redemptions: true }
         }
       }
     });
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
             deals: {
               include: {
                 _count: {
-                  select: { redemptions: true, favorites: true }
+                  select: { redemptions: true }
                 }
               }
             }
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
     const totalMerchants = await prisma.merchant.count();
     const totalDeals = await prisma.deal.count();
     const totalRedemptions = await prisma.redemption.count();
-    const totalFavorites = await prisma.favorite.count();
+    const totalFavorites = 0; // Favorite model not implemented yet
 
     // Recent activity (last 24 hours)
     const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
       }
     });
     const recentRedemptions = await prisma.redemption.count({
-      where: { redeemedAt: { gte: last24Hours } }
+      where: { createdAt: { gte: last24Hours } }
     });
 
     return NextResponse.json({
@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
           venue: deal.venue.name,
           venueAddress: deal.venue.address,
           redemptions: deal._count.redemptions,
-          favorites: deal._count.favorites,
+          favorites: 0, // Favorite model not implemented yet
           status: deal.status
         }))
       },
