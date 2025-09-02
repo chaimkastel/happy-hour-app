@@ -14,11 +14,14 @@
     "test:mobile": "playwright test --grep \"\\[MOBILE\\]\"",
     "test:desktop": "playwright test --grep \"\\[DESKTOP\\]\"",
     "test:api": "playwright test tests/api.test.ts",
+    "test:data": "jest __tests__/data-intelligence.test.ts",
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "node prisma/seed.mjs",
+    "db:seed": "tsx prisma/seed.ts",
+    "workers:start": "tsx packages/workers/start.ts",
+    "workers:dev": "tsx --watch packages/workers/start.ts",
     "clean": "rm -rf .next node_modules/.cache",
     "optimize": "npm run clean && npm install --production=false"
   },
@@ -30,13 +33,18 @@
     "@tailwindcss/line-clamp": "^0.4.4",
     "@tailwindcss/typography": "^0.5.16",
     "@types/bcryptjs": "^2.4.6",
+    "@types/cron": "^2.0.1",
     "@types/leaflet": "^1.9.20",
     "@types/pg": "^8.15.5",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.8",
+    "@upstash/ratelimit": "^2.0.6",
+    "@upstash/redis": "^1.35.3",
     "autoprefixer": "^10.4.16",
     "bcryptjs": "^3.0.2",
+    "bullmq": "^5.58.4",
     "clsx": "^2.1.1",
+    "cron": "^4.3.3",
     "framer-motion": "^12.23.12",
     "ioredis": "^5.7.0",
     "leaflet": "^1.9.4",
@@ -49,19 +57,25 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-intersection-observer": "^9.16.0",
-    "react-leaflet": "^5.0.0",
+    "react-leaflet": "^4.2.1",
+    "resend": "^6.2.0-preview-contacts.0",
     "sonner": "^2.0.7",
+    "stripe": "^14.9.0",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^3.3.0",
     "typescript": "^5.9.2",
     "zod": "^4.1.5"
   },
   "prisma": {
-    "seed": "node prisma/seed.mjs"
+    "seed": "tsx prisma/seed.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",
+    "@types/jest": "^30.0.0",
     "eslint": "^8",
-    "eslint-config-next": "14.0.0"
+    "eslint-config-next": "14.0.0",
+    "jest": "^30.1.2",
+    "ts-jest": "^29.4.1",
+    "tsx": "^4.6.2"
   }
 }

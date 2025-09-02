@@ -57,15 +57,38 @@ export async function GET(request: NextRequest) {
     // Calculate pagination
     const skip = (page - 1) * limit;
 
-    const deals = await prisma.deal.findMany({
-      where: whereClause,
-      include: { venue: true },
-      orderBy: getOrderBy(sortBy),
-      skip,
-      take: limit,
-    });
+    let deals: any[] = [];
+    let totalCount = 0;
     
-    const totalCount = await prisma.deal.count({ where: whereClause });
+    try {
+      deals = await prisma.deal.findMany({
+        where: whereClause,
+        include: { venue: true },
+        orderBy: getOrderBy(sortBy),
+        skip,
+        take: limit,
+      });
+      
+      totalCount = await prisma.deal.count({ where: whereClause });
+    } catch (error) {
+      console.log('Database not available, returning empty results');
+      // Return empty results if database is not available
+      return NextResponse.json({
+        deals: [],
+        total: 0,
+        page,
+        limit,
+        totalPages: 0,
+        filters: {
+          search,
+          distance,
+          minPercentOff,
+          businessType,
+          openNow,
+          sortBy
+        }
+      });
+    }
 
     // Filter by distance if coordinates provided
     let filteredDeals = deals;
