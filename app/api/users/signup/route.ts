@@ -91,22 +91,3 @@ export async function POST(request: NextRequest) {
     await prisma.$disconnect();
   }
 }
-      message: 'Account created successfully',
-      user: {
-        id: user.id,
-        email: user.email,
-        location: user.location,
-        role: user.role
-      }
-    }, { status: 201 });
-
-  } catch (error) {
-    console.error('Signup error:', error);
-    return NextResponse.json(
-      { error: 'Failed to create account. Please try again.' },
-      { status: 500 }
-    );
-  } finally {
-    await prisma.$disconnect();
-  }
-}

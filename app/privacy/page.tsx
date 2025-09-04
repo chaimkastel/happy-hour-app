@@ -153,17 +153,3 @@ export default function PrivacyPage() {
     </div>
   );
 }
-                <p className="text-gray-700 mb-2">
-                  <strong>Address:</strong> Happy Hour Inc., 123 Business St, City, State 12345
-                </p>
-                <p className="text-gray-700">
-                  <strong>Phone:</strong> (555) 123-4567
-                </p>
-              </div>
-            </section>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}

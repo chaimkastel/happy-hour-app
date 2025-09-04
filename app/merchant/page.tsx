@@ -676,22 +676,3 @@ export default function MerchantDashboard() {
     </div>
   );
 }
-
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Performance Trends</h3>
-              <div className="text-center py-8 text-gray-500">
-                <BarChart3 className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                <p>Detailed analytics coming soon</p>
-                <p className="text-sm">Track your business performance, customer behavior, and revenue trends</p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}

@@ -273,29 +273,3 @@ export default function FavoritesPage() {
     </AuthGuard>
   );
 }
-                            href={`/deal/${deal.id}/view`}
-                            className="block w-full btn-primary text-center py-2 px-4 text-sm"
-                          >
-                            Redeem Deal
-                          </a>
-
-                          <button
-                            onClick={() => removeFavorite(deal.id)}
-                            className="block w-full btn-secondary text-center py-2 px-4 text-sm"
-                          >
-                            Remove from Favorites
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-      </div>
-    </AuthGuard>
-  );
-}

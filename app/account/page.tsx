@@ -449,6 +449,3 @@ export default function AccountPage() {
     </AuthGuard>
   );
 }
-
-  );
-}

@@ -6,22 +6,22 @@ const nextConfig = {
   // Optimize for production
   output: 'standalone',
   
-          // Domain redirects
-        async redirects() {
-          return [
-            {
-              source: '/:path*',
-              has: [
-                {
-                  type: 'host',
-                  value: 'orderhappyhour.com',
-                },
-              ],
-              destination: 'https://www.orderhappyhour.com/:path*',
-              permanent: true,
-            },
-          ];
-        },
+  // Domain redirects
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'orderhappyhour.com',
+          },
+        ],
+        destination: 'https://www.orderhappyhour.com/:path*',
+        permanent: true,
+      },
+    ];
+  },
   
   // Reduce bundle size
   experimental: {
@@ -101,24 +101,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;// Deployment trigger Thu Aug 28 19:22:39 EDT 2025
-
-    }
-    
-    return config;
-  },
-  
-  // Disable source maps in production to save space
-  productionBrowserSourceMaps: false,
-  
-  // Optimize CSS
-  swcMinify: true,
-  
-  // Reduce memory usage
-  onDemandEntries: {
-    maxInactiveAge: 25 * 1000,
-    pagesBufferLength: 2,
-  },
-};
-
-module.exports = nextConfig;// Deployment trigger Thu Aug 28 19:22:39 EDT 2025
+module.exports = nextConfig;

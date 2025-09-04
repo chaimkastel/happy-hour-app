@@ -425,9 +425,3 @@ export default function WalletPage() {
     </AuthGuard>
   );
 }
-        )}
-      </div>
-      </div>
-    </AuthGuard>
-  );
-}

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { Sparkles, Search, Rocket, ArrowRight, Flame, Heart, Clock, Timer, Gift, Target, Grid, MapPin, Smartphone, CheckCircle, Diamond, Crown, TrendingUp, Users, Zap } from 'lucide-react';
 import { 
   SearchIcon,
   LocationIcon,
@@ -27,6 +28,8 @@ import {
   FreeDrinkIcon,
   LateNightIcon
 } from '@/components/ui/ProfessionalIcons';
+import DealCard from '@/components/DealCard';
+import MapWithClusters from '@/components/MapWithClusters';
 
 interface Deal {
   id: string;
@@ -36,6 +39,8 @@ interface Deal {
   venue: {
     name: string;
     address: string;
+    latitude: number;
+    longitude: number;
   };
   cuisine: string;
   distance: string;
@@ -50,6 +55,36 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('all');
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [view, setView] = useState<'grid' | 'list' | 'map'>('grid');
+  const [filters, setFilters] = useState({
+    cuisine: 'all',
+    distance: 'all',
+    price: 'all',
+    maxDistance: 10,
+    minDiscount: 0,
+    openNow: false
+  });
+
+  // Filter deals based on current filters
+  const filteredDeals = deals.filter(deal => {
+    // Filter by cuisine
+    if (filters.cuisine !== 'all' && deal.cuisine.toLowerCase() !== filters.cuisine) {
+      return false;
+    }
+    
+    // Filter by active filter
+    if (activeFilter === 'all') return true;
+    if (activeFilter === 'near') return deal.distance.includes('0.3') || deal.distance.includes('0.4') || deal.distance.includes('0.5');
+    if (activeFilter === 'open') return deal.isOpen;
+    if (activeFilter === 'top') return deal.rating >= 4.5;
+    if (activeFilter === 'free-drink') return deal.title.toLowerCase().includes('drink') || deal.title.toLowerCase().includes('cocktail');
+    if (activeFilter === 'lunch') return deal.title.toLowerCase().includes('lunch') || deal.title.toLowerCase().includes('brunch');
+    if (activeFilter === 'late-night') return deal.title.toLowerCase().includes('late') || deal.title.toLowerCase().includes('night');
+    
+    return true;
+  });
 
   // Load deals with realistic data
   useEffect(() => {
@@ -63,7 +98,7 @@ export default function HomePage() {
             title: 'Happy Hour Special',
             description: '50% off all drinks and appetizers during our quiet hours',
             percentOff: 50,
-            venue: { name: 'The Golden Spoon', address: '123 Main St, Downtown' },
+            venue: { name: 'The Golden Spoon', address: '123 Main St, Downtown', latitude: 40.7128, longitude: -74.0060 },
             cuisine: 'American',
             distance: '0.3 mi',
             rating: 4.7,
@@ -75,7 +110,7 @@ export default function HomePage() {
             title: 'Lunch Rush Relief',
             description: '30% off lunch entrees when we need to fill tables',
             percentOff: 30,
-            venue: { name: 'Bella Vista', address: '456 Oak Ave, Midtown' },
+            venue: { name: 'Bella Vista', address: '456 Oak Ave, Midtown', latitude: 40.7589, longitude: -73.9851 },
             cuisine: 'Italian',
             distance: '0.8 mi',
             rating: 4.4,
@@ -87,7 +122,7 @@ export default function HomePage() {
             title: 'Dinner for Two',
             description: '25% off dinner for two during our slowest hours',
             percentOff: 25,
-            venue: { name: 'Le Petit Bistro', address: '789 Pine St, Uptown' },
+            venue: { name: 'Le Petit Bistro', address: '789 Pine St, Uptown', latitude: 40.7831, longitude: -73.9712 },
             cuisine: 'French',
             distance: '1.2 mi',
             rating: 4.9,
@@ -99,7 +134,7 @@ export default function HomePage() {
             title: 'Late Night Bites',
             description: '40% off late night menu items',
             percentOff: 40,
-            venue: { name: 'Midnight Diner', address: '321 Elm St, Night District' },
+            venue: { name: 'Midnight Diner', address: '321 Elm St, Night District', latitude: 40.7505, longitude: -73.9934 },
             cuisine: 'Comfort Food',
             distance: '0.6 mi',
             rating: 4.2,
@@ -111,7 +146,7 @@ export default function HomePage() {
             title: 'Brunch Boost',
             description: '35% off brunch items on slow weekend mornings',
             percentOff: 35,
-            venue: { name: 'Sunny Side Up', address: '555 Sunrise Blvd, Eastside' },
+            venue: { name: 'Sunny Side Up', address: '555 Sunrise Blvd, Eastside', latitude: 40.7282, longitude: -73.9942 },
             cuisine: 'Breakfast',
             distance: '1.0 mi',
             rating: 4.6,
@@ -123,7 +158,7 @@ export default function HomePage() {
             title: 'Cocktail Hour',
             description: 'Buy one get one free on all cocktails',
             percentOff: 50,
-            venue: { name: 'The Mixing Room', address: '777 Bar St, Entertainment District' },
+            venue: { name: 'The Mixing Room', address: '777 Bar St, Entertainment District', latitude: 40.7614, longitude: -73.9776 },
             cuisine: 'Cocktails',
             distance: '0.4 mi',
             rating: 4.8,
@@ -136,6 +171,19 @@ export default function HomePage() {
   };
 
     loadDeals();
+  }, []);
+
+  // Handle hydration and mobile detection
+  useEffect(() => {
+    setIsHydrated(true);
+    setIsMobile(window.innerWidth < 768);
+    
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
 
@@ -193,16 +241,6 @@ export default function HomePage() {
     setActiveFilter(filter);
   };
 
-  const filteredDeals = deals.filter(deal => {
-    if (activeFilter === 'all') return true;
-    if (activeFilter === 'near') return deal.distance.includes('0.3') || deal.distance.includes('0.4') || deal.distance.includes('0.5');
-    if (activeFilter === 'open') return deal.isOpen;
-    if (activeFilter === 'top') return deal.rating >= 4.5;
-    if (activeFilter === 'free-drink') return deal.title.toLowerCase().includes('drink') || deal.title.toLowerCase().includes('cocktail');
-    if (activeFilter === 'lunch') return deal.title.toLowerCase().includes('lunch') || deal.title.toLowerCase().includes('brunch');
-    if (activeFilter === 'late-night') return deal.title.toLowerCase().includes('late') || deal.title.toLowerCase().includes('night');
-    return true;
-  });
 
   return (
     <div className="min-h-screen bg-white">
@@ -507,16 +545,6 @@ export default function HomePage() {
 
     </div>
   );
-}
-    const matchesSearch = deal.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         deal.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         deal.cuisine.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesCuisine = !filters.cuisine || deal.cuisine.toLowerCase() === filters.cuisine.toLowerCase();
-    const matchesDiscount = deal.discount >= filters.minDiscount;
-    
-    return matchesSearch && matchesCuisine && matchesDiscount;
-  });
 
   // Show loading state while checking mobile or loading deals
   if (!isHydrated || loading) {
@@ -577,7 +605,7 @@ export default function HomePage() {
               <span className="text-white font-semibold text-sm sm:text-base">10,000+ Happy Customers</span>
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 fill-current" />
+                  <StarIcon key={i} className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 fill-current" />
                 ))}
               </div>
             </div>
@@ -704,7 +732,7 @@ export default function HomePage() {
                   <div className="absolute top-4 left-4">
                     <span className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg">
                       <Flame className="w-4 h-4 animate-pulse" />
-                      {deal.discount}% OFF
+                      {deal.percentOff}% OFF
                     </span>
                   </div>
 
@@ -726,7 +754,7 @@ export default function HomePage() {
                       <span>•</span>
                       <div className="flex items-center gap-1">
                         {[...Array(5)].map((_, i) => (
-                          <Star key={i} className={`w-3 h-3 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-white/40'}`} />
+                          <StarIcon key={i} className={`w-3 h-3 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-white/40'}`} />
                         ))}
                         <span className="ml-1">4.{Math.floor(Math.random() * 3) + 2}</span>
                       </div>
@@ -829,11 +857,34 @@ export default function HomePage() {
           {/* Enhanced Search and Filters */}
           <div className="max-w-5xl mx-auto mb-12">
             <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-3xl p-6 shadow-2xl">
-              <SortFilterBar
-                filters={filters}
-                onFiltersChange={setFilters}
-                dealsCount={filteredDeals.length}
-              />
+              <div className="flex flex-wrap gap-4 items-center justify-between">
+                <div className="flex gap-2">
+                  <select 
+                    value={filters.cuisine} 
+                    onChange={(e) => setFilters({...filters, cuisine: e.target.value})}
+                    className="px-4 py-2 border border-gray-300 rounded-lg"
+                  >
+                    <option value="all">All Cuisines</option>
+                    <option value="american">American</option>
+                    <option value="italian">Italian</option>
+                    <option value="mexican">Mexican</option>
+                    <option value="asian">Asian</option>
+                  </select>
+                  <select 
+                    value={filters.distance} 
+                    onChange={(e) => setFilters({...filters, distance: e.target.value})}
+                    className="px-4 py-2 border border-gray-300 rounded-lg"
+                  >
+                    <option value="all">Any Distance</option>
+                    <option value="1">Within 1 mile</option>
+                    <option value="5">Within 5 miles</option>
+                    <option value="10">Within 10 miles</option>
+                  </select>
+                </div>
+                <div className="text-gray-600">
+                  {filteredDeals.length} deals found
+                </div>
+              </div>
             </div>
           </div>
 
@@ -873,7 +924,9 @@ export default function HomePage() {
                 onClick={() => {
                   setSearchQuery('');
                   setFilters({
-                    cuisine: '',
+                    cuisine: 'all',
+                    distance: 'all',
+                    price: 'all',
                     maxDistance: 10,
                     minDiscount: 0,
                     openNow: false
@@ -1088,4 +1141,4 @@ export default function HomePage() {
       </div>
     </div>
   );
-}// Force deployment Thu Aug 28 01:24:27 EDT 2025
+}

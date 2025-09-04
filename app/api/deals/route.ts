@@ -123,11 +123,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
-    console.error('Error fetching deals:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch deals' },
-      { status: 500 }
-    );
-  }
-}
