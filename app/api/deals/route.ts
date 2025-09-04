@@ -38,14 +38,22 @@ export async function GET(request: NextRequest) {
       openNow: searchParams.get('openNow')
     });
 
-    if (!validation.success) {
+    if (!validation.isValid) {
       return NextResponse.json(
         { error: 'Invalid parameters', details: validation.errors },
         { status: 400 }
       );
     }
 
-    const { search, limit, offset, cuisine, maxDistance, minDiscount, openNow } = validation.data;
+    const { search, limit, offset, cuisine, maxDistance, minDiscount, openNow } = {
+      search: searchParams.get('search') || '',
+      limit: parseInt(searchParams.get('limit') || '20'),
+      offset: parseInt(searchParams.get('offset') || '0'),
+      cuisine: searchParams.get('cuisine'),
+      maxDistance: searchParams.get('maxDistance'),
+      minDiscount: searchParams.get('minDiscount'),
+      openNow: searchParams.get('openNow')
+    };
 
     // Build where clause
     const where: any = {
@@ -67,8 +75,8 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    if (minDiscount > 0) {
-      where.percentOff = { gte: minDiscount };
+    if (minDiscount && parseInt(minDiscount) > 0) {
+      where.percentOff = { gte: parseInt(minDiscount) };
     }
 
     // Get deals with pagination
@@ -108,6 +116,14 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
+    console.error('Error fetching deals:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch deals' },
+      { status: 500 }
+    );
+  }
+}
+
     console.error('Error fetching deals:', error);
     return NextResponse.json(
       { error: 'Failed to fetch deals' },

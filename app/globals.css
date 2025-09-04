@@ -2,90 +2,254 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .hover\:scale-102:hover {
-    transform: scale(1.02);
-  }
-  
-  .scale-102 {
-    transform: scale(1.02);
-  }
-  
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
+/* Import professional fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+/* Professional Color System */
+:root {
+  /* Neutral Base Palette */
+  --neutral-50: #fafafa;
+  --neutral-100: #f5f5f5;
+  --neutral-200: #e5e5e5;
+  --neutral-300: #d4d4d4;
+  --neutral-400: #a3a3a3;
+  --neutral-500: #737373;
+  --neutral-600: #525252;
+  --neutral-700: #404040;
+  --neutral-800: #262626;
+  --neutral-900: #171717;
+
+  /* Warm Accent - Amber */
+  --amber-50: #fffbeb;
+  --amber-100: #fef3c7;
+  --amber-200: #fde68a;
+  --amber-300: #fcd34d;
+  --amber-400: #fbbf24;
+  --amber-500: #f59e0b;
+  --amber-600: #d97706;
+  --amber-700: #b45309;
+  --amber-800: #92400e;
+  --amber-900: #78350f;
 }
 
-/* Mobile-specific optimizations */
-@layer utilities {
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .safe-area-pb {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  
-  .safe-area-pt {
-    padding-top: env(safe-area-inset-top);
-  }
-  
-  .safe-area-pl {
-    padding-left: env(safe-area-inset-left);
-  }
-  
-  .safe-area-pr {
-    padding-right: env(safe-area-inset-right);
-  }
-}
-
-/* Smooth animations for mobile */
+/* Base Styles */
 @layer base {
   * {
-    -webkit-tap-highlight-color: transparent;
-  }
-  
-  html {
-    scroll-behavior: smooth;
+    @apply border-gray-200;
   }
   
   body {
+    @apply bg-white text-gray-900 font-sans;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--gray-900);
+  }
+
+  p {
+    @apply text-gray-600 leading-relaxed;
+  }
+
+  a {
+    @apply text-amber-600 hover:text-amber-700 transition-colors duration-200;
   }
 }
 
-/* Custom animations */
+/* Professional Components */
 @layer components {
-  .animate-in {
-    animation: fadeIn 0.3s ease-out;
+  /* Container */
+  .container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
-  
-  .fade-in {
-    animation: fadeIn 0.3s ease-out;
+
+  /* Professional Cards */
+  .card {
+    @apply bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200;
   }
-  
-  .slide-in-from-right {
-    animation: slideInFromRight 0.3s ease-out;
+
+  .card-elevated {
+    @apply bg-white rounded-xl border border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-200;
   }
-  
-  .slide-in-from-bottom {
-    animation: slideInFromBottom 0.3s ease-out;
+
+  /* Professional Buttons */
+  .btn-primary {
+    @apply bg-amber-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-gray-900 px-6 py-3 rounded-lg font-semibold border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md;
+  }
+
+  .btn-outline {
+    @apply bg-transparent text-amber-600 px-6 py-3 rounded-lg font-semibold border border-amber-600 hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-200;
+  }
+
+  /* Input Fields */
+  .input-search {
+    @apply w-full pl-12 pr-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm;
+  }
+
+  /* Badges */
+  .badge-discount {
+    @apply bg-amber-600 text-white font-bold text-sm px-3 py-1 rounded-full shadow-sm;
+  }
+
+  /* Filter Chips */
+  .filter-chip {
+    @apply inline-flex items-center px-4 py-2 rounded-full text-sm font-medium border border-gray-300 bg-white hover:bg-gray-50 hover:border-amber-300 transition-all duration-200 cursor-pointer;
+  }
+
+  .filter-chip-active {
+    @apply bg-amber-600 text-white border-amber-600 hover:bg-amber-700;
+  }
+
+  /* Deal Cards */
+  .deal-card {
+    @apply card overflow-hidden cursor-pointer;
+  }
+
+  .deal-card:hover {
+    @apply shadow-lg;
+  }
+
+  .deal-card-image {
+    @apply w-full h-48 object-cover transition-transform duration-300;
+  }
+
+  .deal-card-content {
+    @apply p-6;
+  }
+
+  .deal-card-title {
+    @apply text-lg font-semibold text-gray-900 mb-2;
+  }
+
+  .deal-card-description {
+    @apply text-gray-600 text-sm mb-3;
+  }
+
+  .deal-card-meta {
+    @apply flex items-center justify-between text-sm text-gray-500 mb-4;
+  }
+
+  .deal-card-footer {
+    @apply flex items-center justify-between;
+  }
+
+  /* Testimonial Cards */
+  .testimonial-card {
+    @apply card p-6 text-center;
+  }
+
+  .testimonial-avatar {
+    @apply w-16 h-16 rounded-full mx-auto mb-4 object-cover;
+  }
+
+  .testimonial-text {
+    @apply text-gray-600 italic mb-4;
+  }
+
+  .testimonial-author {
+    @apply font-semibold text-gray-900;
+  }
+
+  .testimonial-deal {
+    @apply text-sm text-amber-600 mt-1;
+  }
+
+  /* Section Headers */
+  .section-header {
+    @apply text-center mb-12;
+  }
+
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold text-gray-900 mb-4;
+  }
+
+  .section-subtitle {
+    @apply text-lg text-gray-600 max-w-2xl mx-auto;
+  }
+
+  /* Grid Layouts */
+  .grid-deals {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+  }
+
+  .grid-testimonials {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+  }
+
+  /* Hero Section */
+  .hero {
+    @apply relative min-h-screen flex items-center justify-center;
+  }
+
+  .hero-content {
+    @apply text-center text-white z-10 max-w-4xl mx-auto px-4;
+  }
+
+  .hero-title {
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold mb-6;
+  }
+
+  .hero-subtitle {
+    @apply text-xl md:text-2xl mb-8 text-white/90;
+  }
+
+  /* Navigation */
+  .nav-link {
+    @apply text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200;
+  }
+
+  .nav-link-active {
+    @apply text-amber-600 bg-amber-50;
+  }
+
+  /* Footer */
+  .footer {
+    @apply bg-gray-50 border-t border-gray-200;
+  }
+
+  .footer-section {
+    @apply space-y-4;
+  }
+
+  .footer-title {
+    @apply text-sm font-semibold text-gray-900 uppercase tracking-wider;
+  }
+
+  .footer-link {
+    @apply text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200;
   }
 }
 
+/* Professional Utilities */
+@layer utilities {
+  .section-padding {
+    @apply py-16 md:py-20 lg:py-24;
+  }
+
+  .container-padding {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out;
+  }
+}
+
+/* Keyframe Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -95,45 +259,305 @@
   }
 }
 
-@keyframes slideInFromRight {
+@keyframes slideUp {
   from {
-    transform: translateX(100%);
+    opacity: 0;
+    transform: translateY(20px);
   }
   to {
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideInFromBottom {
-  from {
-    transform: translateY(100%);
-  }
-  to {
+    opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* Mobile touch optimizations */
-@media (max-width: 768px) {
-  .touch-manipulation {
-    touch-action: manipulation;
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@tailwind utilities;
+
+/* Import professional fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+/* Professional Color System */
+:root {
+  /* Neutral Base Palette */
+  --neutral-50: #fafafa;
+  --neutral-100: #f5f5f5;
+  --neutral-200: #e5e5e5;
+  --neutral-300: #d4d4d4;
+  --neutral-400: #a3a3a3;
+  --neutral-500: #737373;
+  --neutral-600: #525252;
+  --neutral-700: #404040;
+  --neutral-800: #262626;
+  --neutral-900: #171717;
+
+  /* Warm Accent - Amber */
+  --amber-50: #fffbeb;
+  --amber-100: #fef3c7;
+  --amber-200: #fde68a;
+  --amber-300: #fcd34d;
+  --amber-400: #fbbf24;
+  --amber-500: #f59e0b;
+  --amber-600: #d97706;
+  --amber-700: #b45309;
+  --amber-800: #92400e;
+  --amber-900: #78350f;
+}
+
+/* Base Styles */
+@layer base {
+  * {
+    @apply border-gray-200;
   }
   
-  .no-scroll {
-    overflow: hidden;
+  body {
+    @apply bg-white text-gray-900 font-sans;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
   }
-  
-  /* Better button sizing for mobile */
-  button, .btn {
-    min-height: 44px;
-    min-width: 44px;
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--gray-900);
   }
-  
-  /* Improved text selection */
-  .select-text {
-    -webkit-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
-    user-select: text;
+
+  p {
+    @apply text-gray-600 leading-relaxed;
+  }
+
+  a {
+    @apply text-amber-600 hover:text-amber-700 transition-colors duration-200;
+  }
+}
+
+/* Professional Components */
+@layer components {
+  /* Container */
+  .container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Professional Cards */
+  .card {
+    @apply bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+
+  .card-elevated {
+    @apply bg-white rounded-xl border border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-200;
+  }
+
+  /* Professional Buttons */
+  .btn-primary {
+    @apply bg-amber-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-gray-900 px-6 py-3 rounded-lg font-semibold border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md;
+  }
+
+  .btn-outline {
+    @apply bg-transparent text-amber-600 px-6 py-3 rounded-lg font-semibold border border-amber-600 hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-200;
+  }
+
+  /* Input Fields */
+  .input-search {
+    @apply w-full pl-12 pr-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm;
+  }
+
+  /* Badges */
+  .badge-discount {
+    @apply bg-amber-600 text-white font-bold text-sm px-3 py-1 rounded-full shadow-sm;
+  }
+
+  /* Filter Chips */
+  .filter-chip {
+    @apply inline-flex items-center px-4 py-2 rounded-full text-sm font-medium border border-gray-300 bg-white hover:bg-gray-50 hover:border-amber-300 transition-all duration-200 cursor-pointer;
+  }
+
+  .filter-chip-active {
+    @apply bg-amber-600 text-white border-amber-600 hover:bg-amber-700;
+  }
+
+  /* Deal Cards */
+  .deal-card {
+    @apply card overflow-hidden cursor-pointer;
+  }
+
+  .deal-card:hover {
+    @apply shadow-lg;
+  }
+
+  .deal-card-image {
+    @apply w-full h-48 object-cover transition-transform duration-300;
+  }
+
+  .deal-card-content {
+    @apply p-6;
+  }
+
+  .deal-card-title {
+    @apply text-lg font-semibold text-gray-900 mb-2;
+  }
+
+  .deal-card-description {
+    @apply text-gray-600 text-sm mb-3;
+  }
+
+  .deal-card-meta {
+    @apply flex items-center justify-between text-sm text-gray-500 mb-4;
+  }
+
+  .deal-card-footer {
+    @apply flex items-center justify-between;
+  }
+
+  /* Testimonial Cards */
+  .testimonial-card {
+    @apply card p-6 text-center;
+  }
+
+  .testimonial-avatar {
+    @apply w-16 h-16 rounded-full mx-auto mb-4 object-cover;
+  }
+
+  .testimonial-text {
+    @apply text-gray-600 italic mb-4;
+  }
+
+  .testimonial-author {
+    @apply font-semibold text-gray-900;
+  }
+
+  .testimonial-deal {
+    @apply text-sm text-amber-600 mt-1;
+  }
+
+  /* Section Headers */
+  .section-header {
+    @apply text-center mb-12;
+  }
+
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold text-gray-900 mb-4;
+  }
+
+  .section-subtitle {
+    @apply text-lg text-gray-600 max-w-2xl mx-auto;
+  }
+
+  /* Grid Layouts */
+  .grid-deals {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+  }
+
+  .grid-testimonials {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+  }
+
+  /* Hero Section */
+  .hero {
+    @apply relative min-h-screen flex items-center justify-center;
+  }
+
+  .hero-content {
+    @apply text-center text-white z-10 max-w-4xl mx-auto px-4;
+  }
+
+  .hero-title {
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold mb-6;
+  }
+
+  .hero-subtitle {
+    @apply text-xl md:text-2xl mb-8 text-white/90;
+  }
+
+  /* Navigation */
+  .nav-link {
+    @apply text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200;
+  }
+
+  .nav-link-active {
+    @apply text-amber-600 bg-amber-50;
+  }
+
+  /* Footer */
+  .footer {
+    @apply bg-gray-50 border-t border-gray-200;
+  }
+
+  .footer-section {
+    @apply space-y-4;
+  }
+
+  .footer-title {
+    @apply text-sm font-semibold text-gray-900 uppercase tracking-wider;
+  }
+
+  .footer-link {
+    @apply text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200;
+  }
+}
+
+/* Professional Utilities */
+@layer utilities {
+  .section-padding {
+    @apply py-16 md:py-20 lg:py-24;
+  }
+
+  .container-padding {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out;
+  }
+}
+
+/* Keyframe Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

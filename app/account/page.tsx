@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import AuthGuard from '@/lib/auth-guard';
 import { 
   User, 
   MapPin, 
@@ -120,7 +121,8 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-900 dark:via-amber-900 dark:to-yellow-900">
+    <AuthGuard>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-900 dark:via-amber-900 dark:to-yellow-900">
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="text-center mb-12">
@@ -443,6 +445,10 @@ export default function AccountPage() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </AuthGuard>
+  );
+}
+
   );
 }

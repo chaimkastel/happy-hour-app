@@ -36,9 +36,16 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-      const validatedQuery = validateSearchQuery(query);
+      const validationError = validateSearchQuery(query);
       
-      if (validatedQuery.length < 3) {
+      if (validationError) {
+        return NextResponse.json(
+          { error: validationError },
+          { status: 400 }
+        );
+      }
+      
+      if (query.length < 3) {
         return NextResponse.json(
           { predictions: [], status: 'ZERO_RESULTS' },
           { status: 200 }
@@ -204,6 +211,13 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Address autocomplete error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch address suggestions' },
+      { status: 500 }
+    );
+  }
+}
+
     return NextResponse.json(
       { error: 'Failed to fetch address suggestions' },
       { status: 500 }

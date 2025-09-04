@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { 
   Plus, 
   Edit, 
@@ -62,6 +64,8 @@ interface MerchantStats {
 }
 
 export default function MerchantDashboard() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [venues, setVenues] = useState<Venue[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [stats, setStats] = useState<MerchantStats>({
@@ -75,6 +79,21 @@ export default function MerchantDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'venues' | 'deals' | 'analytics' | 'redemptions' | 'redeem'>('overview');
+
+  // Redirect if not authenticated or not a merchant
+  useEffect(() => {
+    if (status === 'loading') return; // Still loading
+    
+    if (!session) {
+      router.push('/login?callbackUrl=/merchant');
+      return;
+    }
+    
+    if (session.user.role !== 'merchant' && session.user.role !== 'admin') {
+      router.push('/merchant/signup');
+      return;
+    }
+  }, [session, status, router]);
 
   useEffect(() => {
     fetchMerchantData();
@@ -639,6 +658,25 @@ export default function MerchantDashboard() {
                     <TrendingUp className="w-4 h-4 mr-2 text-green-500" />
                     Revenue up from last month
                   </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Performance Trends</h3>
+              <div className="text-center py-8 text-gray-500">
+                <BarChart3 className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                <p>Detailed analytics coming soon</p>
+                <p className="text-sm">Track your business performance, customer behavior, and revenue trends</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
                 </div>
               </div>
             </div>

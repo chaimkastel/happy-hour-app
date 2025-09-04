@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import AuthGuard from '@/lib/auth-guard';
 import { 
   CreditCard, 
   Tag, 
@@ -16,6 +17,17 @@ import {
   Building2
 } from 'lucide-react';
 import Link from 'next/link';
+import { 
+  HeartIcon,
+  StarIcon,
+  LocationIcon,
+  ClockIcon as ClockIconCustom,
+  UserIcon,
+  WalletIcon,
+  GridIcon,
+  MapIcon,
+  SearchIcon
+} from '@/components/ui/ProfessionalIcons';
 
 interface Redemption {
   id: string;
@@ -174,8 +186,8 @@ export default function WalletPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-100 p-4">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen bg-white">
+        <div className="container py-8">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -195,33 +207,21 @@ export default function WalletPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-100">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Wallet</h1>
-              <p className="text-gray-600 mt-1">Manage your deals and track your savings</p>
-            </div>
-            <Link 
-              href="/deals"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              <Tag className="w-4 h-4 mr-2" />
-              Find More Deals
-            </Link>
-          </div>
-        </div>
-      </div>
+    <AuthGuard>
+      <div className="min-h-screen bg-white">
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="container py-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Wallet</h1>
+          <p className="text-gray-600">Manage your deals and track your savings</p>
+        </div>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="card p-6">
             <div className="flex items-center">
-              <Tag className="h-8 w-8 text-indigo-600" />
+              <Tag className="h-8 w-8 text-amber-600" />
               <div className="ml-5">
                 <dt className="text-sm font-medium text-gray-500">Total Deals</dt>
                 <dd className="text-lg font-medium text-gray-900">{stats.totalDeals}</dd>
@@ -229,7 +229,7 @@ export default function WalletPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="card p-6">
             <div className="flex items-center">
               <CheckCircle className="h-8 w-8 text-green-600" />
               <div className="ml-5">
@@ -239,7 +239,7 @@ export default function WalletPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="card p-6">
             <div className="flex items-center">
               <CheckCircle className="h-8 w-8 text-blue-600" />
               <div className="ml-5">
@@ -249,9 +249,9 @@ export default function WalletPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="card p-6">
             <div className="flex items-center">
-              <DollarSign className="h-8 w-8 text-yellow-600" />
+              <DollarSign className="h-8 w-8 text-amber-600" />
               <div className="ml-5">
                 <dt className="text-sm font-medium text-gray-500">Total Savings</dt>
                 <dd className="text-lg font-medium text-gray-900">${stats.totalSavings.toFixed(2)}</dd>
@@ -261,7 +261,7 @@ export default function WalletPage() {
         </div>
 
         {/* Filter Tabs */}
-        <div className="bg-white rounded-lg shadow mb-6">
+        <div className="card mb-6">
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8 px-6">
               {[
@@ -275,13 +275,13 @@ export default function WalletPage() {
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
                     activeTab === tab.id
-                      ? 'border-indigo-500 text-indigo-600'
+                      ? 'border-amber-500 text-amber-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
                   <span>{tab.label}</span>
                   <span className={`px-2 py-1 text-xs rounded-full ${
-                    activeTab === tab.id ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-600'
+                    activeTab === tab.id ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-600'
                   }`}>
                     {tab.count}
                   </span>
@@ -293,23 +293,29 @@ export default function WalletPage() {
 
         {/* Deals List */}
         {filteredRedemptions.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg shadow">
+          <div className="text-center py-12 card">
             <CreditCard className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No deals in your wallet</h3>
             <p className="text-gray-500 mb-6">
               {activeTab === 'all' 
-                ? "You haven't redeemed any deals yet. Start exploring to find great offers!"
+                ? "You haven't redeemed any deals yet. Visit Explore to claim your first deal and start saving!"
                 : `No ${activeTab} deals found.`
               }
             </p>
             {activeTab === 'all' && (
-              <Link 
-                href="/deals"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                <Tag className="w-4 h-4 mr-2" />
-                Find Your First Deal
-              </Link>
+              <div className="space-y-4">
+                <Link 
+                  href="/explore"
+                  className="btn-primary"
+                >
+                  <Tag className="w-4 h-4 mr-2" />
+                  Find Your First Deal
+                </Link>
+                <div className="text-sm text-gray-500">
+                  <p>💡 <strong>Tip:</strong> Look for deals marked with "Claim Deal" buttons</p>
+                  <p>🎯 Filter by "Near Me" to find deals close to you</p>
+                </div>
+              </div>
             )}
           </div>
         ) : (
@@ -319,7 +325,7 @@ export default function WalletPage() {
               const isExpired = new Date(redemption.deal.endAt) < new Date();
               
               return (
-                <div key={redemption.id} className="bg-white rounded-lg shadow overflow-hidden">
+                <div key={redemption.id} className="card overflow-hidden">
                   {/* Deal Header */}
                   <div className="p-6 border-b border-gray-200">
                     <div className="flex items-center justify-between mb-4">
@@ -335,7 +341,7 @@ export default function WalletPage() {
                         )}
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-indigo-600">{redemption.deal.percentOff}%</div>
+                        <div className="text-2xl font-bold text-amber-600">{redemption.deal.percentOff}%</div>
                         <div className="text-sm text-gray-500">OFF</div>
                       </div>
                     </div>
@@ -401,7 +407,7 @@ export default function WalletPage() {
                       <div className="mt-4 pt-4 border-t border-gray-200">
                         <Link 
                           href={`/deal/${redemption.deal.id}/view`}
-                          className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                          className="w-full btn-primary text-center py-2 px-4"
                         >
                           <Tag className="w-4 h-4 mr-2" />
                           Use Deal
@@ -415,6 +421,13 @@ export default function WalletPage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </AuthGuard>
+  );
+}
+        )}
+      </div>
+      </div>
+    </AuthGuard>
   );
 }

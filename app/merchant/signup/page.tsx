@@ -56,7 +56,7 @@ export default function MerchantSignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-purple-600 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 relative overflow-hidden">
       {/* Enhanced Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
@@ -186,7 +186,7 @@ export default function MerchantSignupPage() {
                         required
                         value={formData.firstName}
                         onChange={(e) => handleInputChange('firstName', e.target.value)}
-                        className="w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-sm border border-white/30 rounded-2xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-white/60 transition-all duration-300 hover:bg-white/15"
+                        className="w-full pl-12 pr-4 py-4 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:bg-white shadow-sm"
                         placeholder="John"
                       />
                     </div>
@@ -202,7 +202,7 @@ export default function MerchantSignupPage() {
                         required
                         value={formData.lastName}
                         onChange={(e) => handleInputChange('lastName', e.target.value)}
-                        className="w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-sm border border-white/30 rounded-2xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-white/60 transition-all duration-300 hover:bg-white/15"
+                        className="w-full pl-12 pr-4 py-4 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:bg-white shadow-sm"
                         placeholder="Doe"
                       />
                     </div>
@@ -220,7 +220,7 @@ export default function MerchantSignupPage() {
                       required
                       value={formData.businessName}
                       onChange={(e) => handleInputChange('businessName', e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-sm border border-white/30 rounded-2xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-white/60 transition-all duration-300 hover:bg-white/15"
+                      className="w-full pl-12 pr-4 py-4 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:bg-white shadow-sm"
                       placeholder="Your Restaurant Name"
                     />
                   </div>
@@ -237,7 +237,7 @@ export default function MerchantSignupPage() {
                       required
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-sm border border-white/30 rounded-2xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-white/60 transition-all duration-300 hover:bg-white/15"
+                      className="w-full pl-12 pr-4 py-4 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:bg-white shadow-sm"
                       placeholder="your@email.com"
                     />
                   </div>
@@ -254,7 +254,7 @@ export default function MerchantSignupPage() {
                       required
                       value={formData.phone}
                       onChange={(e) => handleInputChange('phone', e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-sm border border-white/30 rounded-2xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-white/60 transition-all duration-300 hover:bg-white/15"
+                      className="w-full pl-12 pr-4 py-4 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:bg-white shadow-sm"
                       placeholder="(555) 123-4567"
                     />
                   </div>
@@ -271,7 +271,7 @@ export default function MerchantSignupPage() {
                       required
                       value={formData.password}
                       onChange={(e) => handleInputChange('password', e.target.value)}
-                      className="w-full pl-12 pr-12 py-4 bg-white/10 backdrop-blur-sm border border-white/30 rounded-2xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-white/60 transition-all duration-300 hover:bg-white/15"
+                      className="w-full pl-12 pr-12 py-4 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:bg-white shadow-sm"
                       placeholder="Create a password"
                     />
                     <button

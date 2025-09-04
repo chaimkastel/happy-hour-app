@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRateLimiter } from './rate-limit'
-import { validateInput } from './validation'
+import { validateForm } from './validation'
 
 export interface MiddlewareConfig {
   rateLimit?: {
@@ -52,8 +52,8 @@ export function withMiddleware(
         if (config.validation.validateBody && req.method !== 'GET') {
           try {
             const body = await req.json()
-            const validation = validateInput(config.validation.schema, body)
-            if (!validation.success) {
+            const validation = validateForm(body, config.validation.schema)
+            if (!validation.isValid) {
               return NextResponse.json(
                 { error: 'Validation failed', details: validation.errors }, 
                 { status: 400 }
@@ -69,8 +69,8 @@ export function withMiddleware(
 
         if (config.validation.validateQuery) {
           const queryParams = Object.fromEntries(req.nextUrl.searchParams.entries())
-          const validation = validateInput(config.validation.schema, queryParams)
-          if (!validation.success) {
+          const validation = validateForm(queryParams, config.validation.schema)
+          if (!validation.isValid) {
             return NextResponse.json(
               { error: 'Invalid query parameters', details: validation.errors }, 
               { status: 400 }
