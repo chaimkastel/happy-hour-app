@@ -6,12 +6,48 @@ export async function POST(request: NextRequest) {
   let body: any = {};
   try {
     body = await request.json();
-    const { businessName, email, phone, password, firstName, lastName } = body;
+    const { 
+      businessName, 
+      email, 
+      phone, 
+      password, 
+      firstName, 
+      lastName, 
+      businessAddress, 
+      cuisineType, 
+      website,
+      acceptTerms 
+    } = body;
 
     // Validate required fields
-    if (!businessName || !email || !phone || !password || !firstName || !lastName) {
+    if (!businessName || !email || !phone || !password || !firstName || !lastName || !businessAddress || !cuisineType) {
       return NextResponse.json(
-        { error: 'All fields are required' },
+        { error: 'Business name, email, phone, password, first name, last name, business address, and cuisine type are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate terms acceptance
+    if (!acceptTerms) {
+      return NextResponse.json(
+        { error: 'You must accept the terms and conditions' },
+        { status: 400 }
+      );
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { error: 'Please enter a valid email address' },
+        { status: 400 }
+      );
+    }
+
+    // Validate password strength
+    if (password.length < 8) {
+      return NextResponse.json(
+        { error: 'Password must be at least 8 characters long' },
         { status: 400 }
       );
     }
@@ -24,7 +60,7 @@ export async function POST(request: NextRequest) {
     if (existingUser) {
       return NextResponse.json(
         { error: 'User with this email already exists' },
-        { status: 400 }
+        { status: 409 }
       );
     }
 
@@ -37,7 +73,9 @@ export async function POST(request: NextRequest) {
         email,
         role: 'MERCHANT',
         password: hashedPassword,
-        phone: phone
+        phone: phone,
+        firstName: firstName,
+        lastName: lastName
       }
     });
 
@@ -46,7 +84,13 @@ export async function POST(request: NextRequest) {
       data: {
         userId: user.id,
         businessName,
+        firstName: firstName,
+        lastName: lastName,
+        businessAddress: businessAddress,
+        cuisineType: cuisineType,
+        website: website || null,
         kycStatus: 'PENDING', // New merchants start with pending KYC
+        termsAcceptedAt: acceptTerms ? new Date() : null,
       }
     });
 
@@ -75,6 +119,10 @@ export async function POST(request: NextRequest) {
           merchantId: merchant.id,
           businessName: merchant.businessName,
           email: user.email,
+          firstName: merchant.firstName,
+          lastName: merchant.lastName,
+          businessAddress: merchant.businessAddress,
+          cuisineType: merchant.cuisineType,
           kycStatus: merchant.kycStatus,
           timestamp: new Date().toISOString()
         })
@@ -87,11 +135,16 @@ export async function POST(request: NextRequest) {
       user: {
         id: user.id,
         email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
         role: user.role
       },
       merchant: {
         id: merchant.id,
         businessName: merchant.businessName,
+        businessAddress: merchant.businessAddress,
+        cuisineType: merchant.cuisineType,
+        website: merchant.website,
         kycStatus: merchant.kycStatus
       },
       subscription: {

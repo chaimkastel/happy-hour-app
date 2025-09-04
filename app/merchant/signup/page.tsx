@@ -14,7 +14,11 @@ export default function MerchantSignupPage() {
     businessName: '',
     phone: '',
     firstName: '',
-    lastName: ''
+    lastName: '',
+    businessAddress: '',
+    cuisineType: '',
+    website: '',
+    acceptTerms: false
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -24,6 +28,13 @@ export default function MerchantSignupPage() {
     setLoading(true);
     setError('');
     setSuccess('');
+
+    // Validate terms acceptance
+    if (!formData.acceptTerms) {
+      setError('You must accept the terms and conditions');
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/merchant/signup', {
@@ -262,6 +273,81 @@ export default function MerchantSignupPage() {
 
                 <div>
                   <label className="block text-sm font-bold text-white/90 mb-3">
+                    Business Address
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      value={formData.businessAddress}
+                      onChange={(e) => handleInputChange('businessAddress', e.target.value)}
+                      className="w-full pl-4 pr-4 py-4 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:bg-white shadow-sm"
+                      placeholder="123 Main St, City, State ZIP"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-white/90 mb-3">
+                    Cuisine Type / Business Category
+                  </label>
+                  <div className="relative">
+                    <select
+                      required
+                      value={formData.cuisineType}
+                      onChange={(e) => handleInputChange('cuisineType', e.target.value)}
+                      className="w-full pl-4 pr-4 py-4 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-900 transition-all duration-300 hover:bg-white shadow-sm"
+                    >
+                      <option value="">Select cuisine type</option>
+                      <option value="american">American</option>
+                      <option value="italian">Italian</option>
+                      <option value="mexican">Mexican</option>
+                      <option value="chinese">Chinese</option>
+                      <option value="japanese">Japanese</option>
+                      <option value="indian">Indian</option>
+                      <option value="thai">Thai</option>
+                      <option value="mediterranean">Mediterranean</option>
+                      <option value="french">French</option>
+                      <option value="greek">Greek</option>
+                      <option value="spanish">Spanish</option>
+                      <option value="middle-eastern">Middle Eastern</option>
+                      <option value="caribbean">Caribbean</option>
+                      <option value="latin-american">Latin American</option>
+                      <option value="african">African</option>
+                      <option value="seafood">Seafood</option>
+                      <option value="steakhouse">Steakhouse</option>
+                      <option value="pizza">Pizza</option>
+                      <option value="burger">Burger</option>
+                      <option value="sushi">Sushi</option>
+                      <option value="bbq">BBQ</option>
+                      <option value="vegetarian">Vegetarian</option>
+                      <option value="vegan">Vegan</option>
+                      <option value="gluten-free">Gluten-Free</option>
+                      <option value="dessert">Dessert</option>
+                      <option value="coffee">Coffee/Tea</option>
+                      <option value="bar">Bar/Pub</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-white/90 mb-3">
+                    Website / Social Media URL (Optional)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="url"
+                      value={formData.website}
+                      onChange={(e) => handleInputChange('website', e.target.value)}
+                      className="w-full pl-4 pr-4 py-4 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:bg-white shadow-sm"
+                      placeholder="https://yourwebsite.com or @socialmedia"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-white/90 mb-3">
                     Password
                   </label>
                   <div className="relative">
@@ -290,6 +376,8 @@ export default function MerchantSignupPage() {
                     type="checkbox"
                     id="terms"
                     required
+                    checked={formData.acceptTerms}
+                    onChange={(e) => setFormData(prev => ({ ...prev, acceptTerms: e.target.checked }))}
                     className="mt-1 w-4 h-4 text-yellow-400 bg-white/10 border-white/30 rounded focus:ring-yellow-400 focus:ring-2"
                   />
                   <label htmlFor="terms" className="text-white/80 text-sm leading-relaxed">

@@ -9,6 +9,8 @@ interface ConsentCheckboxProps {
   error?: string;
   disabled?: boolean;
   className?: string;
+  label?: string;
+  showTermsLinks?: boolean;
 }
 
 export default function ConsentCheckbox({
@@ -16,9 +18,38 @@ export default function ConsentCheckbox({
   onChange,
   error,
   disabled = false,
-  className = ''
+  className = '',
+  label,
+  showTermsLinks = true
 }: ConsentCheckboxProps) {
   const [isHovered, setIsHovered] = useState(false);
+
+  const defaultLabel = (
+    <>
+      I agree to the{' '}
+      <a
+        href="/terms"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-amber-600 hover:text-amber-700 underline focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 rounded"
+        aria-label="Read Terms of Service (opens in new tab)"
+      >
+        Terms of Service
+        <ExternalLink className="inline w-3 h-3 ml-1" aria-hidden="true" />
+      </a>
+      {' '}and{' '}
+      <a
+        href="/privacy"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-amber-600 hover:text-amber-700 underline focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 rounded"
+        aria-label="Read Privacy Policy (opens in new tab)"
+      >
+        Privacy Policy
+        <ExternalLink className="inline w-3 h-3 ml-1" aria-hidden="true" />
+      </a>
+    </>
+  );
 
   return (
     <div className={`space-y-2 ${className}`}>
@@ -59,28 +90,7 @@ export default function ConsentCheckbox({
           htmlFor="consent" 
           className="text-sm text-gray-700 cursor-pointer select-none"
         >
-          I agree to the{' '}
-          <a
-            href="/terms"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-amber-600 hover:text-amber-700 underline focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 rounded"
-            aria-label="Read Terms of Service (opens in new tab)"
-          >
-            Terms of Service
-            <ExternalLink className="inline w-3 h-3 ml-1" aria-hidden="true" />
-          </a>
-          {' '}and{' '}
-          <a
-            href="/privacy"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-amber-600 hover:text-amber-700 underline focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 rounded"
-            aria-label="Read Privacy Policy (opens in new tab)"
-          >
-            Privacy Policy
-            <ExternalLink className="inline w-3 h-3 ml-1" aria-hidden="true" />
-          </a>
+          {label || (showTermsLinks ? defaultLabel : 'I agree to the terms and conditions')}
         </label>
       </div>
       

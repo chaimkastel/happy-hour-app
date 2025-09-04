@@ -11,11 +11,15 @@ model User {
   id              String       @id @default(cuid())
   email           String       @unique
   password        String?
+  firstName       String?
+  lastName        String?
   phone           String?
   role            String       @default("USER")
   walletCardId    String?
   preferredCities String       @default("[]")
   location        String?
+  newsletterOptIn Boolean      @default(false)
+  termsAcceptedAt DateTime?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
   merchant        Merchant?
@@ -54,9 +58,15 @@ model Merchant {
   id              String            @id @default(cuid())
   userId          String            @unique
   businessName    String
+  firstName       String?
+  lastName        String?
+  businessAddress String?
+  cuisineType     String?
+  website         String?
   abnOrEIN        String?
   payoutAccountId String?
   kycStatus       String            @default("PENDING")
+  termsAcceptedAt DateTime?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   auditLogs       AuditLog[]

@@ -24,8 +24,10 @@ interface FormData {
   confirmPassword: string;
   firstName: string;
   lastName: string;
+  phone: string;
   location: string;
   acceptTerms: boolean;
+  newsletterOptIn: boolean;
 }
 
 interface FormErrors {
@@ -34,8 +36,10 @@ interface FormErrors {
   confirmPassword?: string;
   firstName?: string;
   lastName?: string;
+  phone?: string;
   location?: string;
   acceptTerms?: string;
+  newsletterOptIn?: string;
   general?: string;
 }
 
@@ -50,8 +54,10 @@ function SignUpForm() {
     confirmPassword: '',
     firstName: '',
     lastName: '',
+    phone: '',
     location: '',
-    acceptTerms: false
+    acceptTerms: false,
+    newsletterOptIn: false
   });
   
   const [errors, setErrors] = useState<FormErrors>({});
@@ -87,6 +93,13 @@ function SignUpForm() {
       newErrors.confirmPassword = 'Passwords do not match';
     }
     
+    // Phone validation (required)
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^[\+]?[1-9][\d]{0,15}$/.test(formData.phone.replace(/[\s\-\(\)]/g, ''))) {
+      newErrors.phone = 'Please enter a valid phone number';
+    }
+    
     // Name validation (optional but if provided, must be valid)
     if (formData.firstName) {
       const firstNameError = validateName(formData.firstName, 'First name');
@@ -117,7 +130,7 @@ function SignUpForm() {
     setErrors({});
     
     try {
-      const response = await fetch('/api/users/signup', {
+      const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -127,7 +140,10 @@ function SignUpForm() {
           password: formData.password,
           firstName: formData.firstName || undefined,
           lastName: formData.lastName || undefined,
+          phone: formData.phone,
           location: formData.location || undefined,
+          newsletterOptIn: formData.newsletterOptIn,
+          acceptTerms: formData.acceptTerms
         }),
       });
       
@@ -282,11 +298,32 @@ function SignUpForm() {
                   />
                 </div>
 
+                {/* Phone */}
+                <FormField
+                  label="Phone number (Required)"
+                  id="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(value) => updateField('phone', value)}
+                  placeholder="Enter your phone number"
+                  required
+                  error={errors.phone}
+                  autoComplete="tel"
+                />
+
                 {/* Location */}
                 <LocationInput
                   value={formData.location}
                   onChange={(value) => updateField('location', value)}
                   error={errors.location}
+                />
+
+                {/* Newsletter Opt-In */}
+                <ConsentCheckbox
+                  checked={formData.newsletterOptIn}
+                  onChange={(checked) => updateField('newsletterOptIn', checked)}
+                  label="I agree to receive newsletters and promotional communications from Happy Hour."
+                  showTermsLinks={false}
                 />
 
                 {/* Terms Acceptance */}
