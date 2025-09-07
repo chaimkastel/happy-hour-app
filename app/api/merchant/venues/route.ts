@@ -2,139 +2,90 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { smartGeocode } from '@/lib/geocoding';
 
-// Type assertion for session
-type SessionWithUser = {
-  user: {
-    email: string;
-    [key: string]: any;
-  };
-};
-
-// GET /api/merchant/venues - Get merchant's venues
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions) as SessionWithUser | null;
-    
-    if (!session?.user?.email) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get the merchant for this user
-    const merchant = await prisma.merchant.findFirst({
-      where: { user: { email: session.user.email } },
-      include: { venues: true }
-    });
-
-    if (!merchant) {
-      return NextResponse.json({ error: 'Merchant not found' }, { status: 404 });
+    // Check if user has merchant or admin role
+    if (session.user.role !== 'MERCHANT' && session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    return NextResponse.json({ 
-      venues: merchant.venues,
-      total: merchant.venues.length 
+    // Get merchant's venues
+    const venues = await prisma.venue.findMany({
+      where: { merchantId: session.user.id },
+      include: {
+        deals: {
+          select: {
+            id: true,
+            title: true,
+            percentOff: true,
+            status: true,
+            startAt: true,
+            endAt: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
     });
+
+    return NextResponse.json({ venues });
   } catch (error) {
     console.error('Error fetching merchant venues:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch venues' }, { status: 500 });
   }
 }
 
-// POST /api/merchant/venues - Create new venue
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions) as SessionWithUser | null;
-    
-    if (!session?.user?.email) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Handle both JSON and FormData
-    const contentType = request.headers.get('content-type');
-    let venueData: any = {};
-
-    if (contentType?.includes('multipart/form-data')) {
-      const formData = await request.formData();
-      
-      // Extract form fields
-      venueData = {
-        name: formData.get('name') as string,
-        address: formData.get('address') as string,
-        businessType: formData.get('businessType') ? JSON.parse(formData.get('businessType') as string) : [],
-        priceTier: formData.get('priceTier') as string,
-        hours: formData.get('hours') ? JSON.parse(formData.get('hours') as string) : {},
-        description: formData.get('description') as string,
-        contactInfo: formData.get('contactInfo') ? JSON.parse(formData.get('contactInfo') as string) : {},
-        amenities: formData.get('amenities') ? JSON.parse(formData.get('amenities') as string) : [],
-        capacity: formData.get('capacity') ? parseInt(formData.get('capacity') as string) : 50,
-      };
-
-      // Handle file uploads (for now, we'll just store the filenames)
-      const photos: string[] = [];
-      for (const [key, value] of formData.entries()) {
-        if (key.startsWith('photo_') && value instanceof File) {
-          // In a real app, you'd upload to cloud storage
-          photos.push(value.name);
-        }
-      }
-      venueData.photos = photos;
-    } else {
-      venueData = await request.json();
+    // Check if user has merchant or admin role
+    if (session.user.role !== 'MERCHANT' && session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { 
-      name, 
-      address, 
-      businessType, 
-      priceTier, 
-      hours, 
-      description,
-      contactInfo,
-      amenities,
-      capacity,
-      photos
-    } = venueData;
+    const body = await request.json();
+    const { name, address, latitude, longitude, businessType, priceTier, hours, photos } = body;
 
-    // Get the merchant for this user
-    const merchant = await prisma.merchant.findFirst({
-      where: { user: { email: session.user.email } }
-    });
-
-    if (!merchant) {
-      return NextResponse.json({ error: 'Merchant not found' }, { status: 404 });
+    // Validate required fields
+    if (!name || !address || !latitude || !longitude) {
+      return NextResponse.json({ error: 'Name, address, and coordinates are required' }, { status: 400 });
     }
 
-    // Geocode the address to get coordinates
-    const geocodingResult = await smartGeocode(address);
-    
-    // Create the venue with enhanced data
+    // Generate slug from name
+    const slug = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '') + '-' + Date.now();
+
+    // Create venue
     const venue = await prisma.venue.create({
       data: {
-        merchantId: merchant.id,
+        merchantId: session.user.id,
         name,
-        slug: name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+        slug,
         address,
-        latitude: geocodingResult.latitude,
-        longitude: geocodingResult.longitude,
-        businessType: JSON.stringify(Array.isArray(businessType) ? businessType : businessType || []),
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude),
+        businessType: businessType || '[]',
         priceTier: priceTier || 'MODERATE',
-        hours: hours ? JSON.stringify(hours) : '{}',
-        photos: photos ? JSON.stringify(photos) : '[]',
-        isVerified: false, // New venues start unverified
-        rating: 0,
-        // Store additional data in photos field for now
-        // In a real app, you'd add these fields to the schema
-        // Note: metadata field doesn't exist in current schema
+        hours: hours || '{}',
+        photos: photos || '[]',
+        isVerified: false
       }
     });
 
-    return NextResponse.json({ 
-      venue,
-      message: 'Venue created successfully!'
-    }, { status: 201 });
+    return NextResponse.json({ venue }, { status: 201 });
   } catch (error) {
     console.error('Error creating venue:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create venue' }, { status: 500 });
   }
 }

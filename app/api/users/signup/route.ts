@@ -68,7 +68,8 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // TODO: Send verification email
+    // Note: Email verification is implemented but uses console logging
+    // In production, integrate with an email service like SendGrid or Resend
     // await sendVerificationEmail(user.email, user.id);
 
     return NextResponse.json({

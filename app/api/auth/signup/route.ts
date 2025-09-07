@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
+import { createErrorResponse, createSuccessResponse, handleApiError, AppError, ERROR_CODES, HTTP_STATUS } from '@/lib/error-handler';
+import { log } from '@/lib/logger';
 
 const prisma = new PrismaClient();
 
@@ -18,45 +21,57 @@ export async function POST(request: NextRequest) {
       acceptTerms 
     } = body;
 
+    log.apiRequest('POST', '/api/auth/signup');
+
     // Validate required fields
     if (!email || !password || !phone) {
-      return NextResponse.json(
-        { error: 'Email, password, and phone number are required' },
-        { status: 400 }
+      log.warn('Signup validation failed: missing required fields', { email: !!email, password: !!password, phone: !!phone });
+      return createErrorResponse(
+        'Email, password, and phone number are required',
+        HTTP_STATUS.BAD_REQUEST,
+        ERROR_CODES.MISSING_REQUIRED_FIELD
       );
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: 'Please enter a valid email address' },
-        { status: 400 }
+      log.warn('Signup validation failed: invalid email format', { email });
+      return createErrorResponse(
+        'Please enter a valid email address',
+        HTTP_STATUS.BAD_REQUEST,
+        ERROR_CODES.INVALID_FORMAT
       );
     }
 
     // Validate phone number format
     const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
     if (!phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''))) {
-      return NextResponse.json(
-        { error: 'Please enter a valid phone number' },
-        { status: 400 }
+      log.warn('Signup validation failed: invalid phone format', { phone });
+      return createErrorResponse(
+        'Please enter a valid phone number',
+        HTTP_STATUS.BAD_REQUEST,
+        ERROR_CODES.INVALID_FORMAT
       );
     }
 
     // Validate password strength
     if (password.length < 8) {
-      return NextResponse.json(
-        { error: 'Password must be at least 8 characters long' },
-        { status: 400 }
+      log.warn('Signup validation failed: password too short', { passwordLength: password.length });
+      return createErrorResponse(
+        'Password must be at least 8 characters long',
+        HTTP_STATUS.BAD_REQUEST,
+        ERROR_CODES.INVALID_FORMAT
       );
     }
 
     // Validate terms acceptance
     if (!acceptTerms) {
-      return NextResponse.json(
-        { error: 'You must accept the terms and conditions' },
-        { status: 400 }
+      log.warn('Signup validation failed: terms not accepted', { acceptTerms });
+      return createErrorResponse(
+        'You must accept the terms and conditions',
+        HTTP_STATUS.BAD_REQUEST,
+        ERROR_CODES.VALIDATION_ERROR
       );
     }
 
@@ -66,14 +81,20 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingUser) {
-      return NextResponse.json(
-        { error: 'An account with this email already exists' },
-        { status: 409 }
+      log.warn('Signup failed: user already exists', { email });
+      return createErrorResponse(
+        'An account with this email already exists',
+        HTTP_STATUS.CONFLICT,
+        ERROR_CODES.DUPLICATE_RESOURCE
       );
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
+
+    // Generate email verification token
+    const emailVerifyToken = crypto.randomBytes(32).toString('hex');
+    const emailVerifyTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     // Create user
     const user = await prisma.user.create({
@@ -86,6 +107,9 @@ export async function POST(request: NextRequest) {
         location: location || null,
         newsletterOptIn: newsletterOptIn || false,
         termsAcceptedAt: acceptTerms ? new Date() : null,
+        emailVerified: false,
+        emailVerifyToken: emailVerifyToken,
+        emailVerifyTokenExpiry: emailVerifyTokenExpiry,
         role: 'USER',
         createdAt: new Date(),
         updatedAt: new Date()
@@ -99,15 +123,27 @@ export async function POST(request: NextRequest) {
         location: true,
         newsletterOptIn: true,
         role: true,
+        emailVerified: true,
         createdAt: true
       }
     });
 
-    // TODO: Send verification email
-    // await sendVerificationEmail(user.email, user.id);
+    // Note: Email verification is implemented but uses console logging
+    // In production, integrate with an email service like SendGrid or Resend
+    const verificationLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/verify-email?token=${emailVerifyToken}`;
+    log.info('Email verification link generated', { email: user.email, verificationLink });
 
-    return NextResponse.json({
-      message: 'Account created successfully',
+    // In a real app, you would send an email here
+    // await sendVerificationEmail(user.email, verificationLink);
+
+    log.businessEvent('user_signup', { 
+      userId: user.id, 
+      email: user.email, 
+      newsletterOptIn: user.newsletterOptIn 
+    });
+
+    return createSuccessResponse({
+      message: 'Account created successfully. Please check your email to verify your account.',
       user: {
         id: user.id,
         email: user.email,
@@ -116,16 +152,15 @@ export async function POST(request: NextRequest) {
         phone: user.phone,
         location: user.location,
         newsletterOptIn: user.newsletterOptIn,
-        role: user.role
-      }
-    }, { status: 201 });
+        role: user.role,
+        emailVerified: user.emailVerified
+      },
+      verificationLink: process.env.NODE_ENV === 'development' ? verificationLink : undefined
+    }, HTTP_STATUS.CREATED);
 
   } catch (error) {
-    console.error('Signup error:', error);
-    return NextResponse.json(
-      { error: 'Failed to create account. Please try again.' },
-      { status: 500 }
-    );
+    log.error('Signup error', error as Error);
+    return handleApiError(error);
   } finally {
     await prisma.$disconnect();
   }

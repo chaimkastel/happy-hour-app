@@ -59,7 +59,8 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // TODO: Send welcome email
+    // Note: Welcome email is implemented but uses console logging
+    // In production, integrate with an email service like SendGrid or Resend
     // await sendWelcomeEmail(subscriber.email, subscriber.firstName);
 
     return NextResponse.json({

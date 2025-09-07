@@ -1,16 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { signIn, getSession } from 'next-auth/react';
 import { Shield, Lock, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 
 export default function AdminAccessPage() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+
+  // Check if user is already logged in and has admin role
+  useEffect(() => {
+    const checkSession = async () => {
+      const session = await getSession();
+      if (session?.user?.role === 'ADMIN') {
+        router.push('/admin');
+      }
+    };
+    checkSession();
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,14 +30,23 @@ export default function AdminAccessPage() {
     setError('');
 
     try {
-      // Check admin credentials
-      if (username === 'chaimkastel' && password === 'CHAIMrox11!') {
-        // Set admin authentication flag
-        localStorage.setItem('admin-authenticated', 'true');
-        // Redirect to admin dashboard
-        router.push('/admin');
+      const result = await signIn('credentials', {
+        email: email,
+        password: password,
+        redirect: false,
+        callbackUrl: '/admin'
+      });
+
+      if (result?.ok) {
+        // Check if user has admin role
+        const session = await getSession();
+        if (session?.user?.role === 'ADMIN') {
+          router.push('/admin');
+        } else {
+          setError('Access denied. Admin privileges required.');
+        }
       } else {
-        setError('Invalid admin credentials. Access denied.');
+        setError('Invalid credentials. Please check your email and password.');
       }
     } catch (error) {
       console.error('Admin access error:', error);
@@ -71,17 +92,17 @@ export default function AdminAccessPage() {
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="username" className="block text-sm font-semibold text-white/90 mb-2">
-                Admin Username
+              <label htmlFor="email" className="block text-sm font-semibold text-white/90 mb-2">
+                Admin Email
               </label>
               <input
-                id="username"
-                type="text"
+                id="email"
+                type="email"
                 required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/30 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-white placeholder-white/60 transition-all duration-300"
-                placeholder="Enter admin username"
+                placeholder="Enter admin email"
               />
             </div>
 

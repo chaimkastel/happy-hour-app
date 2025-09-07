@@ -62,7 +62,7 @@ export default function ClaimButton({
         setShowSuccessModal(true)
         onClaimSuccess?.(data.redemption)
         
-        // Store claim data for the success page
+        // Store claim data for the success page (temporary storage for success page)
         const claimData = {
           deal: {
             id: dealId,
@@ -73,14 +73,7 @@ export default function ClaimButton({
         }
         localStorage.setItem('hh:lastClaim', JSON.stringify(claimData))
         
-        // Add to wallet (localStorage for now)
-        const wallet = JSON.parse(localStorage.getItem('hh:wallet') || '[]')
-        wallet.push({
-          ...claimData,
-          claimedAt: new Date().toISOString(),
-          expiresAt: endAt
-        })
-        localStorage.setItem('hh:wallet', JSON.stringify(wallet))
+        // Note: Wallet data is now managed by the API, no need for localStorage
       } else {
         setError(data.error || 'Failed to claim deal')
       }

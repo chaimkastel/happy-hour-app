@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import { Users, Building2, CreditCard, BarChart3, Settings, Shield, Eye, EyeOff, Plus, Edit, Trash2, Search, Filter, Download, Upload, AlertTriangle, CheckCircle, Clock, TrendingUp, DollarSign, MapPin, Star, Heart, MessageSquare, Power, Lock, Unlock, Globe, Database, Server, Activity, Zap, AlertCircle, Ban, UserCheck, UserX, Pause, Play, RefreshCw, Bell, BellOff, FileText, ThumbsUp, ThumbsDown, Mail, Phone, Calendar, X } from 'lucide-react';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 
@@ -73,6 +74,7 @@ interface MerchantApplication {
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'merchants' | 'deals' | 'dealReview' | 'settings' | 'safety' | 'analytics' | 'applications' | 'monitoring' | 'health'>('overview');
   const [users, setUsers] = useState<User[]>([]);
   const [merchants, setMerchants] = useState<Merchant[]>([]);
@@ -118,24 +120,30 @@ export default function AdminDashboard() {
     uptime: 99.9
   });
 
-  // Check admin authentication
+  // Check admin authentication using NextAuth session
   useEffect(() => {
-    const checkAdminAuth = () => {
-      // Only run on client side
-      if (typeof window !== 'undefined') {
-        const isAuthenticated = localStorage.getItem('admin-authenticated') === 'true';
-        setIsAdminAuthenticated(isAuthenticated);
-        setAuthLoading(false);
-        
-        if (!isAuthenticated) {
-          // Redirect to admin access page
-          router.push('/admin-access');
-        }
-      }
-    };
+    if (status === 'loading') {
+      setAuthLoading(true);
+      return;
+    }
 
-    checkAdminAuth();
-  }, []);
+    if (status === 'unauthenticated' || !session) {
+      setIsAdminAuthenticated(false);
+      setAuthLoading(false);
+      router.push('/admin-access');
+      return;
+    }
+
+    if (session.user.role !== 'ADMIN') {
+      setIsAdminAuthenticated(false);
+      setAuthLoading(false);
+      router.push('/admin-access');
+      return;
+    }
+
+    setIsAdminAuthenticated(true);
+    setAuthLoading(false);
+  }, [session, status, router]);
 
   // Fetch real data from APIs
   useEffect(() => {

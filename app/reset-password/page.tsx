@@ -2,55 +2,42 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { signIn, getSession } from 'next-auth/react';
-import { Eye, EyeOff, ArrowRight, AlertCircle, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, AlertCircle, CheckCircle, Lock } from 'lucide-react';
 import FormField from '@/components/FormField';
-import SocialSignIn from '@/components/SocialSignIn';
 import SkipToMain from '@/components/SkipToMain';
 import { validateEmail } from '@/lib/validation';
 
 interface FormData {
   email: string;
   password: string;
-  rememberMe: boolean;
+  confirmPassword: string;
 }
 
 interface FormErrors {
   email?: string;
   password?: string;
-  rememberMe?: string;
+  confirmPassword?: string;
   general?: string;
 }
 
-function LoginForm() {
+function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/';
-  const message = searchParams.get('message');
+  const token = searchParams.get('token');
   
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
-    rememberMe: false
+    confirmPassword: ''
   });
   
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Check if user is already logged in
-  useEffect(() => {
-    const checkSession = async () => {
-      const session = await getSession();
-      if (session) {
-        router.push(callbackUrl);
-      }
-    };
-    checkSession();
-  }, [router, callbackUrl]);
-
-  const updateField = (field: keyof FormData, value: string | boolean) => {
+  const updateField = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
     // Clear error when user starts typing
@@ -69,6 +56,15 @@ function LoginForm() {
     // Password validation
     if (!formData.password.trim()) {
       newErrors.password = 'Password is required';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters long';
+    }
+    
+    // Confirm password validation
+    if (!formData.confirmPassword.trim()) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
     }
     
     setErrors(newErrors);
@@ -82,74 +78,39 @@ function LoginForm() {
       return;
     }
     
+    if (!token) {
+      setErrors({ general: 'Invalid or missing reset token. Please request a new password reset.' });
+      return;
+    }
+    
     setIsLoading(true);
     setErrors({});
     
     try {
-      const result = await signIn('credentials', {
-        email: formData.email,
-        password: formData.password,
-        redirect: false,
-        callbackUrl: callbackUrl
-      });
-      
-      if (result?.ok) {
-        setIsSuccess(true);
-        setTimeout(() => {
-          router.push(callbackUrl);
-        }, 1000);
-      } else {
-        setErrors({ 
-          general: 'Email or password is incorrect. Please check your credentials and try again.' 
-        });
-      }
-    } catch (error) {
-      console.error('Sign in error:', error);
-      setErrors({ general: 'Something went wrong. Please try again.' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSocialError = (error: string) => {
-    setErrors({ general: error });
-  };
-
-  const handleForgotPassword = async () => {
-    if (!formData.email) {
-      setErrors({ email: 'Please enter your email address first' });
-      return;
-    }
-
-    const emailError = validateEmail(formData.email);
-    if (emailError) {
-      setErrors({ email: emailError });
-      return;
-    }
-
-    setIsLoading(true);
-    setErrors({});
-
-    try {
-      const response = await fetch('/api/auth/forgot-password', {
+      const response = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: formData.email }),
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          token: token,
+        }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        setErrors({ 
-          general: 'If an account with that email exists, we\'ve sent a password reset link. Please check your email.' 
-        });
+        setIsSuccess(true);
+        setTimeout(() => {
+          router.push('/login?message=Password reset successfully. Please sign in with your new password.');
+        }, 2000);
       } else {
-        setErrors({ general: data.error || 'Failed to send reset email. Please try again.' });
+        setErrors({ general: data.error || 'Failed to reset password. Please try again.' });
       }
     } catch (error) {
-      console.error('Forgot password error:', error);
+      console.error('Reset password error:', error);
       setErrors({ general: 'Something went wrong. Please try again.' });
     } finally {
       setIsLoading(false);
@@ -166,10 +127,10 @@ function LoginForm() {
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              Welcome back!
+              Password Reset Successfully!
             </h1>
             <p className="text-gray-600 mb-6">
-              You've been successfully signed in. Redirecting...
+              Your password has been updated. Redirecting to login...
             </p>
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mx-auto"></div>
           </div>
@@ -187,29 +148,16 @@ function LoginForm() {
         <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24">
           <div className="mx-auto w-full max-w-sm lg:w-96">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Sign in to your account</h1>
-              <p className="mt-2 text-sm text-gray-600">
-                Welcome back! Please enter your details.
+              <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Lock className="w-6 h-6 text-amber-600" />
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 text-center">Reset your password</h1>
+              <p className="mt-2 text-sm text-gray-600 text-center">
+                Enter your email and new password to reset your account.
               </p>
             </div>
 
             <div className="mt-8">
-              {/* Success Message */}
-              {message && (
-                <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                    <p className="text-sm text-green-700">{message}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Social Sign In */}
-              <SocialSignIn 
-                className="mb-6" 
-                onError={handleSocialError}
-              />
-
               <form className="space-y-6" onSubmit={handleSubmit}>
                 {/* General Error */}
                 {errors.general && (
@@ -237,7 +185,7 @@ function LoginForm() {
                 {/* Password */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Password
+                    New Password
                     <span className="text-red-500 ml-1" aria-label="required">*</span>
                   </label>
                   <div className="relative">
@@ -245,15 +193,8 @@ function LoginForm() {
                       type={showPassword ? 'text' : 'password'}
                       id="password"
                       value={formData.password}
-                      onChange={(e) => {
-                        console.log('Password input changed:', e.target.value);
-                        updateField('password', e.target.value);
-                      }}
-                      onInput={(e) => {
-                        console.log('Password input event:', e.currentTarget.value);
-                        updateField('password', e.currentTarget.value);
-                      }}
-                      placeholder="Enter your password"
+                      onChange={(e) => updateField('password', e.target.value)}
+                      placeholder="Enter your new password"
                       required
                       className={`
                         w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors
@@ -264,7 +205,7 @@ function LoginForm() {
                       `}
                       aria-describedby={errors.password ? 'password-error' : undefined}
                       aria-invalid={!!errors.password}
-                      autoComplete="current-password"
+                      autoComplete="new-password"
                     />
                     <button
                       type="button"
@@ -283,25 +224,46 @@ function LoginForm() {
                   )}
                 </div>
 
-                {/* Remember Me & Forgot Password */}
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.rememberMe}
-                      onChange={(e) => updateField('rememberMe', e.target.checked)}
-                      className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
-                    />
-                    <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                {/* Confirm Password */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Confirm New Password
+                    <span className="text-red-500 ml-1" aria-label="required">*</span>
                   </label>
-                  <button
-                    type="button"
-                    onClick={handleForgotPassword}
-                    disabled={isLoading}
-                    className="text-sm text-amber-600 hover:text-amber-700 focus:outline-none focus:text-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isLoading ? 'Sending...' : 'Forgot password?'}
-                  </button>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      id="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={(e) => updateField('confirmPassword', e.target.value)}
+                      placeholder="Confirm your new password"
+                      required
+                      className={`
+                        w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors
+                        ${errors.confirmPassword 
+                          ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
+                          : 'border-gray-300 focus:border-amber-500'
+                        }
+                      `}
+                      aria-describedby={errors.confirmPassword ? 'confirm-password-error' : undefined}
+                      aria-invalid={!!errors.confirmPassword}
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600"
+                      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && (
+                    <p id="confirm-password-error" className="mt-1 text-sm text-red-600 flex items-center space-x-1">
+                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                      <span>{errors.confirmPassword}</span>
+                    </p>
+                  )}
                 </div>
 
                 {/* Submit Button */}
@@ -314,7 +276,7 @@ function LoginForm() {
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <>
-                      <span>Sign in</span>
+                      <span>Reset Password</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
@@ -327,24 +289,24 @@ function LoginForm() {
                     <div className="w-full border-t border-gray-300" />
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">Don't have an account?</span>
+                    <span className="px-2 bg-white text-gray-500">Remember your password?</span>
                   </div>
                 </div>
 
                 <div className="mt-6">
                   <button
-                    onClick={() => router.push(`/signup?callbackUrl=${encodeURIComponent(callbackUrl)}`)}
+                    onClick={() => router.push('/login')}
                     className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors"
                   >
-                    Create account
+                    Back to Sign In
                   </button>
                 </div>
               </div>
 
-              {/* Privacy Note */}
+              {/* Security Note */}
               <div className="mt-6 p-4 bg-gray-50 rounded-lg">
                 <p className="text-xs text-gray-500 text-center">
-                  We'll never share your email.{' '}
+                  Your password will be securely encrypted and stored.{' '}
                   <a href="/privacy" className="text-amber-600 hover:text-amber-700 underline">
                     Privacy Policy
                   </a>
@@ -366,22 +328,22 @@ function LoginForm() {
           <div className="absolute inset-0 bg-black bg-opacity-40" />
           <div className="relative h-full flex items-center justify-center p-12">
             <div className="text-center text-white">
-              <h2 className="text-3xl font-bold mb-4">Welcome Back!</h2>
+              <h2 className="text-3xl font-bold mb-4">Secure Password Reset</h2>
               <p className="text-lg mb-6">
-                Continue discovering amazing deals at your favorite restaurants
+                Reset your password securely and get back to discovering amazing deals
               </p>
               <div className="space-y-3 text-left">
                 <div className="flex items-center space-x-3">
                   <CheckCircle className="w-5 h-5 text-green-400" />
-                  <span>Access your saved favorites</span>
+                  <span>Secure password encryption</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <CheckCircle className="w-5 h-5 text-green-400" />
-                  <span>Track your savings history</span>
+                  <span>Instant access to your account</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <CheckCircle className="w-5 h-5 text-green-400" />
-                  <span>Get personalized recommendations</span>
+                  <span>Continue saving on great deals</span>
                 </div>
               </div>
             </div>
@@ -392,14 +354,14 @@ function LoginForm() {
   );
 }
 
-export default function LoginPage() {
+export default function ResetPasswordPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
       </div>
     }>
-      <LoginForm />
+      <ResetPasswordForm />
     </Suspense>
   );
 }

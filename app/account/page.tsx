@@ -22,19 +22,50 @@ import {
   Users,
   Gift,
   ChevronRight,
-  ArrowRight
+  ArrowRight,
+  XCircle
 } from 'lucide-react';
-import { getSampleDeals, getSampleStats, getSampleNotifications, getSampleReviews } from '../../utils/sampleData';
 import { Deal, UserStats } from '@/types';
+
+interface AccountStats {
+  totalRedemptions: number;
+  activeDeals: number;
+  usedDeals: number;
+  expiredDeals: number;
+  totalSavings: number;
+  streakDays: number;
+  points: number;
+  badges: string[];
+}
+
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+interface Redemption {
+  id: string;
+  dealId: string;
+  code: string;
+  expiresAt: string;
+  status: 'CLAIMED' | 'USED' | 'EXPIRED';
+  createdAt: string;
+  updatedAt: string;
+  deal: Deal;
+}
 
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState('overview');
-  const [deals] = useState(getSampleDeals());
-  const [stats] = useState(getSampleStats());
-  const [notifications] = useState(getSampleNotifications());
-  const [reviews] = useState(getSampleReviews());
+  const [deals, setDeals] = useState<Redemption[]>([]);
+  const [stats, setStats] = useState<AccountStats | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -56,6 +87,44 @@ export default function AccountPage() {
     } else {
       setUserLocation({ lat: 40.6782, lng: -73.9442 });
     }
+  }, []);
+
+  // Fetch account data
+  useEffect(() => {
+    const fetchAccountData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch stats, deals, and notifications in parallel
+        const [statsResponse, dealsResponse, notificationsResponse] = await Promise.all([
+          fetch('/api/account/stats'),
+          fetch('/api/account/deals'),
+          fetch('/api/account/notifications'),
+        ]);
+
+        if (!statsResponse.ok || !dealsResponse.ok || !notificationsResponse.ok) {
+          throw new Error('Failed to fetch account data');
+        }
+
+        const [statsData, dealsData, notificationsData] = await Promise.all([
+          statsResponse.json(),
+          dealsResponse.json(),
+          notificationsResponse.json(),
+        ]);
+
+        setStats(statsData.stats);
+        setDeals(dealsData.deals);
+        setNotifications(notificationsData.notifications);
+      } catch (err) {
+        console.error('Error fetching account data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load account data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAccountData();
   }, []);
 
   const getDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
@@ -82,17 +151,18 @@ export default function AccountPage() {
     return { hours, minutes };
   };
 
-  const nearbyDeals = (isClient && userLocation) 
+  const nearbyDeals = (isClient && userLocation && deals.length > 0) 
     ? deals
-        .map(deal => ({
-          ...deal,
-          distance: getDistance(userLocation.lat, userLocation.lng, deal.venue.latitude, deal.venue.longitude)
+        .map(redemption => ({
+          ...redemption.deal,
+          distance: getDistance(userLocation.lat, userLocation.lng, redemption.deal.venue.latitude, redemption.deal.venue.longitude)
         }))
         .sort((a, b) => a.distance - b.distance)
         .slice(0, 5)
     : [];
 
-  const startingSoonDeals = isClient ? deals
+  const startingSoonDeals = isClient && deals.length > 0 ? deals
+    .map(redemption => redemption.deal)
     .filter(deal => {
       const timeRemaining = getTimeRemaining(deal.endAt);
       return timeRemaining.hours <= 2 && timeRemaining.hours >= 0;
@@ -108,13 +178,49 @@ export default function AccountPage() {
     { id: 'settings', label: 'Settings', icon: Settings }
   ];
 
-  // Show loading state until client-side hydration is complete
-  if (!isClient) {
+  // Show loading state until client-side hydration is complete or data is loading
+  if (!isClient || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-900 dark:via-amber-900 dark:to-yellow-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-600 mx-auto mb-4"></div>
           <p className="text-slate-600 dark:text-slate-400">Loading your account...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-900 dark:via-amber-900 dark:to-yellow-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-32 h-32 bg-red-100 dark:bg-red-900/20 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <XCircle className="w-16 h-16 text-red-600 dark:text-red-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Error Loading Account</h2>
+          <p className="text-slate-600 dark:text-slate-400 mb-6">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty state if no stats available
+  if (!stats) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-900 dark:via-amber-900 dark:to-yellow-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-32 h-32 bg-slate-100 dark:bg-slate-800 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <User className="w-16 h-16 text-slate-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">No Account Data</h2>
+          <p className="text-slate-600 dark:text-slate-400">Unable to load your account information.</p>
         </div>
       </div>
     );
@@ -145,7 +251,7 @@ export default function AccountPage() {
                 <Tag className="w-5 h-5 text-primary-600 dark:text-primary-400" />
               </div>
               <div>
-                <div className="text-2xl font-black text-slate-900 dark:text-white">{stats.users.totalRedemptions}</div>
+                <div className="text-2xl font-black text-slate-900 dark:text-white">{stats.totalRedemptions}</div>
                 <div className="text-sm text-slate-600 dark:text-slate-300">Deals Claimed</div>
               </div>
             </div>
@@ -157,7 +263,7 @@ export default function AccountPage() {
                 <TrendingUp className="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
               </div>
               <div>
-                <div className="text-2xl font-black text-slate-900 dark:text-white">${stats.users.totalSavings}</div>
+                <div className="text-2xl font-black text-slate-900 dark:text-white">${stats.totalSavings}</div>
                 <div className="text-sm text-slate-600 dark:text-slate-300">Total Saved</div>
               </div>
             </div>
@@ -169,7 +275,7 @@ export default function AccountPage() {
                 <Trophy className="w-5 h-5 text-accent-600 dark:text-accent-400" />
               </div>
               <div>
-                <div className="text-2xl font-black text-slate-900 dark:text-white">{stats.users.streakDays}</div>
+                <div className="text-2xl font-black text-slate-900 dark:text-white">{stats.streakDays}</div>
                 <div className="text-sm text-slate-600 dark:text-slate-300">Day Streak</div>
               </div>
             </div>
@@ -181,7 +287,7 @@ export default function AccountPage() {
                 <Gift className="w-5 h-5 text-warning-600 dark:text-warning-400" />
               </div>
               <div>
-                <div className="text-2xl font-black text-slate-900 dark:text-white">{stats.users.points}</div>
+                <div className="text-2xl font-black text-slate-900 dark:text-white">{stats.points}</div>
                 <div className="text-sm text-slate-600 dark:text-slate-300">Points</div>
               </div>
             </div>
@@ -222,26 +328,26 @@ export default function AccountPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                   <div className="text-center">
                     <div className="text-4xl font-black text-primary-600 dark:text-primary-400 mb-2">
-                      {stats.users.streakDays}
+                      {stats.streakDays}
                     </div>
                     <div className="text-slate-600 dark:text-slate-300">Days</div>
                   </div>
                   <div className="text-center">
                     <div className="text-4xl font-black text-secondary-600 dark:text-secondary-400 mb-2">
-                      {stats.users.points}
+                      {stats.points}
                     </div>
                     <div className="text-slate-600 dark:text-slate-300">Points</div>
                   </div>
                   <div className="text-center">
                     <div className="text-4xl font-black text-accent-600 dark:text-accent-400 mb-2">
-                      {stats.users.badges.length}
+                      {stats.badges.length}
                     </div>
                     <div className="text-slate-600 dark:text-slate-300">Badges</div>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {stats.users.badges.map((badge, index) => (
+                  {stats.badges.map((badge, index) => (
                     <div key={index} className="bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 px-3 py-1 rounded-full text-sm font-semibold">
                       {badge}
                     </div>
@@ -327,32 +433,54 @@ export default function AccountPage() {
           {activeTab === 'deals' && (
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-slate-200/50 dark:border-slate-700/50">
               <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-6">My Claimed Deals</h2>
-              <div className="space-y-4">
-                {deals.slice(0, 3).map((deal) => (
-                  <div key={deal.id} className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                    <div className="w-16 h-16 bg-gradient-to-br from-success-500 to-green-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
-                      ✓
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-slate-900 dark:text-white">{deal.title}</h3>
-                      <p className="text-sm text-slate-600 dark:text-slate-300">{deal.venue.name}</p>
-                      <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400">
-                        <span className="flex items-center gap-1">
-                          <Tag className="w-3 h-3" />
-                          {deal.percentOff}% off
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          Claimed today
-                        </span>
+              {deals.length === 0 ? (
+                <div className="text-center py-12">
+                  <Tag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No deals claimed yet</h3>
+                  <p className="text-gray-500 mb-6">Start exploring deals to claim your first one!</p>
+                  <a
+                    href="/explore"
+                    className="inline-flex items-center bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors font-medium"
+                  >
+                    <Tag className="w-4 h-4 mr-2" />
+                    Explore Deals
+                  </a>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {deals.slice(0, 10).map((redemption) => (
+                    <div key={redemption.id} className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                      <div className="w-16 h-16 bg-gradient-to-br from-success-500 to-green-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+                        {redemption.deal.percentOff}%
                       </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-slate-900 dark:text-white">{redemption.deal.title}</h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-300">{redemption.deal.venue.name}</p>
+                        <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400">
+                          <span className="flex items-center gap-1">
+                            <Tag className="w-3 h-3" />
+                            {redemption.deal.percentOff}% off
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            Claimed {new Date(redemption.createdAt).toLocaleDateString()}
+                          </span>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            redemption.status === 'CLAIMED' ? 'bg-green-100 text-green-800' :
+                            redemption.status === 'USED' ? 'bg-blue-100 text-blue-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {redemption.status}
+                          </span>
+                        </div>
+                      </div>
+                      <button className="bg-slate-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-slate-700 transition-colors">
+                        View QR
+                      </button>
                     </div>
-                    <button className="bg-slate-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-slate-700 transition-colors">
-                      View QR
-                    </button>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -362,12 +490,12 @@ export default function AccountPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl p-6 text-white">
                   <h3 className="text-xl font-bold mb-2">Current Points</h3>
-                  <div className="text-4xl font-black mb-4">{stats.users.points}</div>
+                  <div className="text-4xl font-black mb-4">{stats.points}</div>
                   <p className="text-primary-100">Keep claiming deals to earn more points!</p>
                 </div>
                 <div className="bg-gradient-to-br from-secondary-500 to-green-500 rounded-xl p-6 text-white">
                   <h3 className="text-xl font-bold mb-2">Streak Bonus</h3>
-                  <div className="text-4xl font-black mb-4">{stats.users.streakDays} days</div>
+                  <div className="text-4xl font-black mb-4">{stats.streakDays} days</div>
                   <p className="text-secondary-100">You're on fire! 🔥</p>
                 </div>
               </div>

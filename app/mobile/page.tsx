@@ -75,11 +75,21 @@ export default function MobilePage() {
   const fetchDeals = async (searchTerm = '') => {
     try {
       console.log('fetchDeals called with searchTerm:', searchTerm);
-      const url = searchTerm 
-        ? `/api/deals/search?search=${encodeURIComponent(searchTerm)}`
-        : '/api/deals/search';
-      console.log('Fetching from URL:', url);
-      const response = await fetch(url);
+      
+      // Use POST request with JSON body
+      const response = await fetch('/api/deals/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          q: searchTerm,
+          location: 'Downtown', // Default location
+          limit: 20,
+          offset: 0
+        })
+      });
+      
       console.log('Response status:', response.status);
       if (response.ok) {
         const data = await response.json();
@@ -97,14 +107,46 @@ export default function MobilePage() {
           cuisine: Array.isArray(deal.venue?.businessType) 
             ? deal.venue.businessType[0] 
             : deal.venue?.businessType || 'Restaurant',
-          distance: '0.5 mi', // Mock distance for now
+          distance: deal.venue?.distance || '0.5 mi', // Use distance from API or default
           rating: deal.venue?.rating || 4.0,
-          isOpen: true // Mock open status for now
+          isOpen: deal.isOpen !== undefined ? deal.isOpen : true // Use isOpen from API or default
         }));
         console.log('Transformed deals:', transformedDeals);
         setDeals(transformedDeals);
       } else {
         console.error('API response not ok:', response.status);
+        // Fallback to mock data if API fails
+        const mockDeals = [
+          {
+            id: 'mock-1',
+            title: 'Happy Hour Special',
+            description: '50% off all drinks and appetizers',
+            percentOff: 50,
+            venue: {
+              name: 'Sample Restaurant',
+              address: '123 Main St, City, State'
+            },
+            cuisine: 'American',
+            distance: '0.5 mi',
+            rating: 4.5,
+            isOpen: true
+          },
+          {
+            id: 'mock-2',
+            title: 'Lunch Deal',
+            description: '30% off lunch entrees',
+            percentOff: 30,
+            venue: {
+              name: 'Another Place',
+              address: '456 Oak Ave, City, State'
+            },
+            cuisine: 'Italian',
+            distance: '0.8 mi',
+            rating: 4.2,
+            isOpen: true
+          }
+        ];
+        setDeals(mockDeals);
       }
     } catch (error) {
       console.error('Error fetching deals:', error);

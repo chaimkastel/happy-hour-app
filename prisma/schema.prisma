@@ -20,6 +20,10 @@ model User {
   location        String?
   newsletterOptIn Boolean      @default(false)
   termsAcceptedAt DateTime?
+  emailVerified   Boolean      @default(false)
+  emailVerifiedAt DateTime?
+  emailVerifyToken String?
+  emailVerifyTokenExpiry DateTime?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
   merchant        Merchant?

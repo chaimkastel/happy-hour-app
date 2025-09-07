@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { Shield, Lock, ArrowRight } from 'lucide-react';
 
 export default function AdminLoginPage() {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -16,21 +18,17 @@ export default function AdminLoginPage() {
     setError('');
 
     try {
-      const response = await fetch('/api/admin/verify-access', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ password }),
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+        callbackUrl: '/admin'
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        localStorage.setItem('admin-authenticated', 'true');
+      if (result?.ok) {
         router.push('/admin');
       } else {
-        setError(data.message || 'Invalid password');
+        setError('Invalid credentials. Please check your email and password.');
       }
     } catch (err) {
       console.error('Admin login error:', err);
@@ -61,6 +59,23 @@ export default function AdminLoginPage() {
         {/* Login Form */}
         <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8 shadow-2xl">
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-white/90 mb-2">
+                Admin Email
+              </label>
+              <div className="relative">
+                <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/30 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all duration-200"
+                  placeholder="Enter admin email"
+                  required
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-white/90 mb-2">
                 Admin Password
