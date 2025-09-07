@@ -1,22 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../../lib/auth';
-
-// Type assertion for session
-type SessionWithUser = {
-  user: {
-    email: string;
-    [key: string]: any;
-  };
-};
+import { prisma } from '@/lib/db';
+import { authOptions } from '@/lib/auth';
 
 // POST /api/favorite/toggle - Toggle favorite status
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions) as SessionWithUser | null;
+    const session = await getServerSession(authOptions);
     
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -26,25 +19,61 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Deal ID is required' }, { status: 400 });
     }
 
-    // For now, return a mock response since we don't have a favorites table
-    // In production, you would implement proper favorites functionality
-    return NextResponse.json({ 
-      isFavorited: false,
-      message: 'Favorites feature coming soon' 
+    // Check if deal exists
+    const deal = await prisma.deal.findUnique({
+      where: { id: dealId }
     });
+
+    if (!deal) {
+      return NextResponse.json({ error: 'Deal not found' }, { status: 404 });
+    }
+
+    // Check if already favorited
+    const existingFavorite = await prisma.favorite.findFirst({
+      where: {
+        userId: session.user.id,
+        dealId: dealId
+      }
+    });
+
+    if (existingFavorite) {
+      // Remove from favorites
+      await prisma.favorite.delete({
+        where: { id: existingFavorite.id }
+      });
+
+      return NextResponse.json({ 
+        isFavorited: false,
+        message: 'Removed from favorites' 
+      });
+    } else {
+      // Add to favorites
+      await prisma.favorite.create({
+        data: {
+          userId: session.user.id,
+          dealId: dealId,
+          addedAt: new Date()
+        }
+      });
+
+      return NextResponse.json({ 
+        isFavorited: true,
+        message: 'Added to favorites' 
+      });
+    }
   } catch (error) {
     console.error('Error toggling favorite:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to toggle favorite' }, { status: 500 });
   }
 }
 
 // GET /api/favorite/toggle?dealId=... - Check favorite status
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions) as SessionWithUser | null;
+    const session = await getServerSession(authOptions);
     
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -54,12 +83,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Deal ID is required' }, { status: 400 });
     }
 
-    // For now, return false since we don't have a favorites table
+    // Check if favorited
+    const favorite = await prisma.favorite.findFirst({
+      where: {
+        userId: session.user.id,
+        dealId: dealId
+      }
+    });
+
     return NextResponse.json({ 
-      isFavorited: false
+      isFavorited: !!favorite
     });
   } catch (error) {
     console.error('Error checking favorite status:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to check favorite status' }, { status: 500 });
   }
 }

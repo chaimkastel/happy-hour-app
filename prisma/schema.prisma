@@ -26,6 +26,7 @@ model User {
   redemptions     Redemption[]
   walletCard      WalletCard?
   adminAuditLogs  AdminAuditLog[] @relation("AdminAuditLogs")
+  favorites       Favorite[]
 
   @@map("users")
 }
@@ -114,10 +115,24 @@ model Deal {
   updatedAt      DateTime     @updatedAt
   venue          Venue        @relation(fields: [venueId], references: [id], onDelete: Cascade)
   redemptions    Redemption[]
+  favorites      Favorite[]
 
   @@index([venueId, startAt, endAt])
   @@index([status])
   @@map("deals")
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  dealId    String
+  addedAt   DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dealId])
+  @@index([userId])
+  @@map("favorites")
 }
 
 model Redemption {
