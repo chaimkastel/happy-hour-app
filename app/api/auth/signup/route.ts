@@ -1,118 +1,96 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
-import { PrismaClient } from '@prisma/client';
-import { createErrorResponse, createSuccessResponse, handleApiError, AppError, ERROR_CODES, HTTP_STATUS } from '@/lib/error-handler';
-import { log } from '@/lib/logger';
+import { prisma } from '@/lib/db';
+import { z } from 'zod';
+import { rateLimit } from '@/lib/rate-limit';
 
-const prisma = new PrismaClient();
+export const dynamic = 'force-dynamic';
+
+// Rate limit: 5 signups per 15 minutes per IP
+const signupRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  maxRequests: 5,
+});
+
+const signupSchema = z.object({
+  firstName: z.string().min(1, 'First name is required').max(50, 'First name too long'),
+  lastName: z.string().min(1, 'Last name is required').max(50, 'Last name too long'),
+  email: z.string().email('Invalid email address'),
+  phone: z.string()
+    .optional()
+    .refine((phone) => {
+      if (!phone) return true; // Optional field
+      const cleaned = phone.replace(/[^\d+]/g, '');
+      return /^(\+\d{7,15}|\d{7,15})$/.test(cleaned);
+    }, 'Please enter a valid phone number (7-15 digits, optionally starting with +)'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+});
 
 export async function POST(request: NextRequest) {
   try {
+    // Apply rate limiting
+    const rateLimitResult = await signupRateLimit(request);
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many signup attempts. Please try again later.' },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil((rateLimitResult.resetTime! - Date.now()) / 1000).toString(),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
-    const { 
-      email, 
-      password, 
-      firstName, 
-      lastName, 
-      phone, 
-      location, 
-      newsletterOptIn, 
-      acceptTerms 
-    } = body;
-
-    log.apiRequest('POST', '/api/auth/signup');
-
-    // Validate required fields
-    if (!email || !password || !phone) {
-      log.warn('Signup validation failed: missing required fields', { email: !!email, password: !!password, phone: !!phone });
-      return createErrorResponse(
-        'Email, password, and phone number are required',
-        HTTP_STATUS.BAD_REQUEST,
-        ERROR_CODES.MISSING_REQUIRED_FIELD
+    
+    // Validate input
+    const validationResult = signupSchema.safeParse(body);
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { error: validationResult.error.issues[0].message },
+        { status: 400 }
       );
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      log.warn('Signup validation failed: invalid email format', { email });
-      return createErrorResponse(
-        'Please enter a valid email address',
-        HTTP_STATUS.BAD_REQUEST,
-        ERROR_CODES.INVALID_FORMAT
-      );
-    }
-
-    // Validate phone number format
-    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-    if (!phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''))) {
-      log.warn('Signup validation failed: invalid phone format', { phone });
-      return createErrorResponse(
-        'Please enter a valid phone number',
-        HTTP_STATUS.BAD_REQUEST,
-        ERROR_CODES.INVALID_FORMAT
-      );
-    }
-
-    // Validate password strength
-    if (password.length < 8) {
-      log.warn('Signup validation failed: password too short', { passwordLength: password.length });
-      return createErrorResponse(
-        'Password must be at least 8 characters long',
-        HTTP_STATUS.BAD_REQUEST,
-        ERROR_CODES.INVALID_FORMAT
-      );
-    }
-
-    // Validate terms acceptance
-    if (!acceptTerms) {
-      log.warn('Signup validation failed: terms not accepted', { acceptTerms });
-      return createErrorResponse(
-        'You must accept the terms and conditions',
-        HTTP_STATUS.BAD_REQUEST,
-        ERROR_CODES.VALIDATION_ERROR
-      );
-    }
+    const { firstName, lastName, email, phone, password } = validationResult.data;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() }
+      where: { email: email.toLowerCase() },
     });
 
     if (existingUser) {
-      log.warn('Signup failed: user already exists', { email });
-      return createErrorResponse(
-        'An account with this email already exists',
-        HTTP_STATUS.CONFLICT,
-        ERROR_CODES.DUPLICATE_RESOURCE
+      return NextResponse.json(
+        { error: 'An account with this email already exists' },
+        { status: 400 }
+      );
+    }
+
+    // Check if phone number is already in use
+    const existingPhone = await prisma.user.findFirst({
+      where: { phone },
+    });
+
+    if (existingPhone) {
+      return NextResponse.json(
+        { error: 'An account with this phone number already exists' },
+        { status: 400 }
       );
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Generate email verification token
-    const emailVerifyToken = crypto.randomBytes(32).toString('hex');
-    const emailVerifyTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
     // Create user
     const user = await prisma.user.create({
       data: {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
         email: email.toLowerCase(),
+        phone: phone?.trim() || null,
         password: hashedPassword,
-        firstName: firstName || null,
-        lastName: lastName || null,
-        phone: phone,
-        location: location || null,
-        newsletterOptIn: newsletterOptIn || false,
-        termsAcceptedAt: acceptTerms ? new Date() : null,
-        emailVerified: false,
-        emailVerifyToken: emailVerifyToken,
-        emailVerifyTokenExpiry: emailVerifyTokenExpiry,
         role: 'USER',
-        createdAt: new Date(),
-        updatedAt: new Date()
       },
       select: {
         id: true,
@@ -120,48 +98,45 @@ export async function POST(request: NextRequest) {
         firstName: true,
         lastName: true,
         phone: true,
-        location: true,
-        newsletterOptIn: true,
         role: true,
-        emailVerified: true,
-        createdAt: true
-      }
-    });
-
-    // Note: Email verification is implemented but uses console logging
-    // In production, integrate with an email service like SendGrid or Resend
-    const verificationLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/verify-email?token=${emailVerifyToken}`;
-    log.info('Email verification link generated', { email: user.email, verificationLink });
-
-    // In a real app, you would send an email here
-    // await sendVerificationEmail(user.email, verificationLink);
-
-    log.businessEvent('user_signup', { 
-      userId: user.id, 
-      email: user.email, 
-      newsletterOptIn: user.newsletterOptIn 
-    });
-
-    return createSuccessResponse({
-      message: 'Account created successfully. Please check your email to verify your account.',
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        phone: user.phone,
-        location: user.location,
-        newsletterOptIn: user.newsletterOptIn,
-        role: user.role,
-        emailVerified: user.emailVerified
+        createdAt: true,
       },
-      verificationLink: process.env.NODE_ENV === 'development' ? verificationLink : undefined
-    }, HTTP_STATUS.CREATED);
+    });
+
+    // Log the signup
+    await prisma.auditLog.create({
+      data: {
+        actorUserId: user.id,
+        action: 'USER_SIGNUP',
+        entity: 'User',
+        entityId: user.id,
+        metadata: {
+          email: user.email,
+          phone: user.phone,
+          signupMethod: 'email',
+        },
+      },
+    });
+
+    return NextResponse.json(
+      {
+        message: 'Account created successfully',
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+        },
+      },
+      { status: 201 }
+    );
 
   } catch (error) {
-    log.error('Signup error', error as Error);
-    return handleApiError(error);
-  } finally {
-    await prisma.$disconnect();
+    console.error('Signup error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

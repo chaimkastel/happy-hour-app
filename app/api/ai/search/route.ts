@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     // Get all deals from database
     const deals = await prisma.deal.findMany({
-      where: { status: 'LIVE' },
+      where: { status: 'ACTIVE' },
       include: { venue: true },
       take: 50
     });
@@ -25,14 +25,14 @@ export async function POST(request: NextRequest) {
       title: deal.title,
       description: deal.description,
       percentOff: deal.percentOff,
-      cuisine: deal.venue?.businessType || 'Restaurant',
+      cuisine: 'Restaurant',
       venueName: deal.venue?.name || 'Restaurant',
       address: deal.venue?.address || '',
       rating: deal.venue?.rating || 4.0,
-      priceTier: deal.venue?.priceTier || 'MODERATE',
-      tags: deal.tags ? JSON.parse(deal.tags) : [],
+      priceTier: deal.venue?.priceTier || 'MID_RANGE',
+      tags: deal.conditions ? JSON.parse(deal.conditions as string) : [],
       maxRedemptions: deal.maxRedemptions,
-      redeemedCount: deal.redeemedCount || 0
+      redeemedCount: 0
     }));
 
     // AI-powered search and ranking logic
@@ -151,12 +151,12 @@ function generateInsights(deals: any[], query: string): string[] {
   
   const highDiscountDeals = deals.filter(deal => deal.percentOff >= 50);
   if (highDiscountDeals.length > 0) {
-    insights.push(`🔥 ${highDiscountDeals.length} deals with 50%+ discounts available!`);
+    insights.push(`${highDiscountDeals.length} deals with 50%+ discounts available!`);
   }
   
   const popularDeals = deals.filter(deal => deal.redeemedCount > 0);
   if (popularDeals.length > 0) {
-    insights.push(`⭐ ${popularDeals.length} deals are already popular with other customers`);
+    insights.push(`${popularDeals.length} deals are already popular with other customers`);
   }
   
   return insights;

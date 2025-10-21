@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, MapPin, Clock, Star, Heart, Share2, Phone, Navigation, Calendar, Users, AlertCircle, ChevronDown } from 'lucide-react';
+import Image from 'next/image';
 
 interface Deal {
   id: string;
@@ -91,7 +92,7 @@ export default function MobileDealDetailPage({ params }: { params: { id: string 
           hours: 'Mon-Thu: 5PM-10PM, Fri-Sat: 5PM-11PM, Sun: 4PM-9PM'
         },
         images: [
-          'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=800&h=600&fit=crop',
+          'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&h=600&fit=crop',
           'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=800&h=600&fit=crop',
           'https://images.unsplash.com/photo-1571997478779-2adcbbe9ab2f?w=800&h=600&fit=crop'
         ],
@@ -182,9 +183,11 @@ export default function MobileDealDetailPage({ params }: { params: { id: string 
 
       {/* Image Gallery */}
       <div className="relative">
-        <img
+        <Image
           src={deal.images[currentImageIndex]}
           alt={deal.title}
+          width={400}
+          height={256}
           className="w-full h-64 object-cover"
         />
         <div className="absolute top-4 left-4">

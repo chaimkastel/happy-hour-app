@@ -1,8 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '../../../../lib/db';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/db';
+import { z } from 'zod';
+
+export const dynamic = 'force-dynamic';
+
+// Rate limiting (simple in-memory implementation)
+const rateLimitMap = new Map();
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 10;
+
+function rateLimit(ip: string): boolean {
+  const now = Date.now();
+  const userRequests = rateLimitMap.get(ip) || [];
+  const recentRequests = userRequests.filter((time: number) => now - time < RATE_LIMIT_WINDOW);
+  
+  if (recentRequests.length >= RATE_LIMIT_MAX_REQUESTS) {
+    return false;
+  }
+  
+  recentRequests.push(now);
+  rateLimitMap.set(ip, recentRequests);
+  return true;
+}
+
+async function requireAdmin(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  
+  if (!session || (session.user as any)?.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  
+  return null;
+}
 
 export async function GET(request: NextRequest) {
   try {
+    // Check admin authentication
+    const authError = await requireAdmin(request);
+    if (authError) return authError;
+    
+    // Rate limiting
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    if (!rateLimit(ip)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
     const { searchParams } = new URL(request.url);
     const role = searchParams.get('role');
     const status = searchParams.get('status');
@@ -46,8 +89,8 @@ export async function GET(request: NextRequest) {
       venuesCount: user.merchant?.venues?.length || 0,
       merchant: user.merchant ? {
         id: user.merchant.id,
-        businessName: user.merchant.businessName,
-        kycStatus: user.merchant.kycStatus
+        companyName: user.merchant.businessName,
+        approved: user.merchant.kycStatus === 'APPROVED'
       } : null
     }));
 
@@ -66,15 +109,34 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check admin authentication
+    const authError = await requireAdmin(request);
+    if (authError) return authError;
+    
+    // Rate limiting
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    if (!rateLimit(ip)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+    
     const body = await request.json();
-    const { email, phone, role } = body;
-
-    if (!email || !role) {
+    
+    // Validate input with Zod
+    const schema = z.object({
+      email: z.string().email(),
+      phone: z.string().optional(),
+      role: z.enum(['USER', 'MERCHANT', 'ADMIN', 'OWNER'])
+    });
+    
+    const validation = schema.safeParse(body);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'Email and role are required' },
+        { error: 'Invalid input', details: validation.error.issues },
         { status: 400 }
       );
     }
+    
+    const { email, phone, role } = validation.data;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -93,7 +155,7 @@ export async function POST(request: NextRequest) {
       data: {
         email,
         phone: phone || null,
-        role: role || 'USER'
+        role: (role as 'ADMIN' | 'MERCHANT' | 'USER') || 'USER'
       }
     });
 
@@ -118,21 +180,35 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    // Check admin authentication
+    const authError = await requireAdmin(request);
+    if (authError) return authError;
+    
+    // Rate limiting
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    if (!rateLimit(ip)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+    
     const body = await request.json();
-    const { userId, isActive, role } = body;
-
-    if (!userId) {
+    
+    // Validate input with Zod
+    const schema = z.object({
+      userId: z.string(),
+      role: z.enum(['USER', 'MERCHANT', 'ADMIN', 'OWNER']).optional()
+    });
+    
+    const validation = schema.safeParse(body);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'User ID is required' },
+        { error: 'Invalid input', details: validation.error.issues },
         { status: 400 }
       );
     }
+    
+    const { userId, role } = validation.data;
 
     const updateData: any = {};
-    if (isActive !== undefined) {
-      // You might need to add an isActive field to your User model
-      // updateData.isActive = isActive;
-    }
     if (role) {
       updateData.role = role;
     }
@@ -162,6 +238,16 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    // Check admin authentication
+    const authError = await requireAdmin(request);
+    if (authError) return authError;
+    
+    // Rate limiting
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    if (!rateLimit(ip)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+    
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
 

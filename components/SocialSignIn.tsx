@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
 interface SocialSignInProps {
@@ -11,6 +12,7 @@ interface SocialSignInProps {
 
 export default function SocialSignIn({ className = '', onError }: SocialSignInProps) {
   const [isLoading, setIsLoading] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleSocialSignIn = async (provider: string) => {
     setIsLoading(provider);
@@ -23,6 +25,20 @@ export default function SocialSignIn({ className = '', onError }: SocialSignInPr
       
       if (result?.error) {
         onError?.(`Failed to sign in with ${provider}. Please try again.`);
+      } else if (result?.ok) {
+        // Handle successful OAuth sign-in with role-based redirect
+        const session = await getSession();
+        
+        if (session?.user?.role === 'ADMIN') {
+          router.push('/admin');
+        } else if (session?.user?.role === 'MERCHANT') {
+          router.push('/merchant/dashboard');
+        } else if (session?.user?.role === 'OWNER') {
+          router.push('/owner');
+        } else {
+          // Default redirect to explore page for regular users
+          router.push('/explore');
+        }
       }
     } catch (error) {
       console.error(`${provider} sign in error:`, error);
@@ -58,7 +74,8 @@ export default function SocialSignIn({ className = '', onError }: SocialSignInPr
       ),
       bgColor: 'bg-white hover:bg-gray-50',
       textColor: 'text-gray-700',
-      borderColor: 'border-gray-300'
+      borderColor: 'border-gray-300',
+      enabled: typeof window !== 'undefined' && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
     },
     {
       id: 'apple',
@@ -70,9 +87,15 @@ export default function SocialSignIn({ className = '', onError }: SocialSignInPr
       ),
       bgColor: 'bg-black hover:bg-gray-900',
       textColor: 'text-white',
-      borderColor: 'border-gray-900'
+      borderColor: 'border-gray-900',
+      enabled: typeof window !== 'undefined' && process.env.NEXT_PUBLIC_APPLE_ID
     }
-  ];
+  ].filter(provider => provider.enabled);
+
+  // Don't render if no OAuth providers are available
+  if (socialProviders.length === 0) {
+    return null;
+  }
 
   return (
     <div className={`space-y-3 ${className}`}>

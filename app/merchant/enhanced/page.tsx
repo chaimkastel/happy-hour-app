@@ -78,21 +78,21 @@ export default function EnhancedMerchantDashboard() {
       const result = await response.json();
       
       if (response.ok) {
-        setMessage('✅ Restaurant created successfully!');
+        setMessage('Restaurant created successfully!');
         setShowRestaurantForm(false);
         await loadData();
       } else {
-        setMessage(`❌ ${result.error || 'Failed to create restaurant'}`);
+        setMessage(`Error: ${result.error || 'Failed to create restaurant'}`);
       }
     } catch (error) {
       console.error('Error creating restaurant:', error);
-      setMessage('❌ Failed to create restaurant');
+      setMessage('Failed to create restaurant');
     }
   };
 
   const handleDealSubmit = async (data: any) => {
     if (!selectedRestaurant) {
-      setMessage('❌ Please select a restaurant first');
+      setMessage('Please select a restaurant first');
       return;
     }
 
@@ -109,16 +109,16 @@ export default function EnhancedMerchantDashboard() {
       const result = await response.json();
       
       if (response.ok) {
-        setMessage('✅ Deal created successfully!');
+        setMessage('Deal created successfully!');
         setShowDealForm(false);
         setSelectedRestaurant(null);
         await loadData();
       } else {
-        setMessage(`❌ ${result.error || 'Failed to create deal'}`);
+        setMessage(`Error: ${result.error || 'Failed to create deal'}`);
       }
     } catch (error) {
       console.error('Error creating deal:', error);
-      setMessage('❌ Failed to create deal');
+      setMessage('Failed to create deal');
     }
   };
 
@@ -131,13 +131,13 @@ export default function EnhancedMerchantDashboard() {
       });
 
       if (response.ok) {
-        setMessage('✅ Deal activated!');
+        setMessage('Deal activated!');
         await loadData();
       } else {
-        setMessage('❌ Failed to activate deal');
+        setMessage('Failed to activate deal');
       }
     } catch (error) {
-      setMessage('❌ Failed to activate deal');
+      setMessage('Failed to activate deal');
     }
   };
 
@@ -150,13 +150,13 @@ export default function EnhancedMerchantDashboard() {
       });
 
       if (response.ok) {
-        setMessage('✅ Deal deactivated!');
+        setMessage('Deal deactivated!');
         await loadData();
       } else {
-        setMessage('❌ Failed to deactivate deal');
+        setMessage('Failed to deactivate deal');
       }
     } catch (error) {
-      setMessage('❌ Failed to deactivate deal');
+      setMessage('Failed to deactivate deal');
     }
   };
 
@@ -177,7 +177,7 @@ export default function EnhancedMerchantDashboard() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-white mb-4">
-            🏪 Enhanced Merchant Dashboard
+            Enhanced Merchant Dashboard
           </h1>
           <p className="text-xl text-white/70">
             Manage your restaurants and create amazing deals
@@ -187,7 +187,7 @@ export default function EnhancedMerchantDashboard() {
         {/* Message Display */}
         {message && (
           <div className={`mb-6 p-4 rounded-lg text-center ${
-            message.includes('✅') ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'
+            message.includes('successfully') ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'
           }`}>
             {message}
           </div>

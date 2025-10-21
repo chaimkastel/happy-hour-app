@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Check, Clock, Users, Zap, QrCode, Download, Share2 } from 'lucide-react'
 import { Button } from './ui/Button'
 import { Modal } from './ui/Modal'
@@ -28,6 +29,7 @@ export default function ClaimButton({
   className = ''
 }: ClaimButtonProps) {
   const router = useRouter()
+  const { data: session, status } = useSession()
   const [isClaiming, setIsClaiming] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [redemption, setRedemption] = useState<any>(null)
@@ -40,19 +42,21 @@ export default function ClaimButton({
   const handleClaim = async () => {
     if (isFullyClaimed || isExpired) return
 
+    // Check if user is authenticated
+    if (!session?.user) {
+      router.push(`/login?callbackUrl=${encodeURIComponent(window.location.pathname)}` as any)
+      return
+    }
+
     setIsClaiming(true)
     setError(null)
 
     try {
-      // For now, use a demo user ID - in production this would come from auth
-      const demoUserId = 'cmet5ypx5000012d06plzqb9i' // User from seed script
-      
       const response = await fetch(`/api/deals/${dealId}/claim`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId: demoUserId }),
       })
 
       const data = await response.json()
@@ -88,12 +92,14 @@ export default function ClaimButton({
     if (isExpired) return 'Deal Expired'
     if (isFullyClaimed) return 'Fully Claimed'
     if (isClaiming) return 'Claiming...'
+    if (status === 'loading') return 'Loading...'
+    if (!session?.user) return 'Login to Claim'
     return 'Claim Deal'
   }
 
   const getButtonVariant = () => {
     if (isExpired || isFullyClaimed) return 'secondary'
-    return 'glass'
+    return 'primary'
   }
 
   const getButtonDisabled = () => {
@@ -114,7 +120,7 @@ export default function ClaimButton({
             ? 'opacity-60 cursor-not-allowed' 
             : 'hover:scale-105'
         }`}
-        leftIcon={isClaiming ? undefined : Zap}
+        leftIcon={isClaiming ? undefined : <Zap className="w-4 h-4" />}
       >
         {getButtonText()}
       </Button>

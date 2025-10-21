@@ -1,303 +1,276 @@
-# Happy Hour App - Restaurant Deals Platform
+# OrderHappyHour 🍺
 
-A comprehensive Next.js application for discovering and managing restaurant deals, built with TypeScript, Prisma, and NextAuth.
+A modern platform connecting food lovers with amazing restaurant deals through vouchers and subscriptions.
 
-## 🚀 Features
+## Features
 
-### User Features
-- **Deal Discovery**: Browse and search for restaurant deals with advanced filtering
-- **Account Management**: User registration, authentication, and profile management
-- **Favorites**: Save and manage favorite deals
-- **Wallet**: Claim and track deal redemptions
-- **Mobile Experience**: Optimized mobile interface for deal browsing
-- **Email Verification**: Secure account verification system
-- **Password Reset**: Forgot password functionality
+### For Users
+- 🍽️ **Discover Deals**: Browse happy hour and instant deals from local restaurants
+- 🎫 **Claim Vouchers**: Get unique voucher codes with QR codes for easy redemption
+- 📱 **Mobile-First**: Optimized for mobile devices with PWA support
+- 🗺️ **Location-Based**: Find deals near you with smart location services
+- ⭐ **Favorites**: Save your favorite restaurants and deals
 
-### Merchant Features
-- **Dashboard**: Comprehensive merchant dashboard with analytics
-- **Deal Management**: Create, edit, and manage restaurant deals
-- **Venue Management**: Add and manage restaurant locations
-- **Real-time Control**: Activate/deactivate deals instantly
-- **Analytics**: Track deal performance and customer engagement
+### For Merchants
+- 💳 **Subscription Model**: Monthly subscription for deal management
+- 🏪 **Venue Management**: Manage multiple restaurant locations
+- 🎯 **Deal Creation**: Create happy hour and instant deals with time windows
+- 📊 **Analytics**: Track redemption rates and performance
+- 🔍 **Voucher Validation**: Easy QR code and voucher validation system
 
-### Admin Features
-- **User Management**: Manage users, merchants, and applications
-- **Deal Moderation**: Review and approve deals
-- **System Monitoring**: Health checks and performance monitoring
-- **Analytics**: Platform-wide analytics and insights
-- **Security Controls**: Role-based access control
+### For Admins
+- 👥 **User Management**: Manage users, merchants, and venues
+- 📈 **Dashboard**: Comprehensive analytics and system overview
+- ✅ **Approval System**: Approve new merchants and deals
+- 🔧 **System Management**: Monitor system health and performance
 
-## 🛠 Tech Stack
+## Tech Stack
 
-- **Framework**: Next.js 14 with App Router
-- **Language**: TypeScript
-- **Database**: SQLite with Prisma ORM
-- **Authentication**: NextAuth.js with role-based access
-- **Styling**: Tailwind CSS
-- **Icons**: Lucide React
-- **Deployment**: Vercel-ready
+- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes, Prisma ORM
+- **Database**: PostgreSQL (Neon)
+- **Authentication**: NextAuth.js
+- **Payments**: Stripe
+- **Email**: Resend
+- **Monitoring**: Sentry
+- **Testing**: Playwright, Vitest
+- **Deployment**: Vercel
 
-## 📋 Prerequisites
+## Getting Started
+
+### Prerequisites
 
 - Node.js 18+ 
-- npm or yarn
-- Git
+- PostgreSQL database
+- Stripe account
+- Resend account (for emails)
 
-## 🚀 Getting Started
+### Installation
 
-### 1. Clone the Repository
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/orderhappyhour.git
+   cd orderhappyhour
+   ```
 
-```bash
-git clone https://github.com/chaimkastel/happy-hour-app.git
-cd happy-hour-app
-```
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-### 2. Install Dependencies
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Fill in your environment variables:
+   ```env
+   DATABASE_URL="postgres://username:password@host:port/database"
+   NEXTAUTH_URL="http://localhost:3000"
+   NEXTAUTH_SECRET="your-secret-key"
+   STRIPE_SECRET_KEY="sk_test_..."
+   STRIPE_WEBHOOK_SECRET="whsec_..."
+   STRIPE_PRICE_MONTHLY="price_..."
+   RESEND_API_KEY="re_..."
+   SENTRY_DSN="https://..."
+   ```
 
-```bash
-npm install
-```
+4. **Set up the database**
+   ```bash
+   npx prisma migrate dev
+   npx prisma db seed
+   ```
 
-### 3. Environment Setup
+5. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-Create a `.env.local` file in the root directory:
+6. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
 
-```env
-# Database
-DATABASE_URL="file:./dev.db"
-
-# NextAuth
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secret-key-here"
-
-# Optional: External Services
-EXTERNAL_LOGGING_ENABLED="false"
-```
-
-### 4. Database Setup
-
-```bash
-# Generate Prisma client
-npx prisma generate
-
-# Run database migrations
-npx prisma migrate dev
-
-# Seed the database (optional)
-npx prisma db seed
-```
-
-### 5. Create Admin User
-
-```bash
-# Run the admin creation script
-node scripts/create-admin.js
-```
-
-This creates an admin user with:
-- Email: `admin@happyhour.com`
-- Password: `admin123!`
-
-### 6. Start Development Server
-
-```bash
-npm run dev
-```
-
-Visit [http://localhost:3000](http://localhost:3000) to see the application.
-
-## 📁 Project Structure
+## Project Structure
 
 ```
-├── app/                          # Next.js App Router
-│   ├── api/                     # API routes
-│   │   ├── auth/               # Authentication endpoints
-│   │   ├── deals/              # Deal management
-│   │   ├── merchant/           # Merchant-specific APIs
-│   │   ├── admin/              # Admin panel APIs
-│   │   └── wallet/             # Wallet and redemptions
-│   ├── (auth)/                 # Authentication pages
-│   ├── admin/                  # Admin dashboard
-│   ├── merchant/               # Merchant dashboard
-│   ├── mobile/                 # Mobile-optimized pages
-│   └── deal/                   # Deal detail pages
-├── components/                  # Reusable components
-│   ├── ui/                     # Base UI components
-│   └── mobile/                 # Mobile-specific components
-├── lib/                        # Utility libraries
-│   ├── auth.ts                 # NextAuth configuration
-│   ├── db.ts                   # Prisma client
-│   ├── error-handler.ts        # Error handling utilities
-│   └── logger.ts               # Logging utilities
-├── prisma/                     # Database schema and migrations
-│   └── schema.prisma           # Database schema
-└── scripts/                    # Utility scripts
-    └── create-admin.js         # Admin user creation
+├── app/                    # Next.js app directory
+│   ├── api/               # API routes
+│   ├── admin/             # Admin pages
+│   ├── merchant/          # Merchant pages
+│   ├── mobile/            # Mobile-specific pages
+│   └── (auth)/            # Authentication pages
+├── components/            # Reusable components
+│   └── ui/               # UI components
+├── lib/                  # Utility libraries
+├── prisma/               # Database schema and migrations
+├── test/                 # Test files
+│   ├── e2e/             # End-to-end tests
+│   └── lib/             # Unit tests
+└── public/               # Static assets
 ```
 
-## 🔧 API Endpoints
+## API Endpoints
 
-### Authentication
-- `POST /api/auth/signup` - User registration
-- `POST /api/auth/forgot-password` - Password reset request
-- `POST /api/auth/reset-password` - Password reset confirmation
-- `GET /api/auth/verify-email` - Email verification
-- `POST /api/auth/resend-verification` - Resend verification email
-
-### Deals
-- `GET /api/deals` - List deals with filtering
-- `POST /api/deals/search` - Search deals
-- `GET /api/deals/[id]` - Get deal details
+### Public Endpoints
+- `GET /api/deals/search` - Search deals
 - `POST /api/deals/[id]/claim` - Claim a deal
+- `POST /api/redemptions/redeem` - Redeem a voucher
+- `POST /api/newsletter/subscribe` - Newsletter subscription
 
-### User Management
-- `GET /api/account/stats` - User account statistics
-- `GET /api/account/deals` - User's claimed deals
-- `GET /api/account/notifications` - User notifications
-- `GET /api/favorites` - User's favorite deals
-- `POST /api/favorite/toggle` - Toggle deal favorite status
+### Merchant Endpoints
+- `GET /api/merchant/dashboard` - Dashboard data
+- `GET /api/merchant/venues` - List venues
+- `POST /api/merchant/venues` - Create venue
+- `GET /api/merchant/deals` - List deals
+- `POST /api/merchant/deals` - Create deal
+- `POST /api/merchant/subscribe` - Start subscription
 
-### Wallet
-- `GET /api/wallet/redemptions` - User's redemptions
-- `POST /api/wallet/claim` - Claim a deal
-- `POST /api/wallet/redeem` - Redeem a deal
+### Admin Endpoints
+- `GET /api/admin/dashboard` - Admin dashboard
+- `GET /api/admin/merchants` - List merchants
+- `PATCH /api/admin/merchants` - Update merchant
 
-### Merchant
-- `GET /api/merchant/venues` - List merchant venues
-- `POST /api/merchant/venues` - Create new venue
-- `GET /api/merchant/deals` - List merchant deals
-- `POST /api/merchant/deals` - Create new deal
-- `POST /api/merchant/activate` - Activate deal
-- `POST /api/merchant/deactivate` - Deactivate deal
+## Database Schema
 
-### Admin
-- `GET /api/admin/users` - List all users
-- `GET /api/admin/merchants` - List all merchants
-- `GET /api/admin/deals` - List all deals
-- `GET /api/admin/applications` - List merchant applications
-
-## 🔐 Authentication & Authorization
-
-The application uses NextAuth.js with role-based access control:
-
-### User Roles
-- **USER**: Regular customers
-- **MERCHANT**: Restaurant owners/managers
-- **ADMIN**: Platform administrators
-- **OWNER**: Platform owners
-
-### Protected Routes
-- `/admin/*` - Admin only
-- `/merchant/*` - Merchant and Admin
-- `/owner/*` - Owner and Admin
-
-### Middleware
-Route protection is handled by `middleware.ts` which automatically redirects unauthorized users to appropriate login pages.
-
-## 🗄 Database Schema
-
-### Key Models
-- **User**: Customer accounts with authentication
+### Core Models
+- **User**: User accounts with role-based access
 - **Merchant**: Restaurant business accounts
-- **Venue**: Restaurant locations
-- **Deal**: Restaurant deals and offers
-- **Redemption**: Deal claims and usage
+- **Venue**: Individual restaurant locations
+- **Deal**: Happy hour and instant deals
+- **Voucher**: Single-use redemption codes
 - **Favorite**: User's favorite deals
-- **NewsletterSubscriber**: Email newsletter subscribers
+- **AuditLog**: System activity tracking
 
-## 🚀 Deployment
+### Key Relationships
+- User → Merchant (one-to-one)
+- Merchant → Venue (one-to-many)
+- Venue → Deal (one-to-many)
+- Deal → Voucher (one-to-many)
+- User → Favorite (many-to-many)
+
+## Authentication & Authorization
+
+### Roles
+- **USER**: Can browse deals, claim vouchers
+- **MERCHANT**: Can manage venues and deals
+- **ADMIN**: Full system access
+
+### Authentication Flow
+1. User signs up with email/password
+2. Email verification (optional)
+3. Role assignment based on signup type
+4. JWT token for session management
+
+## Payment Integration
+
+### Stripe Integration
+- **Checkout Sessions**: For merchant subscriptions
+- **Billing Portal**: For subscription management
+- **Webhooks**: For subscription status updates
+
+### Subscription Flow
+1. Merchant signs up
+2. Redirected to Stripe Checkout
+3. Payment processed
+4. Webhook updates subscription status
+5. Access granted to merchant features
+
+## Testing
+
+### Unit Tests
+```bash
+npm run test
+```
+
+### End-to-End Tests
+```bash
+npm run test:e2e
+```
+
+### Test Coverage
+- API endpoint testing
+- Component testing
+- User flow testing
+- Payment flow testing
+
+## Deployment
 
 ### Vercel Deployment
-
 1. Connect your GitHub repository to Vercel
 2. Set environment variables in Vercel dashboard
 3. Deploy automatically on push to main branch
 
-### Environment Variables for Production
-
-```env
-DATABASE_URL="your-production-database-url"
-NEXTAUTH_URL="https://your-domain.com"
-NEXTAUTH_SECRET="your-production-secret"
-```
-
-## 🧪 Testing
-
+### Database Migration
 ```bash
-# Run type checking
-npm run type-check
-
-# Run linting
-npm run lint
-
-# Build for production
-npm run build
+npx prisma migrate deploy
 ```
 
-## 📝 Development Guidelines
+### Environment Variables
+See [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md) for complete setup instructions.
 
-### Code Style
-- Use TypeScript for type safety
-- Follow Next.js App Router conventions
-- Use Tailwind CSS for styling
-- Implement proper error handling with the error-handler utility
-- Use the logger utility for consistent logging
-
-### API Development
-- Use standardized error responses
-- Implement proper validation
-- Add comprehensive logging
-- Follow RESTful conventions
-
-### Database
-- Use Prisma migrations for schema changes
-- Always validate data before database operations
-- Use transactions for complex operations
-
-## 🔧 Troubleshooting
-
-### Common Issues
-
-1. **Database Connection Issues**
-   - Ensure DATABASE_URL is correctly set
-   - Run `npx prisma generate` after schema changes
-
-2. **Authentication Issues**
-   - Check NEXTAUTH_SECRET is set
-   - Verify NEXTAUTH_URL matches your domain
-
-3. **Build Issues**
-   - Run `npm run type-check` to identify TypeScript errors
-   - Ensure all environment variables are set
-
-## 📞 Support
-
-For support and questions:
-- Create an issue in the GitHub repository
-- Check the documentation in the `/docs` folder
-- Review the API documentation above
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests if applicable
+4. Add tests for new functionality
 5. Submit a pull request
 
-## 🎯 Roadmap
+### Development Guidelines
+- Follow TypeScript best practices
+- Write tests for new features
+- Use conventional commit messages
+- Ensure mobile responsiveness
 
-- [ ] Email service integration
-- [ ] Payment processing
-- [ ] Advanced analytics
-- [ ] Mobile app
-- [ ] Real-time notifications
-- [ ] Multi-language support
+## Security
+
+### Data Protection
+- All passwords hashed with bcrypt
+- Sensitive data encrypted at rest
+- HTTPS enforced in production
+- Rate limiting on API endpoints
+
+### Privacy
+- GDPR compliant data handling
+- User data export/deletion
+- Transparent privacy policy
+- Secure payment processing
+
+## Monitoring & Analytics
+
+### Error Tracking
+- Sentry integration for error monitoring
+- Performance tracking
+- User session recording
+
+### Analytics
+- User behavior tracking
+- Conversion rate monitoring
+- Performance metrics
+
+## Support
+
+### Documentation
+- API documentation
+- User guides
+- Admin documentation
+- Troubleshooting guides
+
+### Contact
+- Email: support@orderhappyhour.com
+- Phone: 1-800-ORDER-HH
+- Documentation: [docs.orderhappyhour.com](https://docs.orderhappyhour.com)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Built with Next.js and the amazing React ecosystem
+- Powered by Stripe for payments
+- Designed with Tailwind CSS
+- Deployed on Vercel
 
 ---
 
-Built with ❤️ for the restaurant industry
+**OrderHappyHour** - Making great food more accessible, one deal at a time! 🍺

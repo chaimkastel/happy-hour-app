@@ -1,34 +1,16 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
-import AppleProvider from 'next-auth/providers/apple';
-import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
+import { prisma } from './db';
 
-const providers = [];
-
-// Add Google provider if configured
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-  providers.push(GoogleProvider({
-    clientId: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  }));
-}
-
-// Add Apple provider if configured
-if (process.env.APPLE_ID && process.env.APPLE_SECRET) {
-  providers.push(AppleProvider({
-    clientId: process.env.APPLE_ID,
-    clientSecret: process.env.APPLE_SECRET,
-  }));
-}
-
-// Always add credentials provider
-providers.push(CredentialsProvider({
+export const authOptions: NextAuthOptions = {
+  providers: [
+    CredentialsProvider({
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
+        password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -56,59 +38,85 @@ providers.push(CredentialsProvider({
           id: user.id,
           email: user.email,
           role: user.role,
+          firstName: (user as any).firstName || '',
+          lastName: (user as any).lastName || '',
+          phone: user.phone || '',
+          createdAt: user.createdAt.toISOString(),
         };
-      }
-    })
-);
-
-export const authOptions: NextAuthOptions = {
-  providers,
+      },
+    }),
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          }),
+        ]
+      : []),
+  ],
   session: {
     strategy: 'jwt',
   },
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (account?.provider === 'google' || account?.provider === 'apple') {
+      if (account?.provider === 'google') {
         try {
-          // Check if user exists
           const existingUser = await prisma.user.findUnique({
             where: { email: user.email! },
           });
 
           if (!existingUser) {
-            // Create new user for OAuth sign-in
             await prisma.user.create({
               data: {
                 email: user.email!,
                 role: 'USER',
-                // OAuth users don't have passwords
-                password: null,
               },
             });
           }
-          return true;
+          
+          // Update user data in the token
+          const dbUser = await prisma.user.findUnique({
+            where: { email: user.email! },
+          });
+          
+          if (dbUser) {
+            (user as any).id = dbUser.id;
+            (user as any).phone = dbUser.phone;
+            (user as any).createdAt = dbUser.createdAt.toISOString();
+          }
         } catch (error) {
-          console.error('OAuth sign-in error:', error);
+          console.error('Google sign-in error:', error);
           return false;
         }
       }
       return true;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
+        token.id = user.id;
         token.role = (user as any).role;
+        token.firstName = (user as any).firstName;
+        token.lastName = (user as any).lastName;
+        token.phone = (user as any).phone;
+        token.createdAt = (user as any).createdAt;
       }
       return token;
     },
     async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.sub!;
-        session.user.role = token.role as string;
+      if (token) {
+        session.user.id = (token.sub || token.id || '') as string;
+        (session.user as any).role = token.role as string;
+        (session.user as any).firstName = token.firstName as string;
+        (session.user as any).lastName = token.lastName as string;
+        (session.user as any).phone = token.phone as string;
+        (session.user as any).createdAt = token.createdAt as string;
       }
       return session;
     },
   },
   pages: {
     signIn: '/login',
+    error: '/login',
   },
+  secret: process.env.NEXTAUTH_SECRET,
 };

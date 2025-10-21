@@ -1,0 +1,20 @@
+#!/bin/bash
+
+echo "🔧 Database URL Update Helper"
+echo "============================="
+echo ""
+echo "Current DATABASE_URL in .env.local:"
+grep DATABASE_URL .env.local
+echo ""
+echo "📋 To fix this:"
+echo "1. Go to your Neon Console: https://console.neon.tech/"
+echo "2. Copy your connection string (it should look like):"
+echo "   postgresql://[user]:[password]@[host]/[database]?sslmode=require"
+echo ""
+echo "3. Run this command to update it:"
+echo "   sed -i '' 's|DATABASE_URL=.*|DATABASE_URL=\"your-actual-neon-url-here\"|' .env.local"
+echo ""
+echo "4. Or manually edit .env.local and replace the DATABASE_URL line"
+echo ""
+echo "🔍 Your Neon connection string should look like:"
+echo "postgresql://neondb_owner:abc123@ep-cool-name-123456.us-east-1.aws.neon.tech/neondb?sslmode=require"

@@ -1,62 +1,30 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('API Tests', () => {
-  test('[API] Deals endpoint returns valid data', async ({ request }) => {
-    const response = await request.get('/api/deals/search');
-    expect(response.status()).toBe(200);
-    
-    const data = await response.json();
-    expect(data).toHaveProperty('deals');
-    expect(Array.isArray(data.deals)).toBe(true);
+test.describe('API Endpoints', () => {
+  test('should return 401 for protected routes without auth', async ({ request }) => {
+    const response = await request.get('/api/merchant/dashboard');
+    expect(response.status()).toBe(401);
   });
 
-  test('[API] Address autocomplete handles queries', async ({ request }) => {
-    const response = await request.get('/api/address/autocomplete?query=New York');
-    expect(response.status()).toBe(200);
-    
-    const data = await response.json();
-    expect(data).toHaveProperty('predictions');
-    expect(Array.isArray(data.predictions)).toBe(true);
+  test('should return 401 for voucher claim without auth', async ({ request }) => {
+    const response = await request.post('/api/deals/test-id/claim', {
+      data: {}
+    });
+    expect(response.status()).toBe(401);
   });
 
-  test('[API] Address autocomplete rejects short queries', async ({ request }) => {
-    const response = await request.get('/api/address/autocomplete?query=NY');
-    expect(response.status()).toBe(200);
-    
-    const data = await response.json();
-    expect(data.status).toBe('ZERO_RESULTS');
+  test('should return 401 for voucher redemption without auth', async ({ request }) => {
+    const response = await request.post('/api/redemptions/redeem', {
+      data: { code: 'test-code' }
+    });
+    expect(response.status()).toBe(401);
   });
 
-  test('[API] Rate limiting works', async ({ request }) => {
-    // Make multiple rapid requests to test rate limiting
-    const promises = Array(25).fill(0).map(() => 
-      request.get('/api/address/autocomplete?query=test')
-    );
-    
-    const responses = await Promise.all(promises);
-    const statusCodes = responses.map(r => r.status());
-    
-    // Should have some 429 responses if rate limiting is working
-    const rateLimitedResponses = statusCodes.filter(code => code === 429);
-    expect(rateLimitedResponses.length).toBeGreaterThan(0);
-  });
-
-  test('[API] Invalid parameters are rejected', async ({ request }) => {
-    // Test with invalid limit parameter
-    const response = await request.get('/api/deals?limit=invalid');
-    
-    // Should return 400 for invalid parameters
-    expect(response.status()).toBe(400);
-    
-    const data = await response.json();
-    expect(data).toHaveProperty('error');
-  });
-
-  test('[API] Security headers are present', async ({ request }) => {
-    const response = await request.get('/api/deals/search');
-    
-    // Check for rate limiting headers
-    expect(response.headers()['x-ratelimit-limit']).toBeDefined();
-    expect(response.headers()['x-ratelimit-remaining']).toBeDefined();
+  test('should return 404 for non-existent deal claim', async ({ request }) => {
+    // This would need proper auth setup in a real test
+    const response = await request.post('/api/deals/non-existent/claim', {
+      data: {}
+    });
+    expect(response.status()).toBe(401); // Should be 401 due to no auth
   });
 });

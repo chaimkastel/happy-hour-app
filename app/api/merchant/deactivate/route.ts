@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -39,7 +41,7 @@ export async function POST(request: NextRequest) {
     // Deactivate deal
     await prisma.deal.update({
       where: { id: dealId },
-      data: { status: 'INACTIVE' }
+      data: { active: false }
     });
 
     return NextResponse.json({ message: 'Deal deactivated successfully' });

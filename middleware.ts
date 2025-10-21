@@ -1,24 +1,58 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
+import type { NextRequestWithAuth } from 'next-auth/middleware';
+import { rateLimit, rateLimitConfigs, createRateLimitResponse } from '@/lib/rate-limit';
 
 export default withAuth(
-  function middleware(req) {
+  async function middleware(req: NextRequestWithAuth) {
     const { pathname } = req.nextUrl;
     const token = req.nextauth.token;
 
-    // Protect admin routes
-    if (pathname.startsWith('/admin') && token?.role !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/admin-access', req.url));
+    // Rate limiting for API routes
+    if (pathname.startsWith('/api/')) {
+      let limiter;
+      
+      if (pathname.startsWith('/api/auth/')) {
+        limiter = rateLimit(rateLimitConfigs.auth);
+      } else if (pathname.startsWith('/api/deals/search')) {
+        limiter = rateLimit(rateLimitConfigs.search);
+      } else {
+        limiter = rateLimit(rateLimitConfigs.api);
+      }
+      
+      const rateLimitResult = await limiter(req);
+      
+      if (!rateLimitResult.success) {
+        return createRateLimitResponse(
+          rateLimitResult.remaining || 0,
+          rateLimitResult.resetTime || Date.now()
+        );
+      }
     }
 
-    // Protect merchant routes
-    if (pathname.startsWith('/merchant') && token?.role !== 'MERCHANT' && token?.role !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/merchant/login', req.url));
+    // Admin routes
+    if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
+      if (token?.role !== 'ADMIN') {
+        return NextResponse.redirect(new URL('/admin/login', req.url));
+      }
     }
 
-    // Protect owner routes
-    if (pathname.startsWith('/owner') && token?.role !== 'OWNER' && token?.role !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/admin-access', req.url));
+    // Merchant routes
+    if (pathname.startsWith('/merchant') && 
+        !pathname.startsWith('/merchant/login') && 
+        !pathname.startsWith('/merchant/signup')) {
+      if (token?.role !== 'MERCHANT' && token?.role !== 'ADMIN') {
+        return NextResponse.redirect(new URL('/merchant/login', req.url));
+      }
+    }
+
+    // Protected user routes (require authentication)
+    if (pathname.startsWith('/account') || 
+        pathname.startsWith('/wallet') || 
+        pathname.startsWith('/favorites')) {
+      if (!token) {
+        return NextResponse.redirect(new URL('/login', req.url));
+      }
     }
 
     return NextResponse.next();
@@ -31,35 +65,28 @@ export default withAuth(
         // Public routes that don't require authentication
         const publicRoutes = [
           '/',
-          '/about',
-          '/contact',
-          '/faq',
+          '/explore',
+          '/deal',
+          '/claim-success',
+          '/partner',
           '/how-it-works',
-          '/pricing',
+          '/about',
           '/privacy',
-          '/terms',
-          '/cookies',
+          '/contact',
           '/login',
           '/signup',
+          '/verify-email',
           '/merchant/login',
           '/merchant/signup',
-          '/admin-access',
-          '/reset-password',
-          '/verify-email',
-          '/api/auth',
-          '/api/deals',
-          '/api/newsletter',
-          '/api/partner',
-          '/api/merchant/signup',
-          '/api/auth/signup',
-          '/api/auth/forgot-password',
-          '/api/auth/reset-password',
-          '/api/auth/verify-email',
-          '/api/auth/resend-verification',
+          '/admin/login',
         ];
 
-        // Check if the route is public
-        if (publicRoutes.some(route => pathname.startsWith(route))) {
+        // Check if route is public
+        const isPublicRoute = publicRoutes.some(route => 
+          pathname === route || pathname.startsWith(route + '/')
+        );
+
+        if (isPublicRoute) {
           return true;
         }
 
@@ -72,13 +99,11 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    '/((?!_next/static|_next/image|favicon.ico|public/).*)',
+    '/admin/:path*',
+    '/merchant/:path*',
+    '/account/:path*',
+    '/wallet/:path*',
+    '/favorites/:path*',
+    '/api/:path*',
   ],
 };

@@ -15,7 +15,7 @@ export default function MerchantUI({ restaurant, deals }: { restaurant:any, deal
     return (
       <main className="grid gap-4">
         <div className="card"><h1 className="text-xl font-semibold">Welcome</h1><p className="text-white/70">Let’s onboard your restaurant.</p></div>
-        <a href="/merchant/onboarding" className="btn w-fit">Start Onboarding</a>
+        <Link href={"/merchant/onboarding" as any} className="btn w-fit">Start Onboarding</Link>
       </main>
     );
   }

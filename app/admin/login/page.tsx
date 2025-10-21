@@ -1,5 +1,9 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const runtime = 'nodejs';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
@@ -121,7 +125,7 @@ export default function AdminLoginPage() {
 
           <div className="mt-6 pt-6 border-t border-white/20">
             <p className="text-white/60 text-sm text-center">
-              🔒 Secure admin access • Authorized personnel only
+              Secure admin access • Authorized personnel only
             </p>
           </div>
         </div>

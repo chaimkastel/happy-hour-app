@@ -1,30 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { prisma } from '@/lib/db';
 import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/db';
+import { z } from 'zod';
+
+export const dynamic = 'force-dynamic';
+
+const ClaimSchema = z.object({
+  dealId: z.string().min(1),
+});
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { dealId } = body;
+    const { dealId } = ClaimSchema.parse(await request.json());
 
-    if (!dealId) {
-      return NextResponse.json(
-        { error: 'Deal ID is required' },
-        { status: 400 }
-      );
-    }
-
-    // Check if deal exists and is live
+    // Find the deal
     const deal = await prisma.deal.findUnique({
       where: { id: dealId },
       include: {
@@ -33,9 +29,9 @@ export async function POST(request: NextRequest) {
             id: true,
             name: true,
             address: true,
-            rating: true,
             latitude: true,
             longitude: true,
+            rating: true,
             photos: true
           }
         }
@@ -51,9 +47,9 @@ export async function POST(request: NextRequest) {
 
     // Check if deal is live
     const now = new Date();
-    const isLive = deal.status === 'LIVE' && 
-                   new Date(deal.startAt) <= now && 
-                   new Date(deal.endAt) > now;
+    const isLive = deal.active && 
+                    new Date(deal.startAt) <= now &&
+                    new Date(deal.endAt) > now;
 
     if (!isLive) {
       return NextResponse.json(
@@ -62,84 +58,50 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user has already claimed this deal
-    const existingRedemption = await prisma.redemption.findFirst({
-      where: {
-        userId: session.user.id,
-        dealId: dealId
-      }
-    });
-
-    if (existingRedemption) {
-      return NextResponse.json(
-        { error: 'You have already claimed this deal' },
-        { status: 409 }
-      );
-    }
-
-    // Check if deal has remaining redemptions
-    if (deal.redeemedCount >= deal.maxRedemptions) {
-      return NextResponse.json(
-        { error: 'This deal is no longer available' },
-        { status: 400 }
-      );
-    }
-
-    // Generate unique code
+    // Generate unique voucher code
     const code = `HH${Date.now()}${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
     
-    // Create redemption
-    const redemption = await prisma.redemption.create({
+    // Create voucher
+    const voucher = await prisma.redemption.create({
       data: {
+        code,
+        dealId: deal.id,
         userId: session.user.id,
-        dealId: dealId,
-        status: 'CLAIMED',
-        code: code,
-        expiresAt: new Date(deal.endAt)
-      },
-      include: {
-        deal: {
-          include: {
-            venue: {
-              select: {
-                id: true,
-                name: true,
-                address: true,
-                rating: true,
-                latitude: true,
-                longitude: true,
-                photos: true
-              }
-            }
-          }
-        }
-      }
-    });
-
-    // Update deal redemption count
-    await prisma.deal.update({
-      where: { id: dealId },
-      data: {
-        redeemedCount: {
-          increment: 1
-        }
+        status: 'ISSUED',
+        expiresAt: new Date(deal.endAt),
+        qrData: JSON.stringify({
+          code,
+          dealId: deal.id,
+          venueId: deal.venueId,
+          userId: session.user.id,
+          timestamp: new Date().toISOString()
+        })
       }
     });
 
     return NextResponse.json({
-      message: 'Deal claimed successfully',
-      redemption: {
-        id: redemption.id,
-        dealId: redemption.dealId,
-        code: redemption.code,
-        expiresAt: redemption.expiresAt,
-        status: redemption.status,
-        deal: redemption.deal
+      success: true,
+      voucher: {
+        id: voucher.id,
+        code: voucher.code,
+        deal: {
+          id: deal.id,
+          title: deal.title,
+          description: deal.description,
+          percentOff: deal.percentOff,
+          minSpend: deal.minSpend,
+          venue: deal.venue
+        },
+        expiresAt: voucher.expiresAt,
+        qrData: voucher.qrData
       }
-    }, { status: 201 });
+    });
 
   } catch (error) {
-    console.error('Error claiming deal:', error);
+    console.error('Claim deal error:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Invalid request data', details: error.issues }, { status: 400 });
+    }
     return NextResponse.json(
       { error: 'Failed to claim deal' },
       { status: 500 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { hash } from 'bcryptjs';
+// Removed libphonenumber-js import - using flexible validation instead
 
 export async function POST(request: NextRequest) {
   let body: any = {};
@@ -11,24 +12,37 @@ export async function POST(request: NextRequest) {
       email, 
       phone, 
       password, 
-      firstName, 
-      lastName, 
-      businessAddress, 
-      cuisineType, 
+      confirmPassword,
+      contactName, 
+      address,
+      city,
+      state,
+      zipCode,
+      businessType,
+      cuisine,
       website,
-      acceptTerms 
+      termsAccepted,
+      newsletterOptIn
     } = body;
 
     // Validate required fields
-    if (!businessName || !email || !phone || !password || !firstName || !lastName || !businessAddress || !cuisineType) {
+    if (!businessName || !email || !phone || !password || !contactName || !address || !businessType) {
       return NextResponse.json(
-        { error: 'Business name, email, phone, password, first name, last name, business address, and cuisine type are required' },
+        { error: 'Business name, email, phone, password, contact name, address, and business type are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate password confirmation
+    if (password !== confirmPassword) {
+      return NextResponse.json(
+        { error: 'Passwords do not match' },
         { status: 400 }
       );
     }
 
     // Validate terms acceptance
-    if (!acceptTerms) {
+    if (!termsAccepted) {
       return NextResponse.json(
         { error: 'You must accept the terms and conditions' },
         { status: 400 }
@@ -52,6 +66,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Normalize phone number - simple format
+    let normalizedPhone = phone;
+    if (phone) {
+      // Remove all non-digit characters except + at the beginning
+      const cleaned = phone.replace(/[^\d+]/g, '');
+      // Basic validation - must be 7-15 digits or start with + and have 7-15 digits
+      if (!/^(\+\d{7,15}|\d{7,15})$/.test(cleaned)) {
+        return NextResponse.json(
+          { error: 'Please enter a valid phone number (7-15 digits, optionally starting with +)' },
+          { status: 400 }
+        );
+      }
+      normalizedPhone = cleaned;
+    }
+
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email }
@@ -73,9 +102,9 @@ export async function POST(request: NextRequest) {
         email,
         role: 'MERCHANT',
         password: hashedPassword,
-        phone: phone,
-        firstName: firstName,
-        lastName: lastName
+        phone: normalizedPhone,
+        firstName: contactName.split(' ')[0] || contactName,
+        lastName: contactName.split(' ').slice(1).join(' ') || null
       }
     });
 
@@ -83,51 +112,16 @@ export async function POST(request: NextRequest) {
     const merchant = await prisma.merchant.create({
       data: {
         userId: user.id,
-        businessName,
-        firstName: firstName,
-        lastName: lastName,
-        businessAddress: businessAddress,
-        cuisineType: cuisineType,
-        website: website || null,
-        kycStatus: 'PENDING', // New merchants start with pending KYC
-        termsAcceptedAt: acceptTerms ? new Date() : null,
+        businessName: businessName,
+        companyName: businessName,
+        contactEmail: user.email,
+        approved: false // New merchants start as not approved
       }
     });
 
-    // Create subscription for trial
-    const subscription = await prisma.subscription.create({
-      data: {
-        merchantId: merchant.id,
-        plan: 'TRIAL',
-        status: 'ACTIVE',
-        currentPeriodStart: new Date(),
-        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-        trialStartedAt: new Date(),
-      }
-    });
 
     // Note: Venues will be created separately by the merchant
 
-    // Create admin notification for new merchant application
-    await prisma.adminNotification.create({
-      data: {
-        type: 'merchant_application',
-        title: 'New Merchant Application',
-        message: `New merchant application: ${businessName} (${email})`,
-        priority: 'high',
-        data: JSON.stringify({
-          merchantId: merchant.id,
-          businessName: merchant.businessName,
-          email: user.email,
-          firstName: merchant.firstName,
-          lastName: merchant.lastName,
-          businessAddress: merchant.businessAddress,
-          cuisineType: merchant.cuisineType,
-          kycStatus: merchant.kycStatus,
-          timestamp: new Date().toISOString()
-        })
-      }
-    });
 
     return NextResponse.json({
       success: true,
@@ -141,17 +135,9 @@ export async function POST(request: NextRequest) {
       },
       merchant: {
         id: merchant.id,
-        businessName: merchant.businessName,
-        businessAddress: merchant.businessAddress,
-        cuisineType: merchant.cuisineType,
-        website: merchant.website,
-        kycStatus: merchant.kycStatus
-      },
-      subscription: {
-        id: subscription.id,
-        plan: subscription.plan,
-        status: subscription.status,
-        currentPeriodEnd: subscription.currentPeriodEnd
+        companyName: merchant.companyName,
+        contactEmail: merchant.contactEmail,
+        approved: merchant.approved
       }
     });
 

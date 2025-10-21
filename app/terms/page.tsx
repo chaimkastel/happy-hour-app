@@ -1,168 +1,150 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Terms of Service - Happy Hour',
-  description: 'Read our terms of service and user agreement for Happy Hour.',
+  description: 'Terms of Service for Happy Hour app',
+  robots: 'noindex, follow',
 };
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-white">
-      <div className="container py-16">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-gray-900 mb-8">Terms of Service</h1>
-          <p className="text-gray-600 mb-8">Last updated: January 2025</p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="mb-6">
+          <Link 
+            href="/" 
+            className="inline-flex items-center text-orange-600 hover:text-orange-700 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Link>
+        </div>
 
-          <div className="prose prose-lg max-w-none">
+        <div className="bg-white rounded-lg shadow-sm p-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Terms of Service</h1>
+          
+          <div className="prose prose-gray max-w-none">
+            <p className="text-sm text-gray-600 mb-6">
+              <strong>Last updated:</strong> {new Date().toLocaleDateString()}
+            </p>
+
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Agreement to Terms</h2>
-              <p className="text-gray-700 mb-4">
-                By accessing and using Happy Hour's website and services, you agree to be bound by these Terms of Service 
-                and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited 
-                from using or accessing this site.
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">1. Acceptance of Terms</h2>
+              <p className="text-gray-700 leading-relaxed">
+                By accessing and using the Happy Hour mobile application and website (collectively, the "Service"), 
+                you accept and agree to be bound by the terms and provision of this agreement. If you do not agree 
+                to abide by the above, please do not use this service.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Description of Service</h2>
-              <p className="text-gray-700 mb-4">
-                Happy Hour is a platform that connects customers with restaurants offering deals during off-peak hours. 
-                Our service includes:
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">2. Description of Service</h2>
+              <p className="text-gray-700 leading-relaxed">
+                Happy Hour is a platform that connects users with local restaurants offering off-peak deals and 
+                special promotions. We facilitate the discovery and claiming of restaurant deals, vouchers, and 
+                special offers in your area.
               </p>
-              <ul className="list-disc list-inside text-gray-700 mb-4 space-y-2">
-                <li>Searching and discovering restaurant deals</li>
-                <li>Redeeming deals at participating restaurants</li>
-                <li>Managing your account and preferences</li>
-                <li>Receiving notifications about new deals</li>
-              </ul>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">User Accounts</h2>
-              <p className="text-gray-700 mb-4">
-                To use certain features of our service, you must create an account. You are responsible for:
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">3. User Accounts</h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                To access certain features of the Service, you may be required to create an account. You are 
+                responsible for:
               </p>
-              <ul className="list-disc list-inside text-gray-700 mb-4 space-y-2">
-                <li>Providing accurate and complete information</li>
-                <li>Maintaining the security of your account credentials</li>
+              <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
+                <li>Maintaining the confidentiality of your account credentials</li>
                 <li>All activities that occur under your account</li>
+                <li>Providing accurate and complete information</li>
                 <li>Notifying us immediately of any unauthorized use</li>
               </ul>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Deal Redemption</h2>
-              <p className="text-gray-700 mb-4">
-                When redeeming deals through our platform:
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">4. Deal and Voucher Terms</h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                All deals, vouchers, and offers are subject to the following terms:
               </p>
-              <ul className="list-disc list-inside text-gray-700 mb-4 space-y-2">
-                <li>Deals are subject to availability and restaurant policies</li>
-                <li>Restaurants may have additional terms and conditions</li>
-                <li>Deals cannot be combined with other offers unless specified</li>
-                <li>We are not responsible for restaurant service or food quality</li>
-                <li>Deal expiration dates and times are strictly enforced</li>
+              <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
+                <li>Deals are subject to availability and may be withdrawn at any time</li>
+                <li>Vouchers have expiration dates and must be used within the specified timeframe</li>
+                <li>One voucher per deal per user unless otherwise specified</li>
+                <li>Vouchers cannot be transferred, sold, or exchanged for cash</li>
+                <li>Restaurant terms and conditions apply in addition to these terms</li>
               </ul>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Prohibited Uses</h2>
-              <p className="text-gray-700 mb-4">You may not use our service:</p>
-              <ul className="list-disc list-inside text-gray-700 mb-4 space-y-2">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">5. Payment and Billing</h2>
+              <p className="text-gray-700 leading-relaxed">
+                For merchant subscriptions and premium features, payment is processed through Stripe. 
+                All fees are non-refundable unless otherwise specified. You agree to pay all applicable 
+                taxes and fees associated with your use of the Service.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">6. Prohibited Uses</h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                You may not use our Service:
+              </p>
+              <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
                 <li>For any unlawful purpose or to solicit others to perform unlawful acts</li>
                 <li>To violate any international, federal, provincial, or state regulations, rules, laws, or local ordinances</li>
                 <li>To infringe upon or violate our intellectual property rights or the intellectual property rights of others</li>
                 <li>To harass, abuse, insult, harm, defame, slander, disparage, intimidate, or discriminate</li>
                 <li>To submit false or misleading information</li>
                 <li>To upload or transmit viruses or any other type of malicious code</li>
-                <li>To spam, phish, pharm, pretext, spider, crawl, or scrape</li>
-                <li>For any obscene or immoral purpose</li>
-                <li>To interfere with or circumvent the security features of the service</li>
               </ul>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Intellectual Property</h2>
-              <p className="text-gray-700 mb-4">
-                The service and its original content, features, and functionality are and will remain the exclusive property 
-                of Happy Hour and its licensors. The service is protected by copyright, trademark, and other laws. Our 
-                trademarks and trade dress may not be used in connection with any product or service without our prior 
-                written consent.
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">7. Privacy Policy</h2>
+              <p className="text-gray-700 leading-relaxed">
+                Your privacy is important to us. Please review our Privacy Policy, which also governs your 
+                use of the Service, to understand our practices.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Disclaimers</h2>
-              <p className="text-gray-700 mb-4">
-                The information on this service is provided on an "as is" basis. To the fullest extent permitted by law, 
-                this Company:
-              </p>
-              <ul className="list-disc list-inside text-gray-700 mb-4 space-y-2">
-                <li>Excludes all representations and warranties relating to this website and its contents</li>
-                <li>Excludes all liability for damages arising out of or in connection with your use of this website</li>
-                <li>Does not guarantee the accuracy, completeness, or timeliness of information</li>
-                <li>Is not responsible for the quality of food, service, or experience at participating restaurants</li>
-              </ul>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Limitation of Liability</h2>
-              <p className="text-gray-700 mb-4">
-                In no event shall Happy Hour, nor its directors, employees, partners, agents, suppliers, or affiliates, 
-                be liable for any indirect, incidental, special, consequential, or punitive damages, including without 
-                limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your use 
-                of the service.
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">8. Limitation of Liability</h2>
+              <p className="text-gray-700 leading-relaxed">
+                In no event shall Happy Hour, nor its directors, employees, partners, agents, suppliers, 
+                or affiliates, be liable for any indirect, incidental, special, consequential, or punitive 
+                damages, including without limitation, loss of profits, data, use, goodwill, or other 
+                intangible losses, resulting from your use of the Service.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Indemnification</h2>
-              <p className="text-gray-700 mb-4">
-                You agree to defend, indemnify, and hold harmless Happy Hour and its licensee and licensors, and their 
-                employees, contractors, agents, officers and directors, from and against any and all claims, damages, 
-                obligations, losses, liabilities, costs or debt, and expenses (including but not limited to attorney's fees).
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">9. Termination</h2>
+              <p className="text-gray-700 leading-relaxed">
+                We may terminate or suspend your account and bar access to the Service immediately, 
+                without prior notice or liability, under our sole discretion, for any reason whatsoever 
+                and without limitation, including but not limited to a breach of the Terms.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Termination</h2>
-              <p className="text-gray-700 mb-4">
-                We may terminate or suspend your account and bar access to the service immediately, without prior notice 
-                or liability, under our sole discretion, for any reason whatsoever and without limitation, including but 
-                not limited to a breach of the Terms.
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">10. Changes to Terms</h2>
+              <p className="text-gray-700 leading-relaxed">
+                We reserve the right, at our sole discretion, to modify or replace these Terms at any time. 
+                If a revision is material, we will provide at least 30 days notice prior to any new terms 
+                taking effect.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Governing Law</h2>
-              <p className="text-gray-700 mb-4">
-                These Terms shall be interpreted and governed by the laws of the State of [Your State], without regard 
-                to its conflict of law provisions. Our failure to enforce any right or provision of these Terms will 
-                not be considered a waiver of those rights.
-              </p>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Changes to Terms</h2>
-              <p className="text-gray-700 mb-4">
-                We reserve the right, at our sole discretion, to modify or replace these Terms at any time. If a revision 
-                is material, we will provide at least 30 days notice prior to any new terms taking effect.
-              </p>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Contact Information</h2>
-              <p className="text-gray-700 mb-4">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">11. Contact Information</h2>
+              <p className="text-gray-700 leading-relaxed">
                 If you have any questions about these Terms of Service, please contact us at:
               </p>
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <p className="text-gray-700 mb-2">
-                  <strong>Email:</strong> legal@orderhappyhour.com
-                </p>
-                <p className="text-gray-700 mb-2">
-                  <strong>Address:</strong> Happy Hour Inc., 123 Business St, City, State 12345
-                </p>
+              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                 <p className="text-gray-700">
-                  <strong>Phone:</strong> (555) 123-4567
+                  <strong>Email:</strong> legal@orderhappyhour.com<br />
+                  <strong>Address:</strong> Happy Hour Inc., 123 Business St, City, State 12345
                 </p>
               </div>
             </section>

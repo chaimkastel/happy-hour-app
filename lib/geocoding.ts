@@ -1,5 +1,5 @@
-// Simple geocoding utility
-// In production, you'd use a real geocoding service like Google Maps API
+// Geocoding utility
+// TODO: Integrate with Google Maps Geocoding API or similar service
 
 export interface GeocodingResult {
   latitude: number;
@@ -9,8 +9,8 @@ export interface GeocodingResult {
 }
 
 export async function smartGeocode(address: string): Promise<GeocodingResult> {
-  // For demo purposes, return mock coordinates
-  // In production, integrate with Google Maps Geocoding API or similar
+  // TODO: Replace with real geocoding service
+  // For now, return mock coordinates for major cities
   
   const mockCoordinates = {
     'New York': { lat: 40.7128, lng: -74.0060 },

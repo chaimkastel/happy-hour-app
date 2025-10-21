@@ -1,76 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { prisma } from '@/lib/db';
 import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/db';
+import { z } from 'zod';
+
+export const dynamic = 'force-dynamic';
+
+const RedeemSchema = z.object({
+  code: z.string().min(1),
+});
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { redemptionId } = body;
+    const { code } = RedeemSchema.parse(await request.json());
 
-    if (!redemptionId) {
-      return NextResponse.json(
-        { error: 'Redemption ID is required' },
-        { status: 400 }
-      );
-    }
-
-    // Find the redemption
-    const redemption = await prisma.redemption.findFirst({
+    // Find the voucher
+    const voucher = await prisma.redemption.findFirst({
       where: {
-        id: redemptionId,
-        userId: session.user.id
-      },
-      include: {
-        deal: true
-      }
-    });
-
-    if (!redemption) {
-      return NextResponse.json(
-        { error: 'Redemption not found' },
-        { status: 404 }
-      );
-    }
-
-    if (redemption.status !== 'CLAIMED') {
-      return NextResponse.json(
-        { error: 'This deal has already been used or is expired' },
-        { status: 400 }
-      );
-    }
-
-    // Check if deal is still valid
-    const now = new Date();
-    const isExpired = new Date(redemption.expiresAt) < now;
-
-    if (isExpired) {
-      // Mark as expired
-      await prisma.redemption.update({
-        where: { id: redemptionId },
-        data: { status: 'EXPIRED' }
-      });
-
-      return NextResponse.json(
-        { error: 'This deal has expired' },
-        { status: 400 }
-      );
-    }
-
-    // Mark as used
-    const updatedRedemption = await prisma.redemption.update({
-      where: { id: redemptionId },
-      data: {
-        status: 'USED'
+        code: code,
+        userId: session.user.id,
+        status: 'ISSUED'
       },
       include: {
         deal: {
@@ -80,9 +35,9 @@ export async function POST(request: NextRequest) {
                 id: true,
                 name: true,
                 address: true,
-                rating: true,
                 latitude: true,
                 longitude: true,
+                rating: true,
                 photos: true
               }
             }
@@ -91,22 +46,56 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    if (!voucher) {
+      return NextResponse.json(
+        { error: 'Invalid or expired voucher code' },
+        { status: 404 }
+      );
+    }
+
+    // Check if voucher is expired
+    if (voucher.expiresAt && new Date() > new Date(voucher.expiresAt)) {
+      return NextResponse.json(
+        { error: 'Voucher has expired' },
+        { status: 400 }
+      );
+    }
+
+    // Update voucher status to redeemed
+    await prisma.redemption.update({
+      where: { id: voucher.id },
+      data: { 
+        status: 'REDEEMED',
+        redeemedAt: new Date()
+      }
+    });
+
     return NextResponse.json({
-      message: 'Deal redeemed successfully',
-      redemption: {
-        id: updatedRedemption.id,
-        dealId: updatedRedemption.dealId,
-        code: updatedRedemption.code,
-        expiresAt: updatedRedemption.expiresAt,
-        status: updatedRedemption.status,
-        deal: updatedRedemption.deal
+      success: true,
+      message: 'Voucher redeemed successfully!',
+      voucher: {
+        id: voucher.id,
+        code: voucher.code,
+        deal: {
+          id: voucher.deal.id,
+          title: voucher.deal.title,
+          description: voucher.deal.description,
+          percentOff: voucher.deal.percentOff,
+          originalPrice: voucher.deal.originalPrice,
+          discountedPrice: voucher.deal.discountedPrice,
+          venue: voucher.deal.venue
+        },
+        redeemedAt: new Date()
       }
     });
 
   } catch (error) {
-    console.error('Error redeeming deal:', error);
+    console.error('Redeem voucher error:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Invalid request data', details: error.issues }, { status: 400 });
+    }
     return NextResponse.json(
-      { error: 'Failed to redeem deal' },
+      { error: 'Failed to redeem voucher' },
       { status: 500 }
     );
   }

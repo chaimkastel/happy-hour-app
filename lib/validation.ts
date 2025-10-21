@@ -1,197 +1,260 @@
-export interface ValidationError {
-  field: string;
-  message: string;
-}
+import { z } from 'zod';
 
-export interface ValidationResult {
-  isValid: boolean;
-  errors: ValidationError[];
-}
+// Deal search validation
+export const dealSearchSchema = z.object({
+  q: z.string().optional(),
+  location: z.string().optional(),
+  limit: z.coerce.number().min(1).max(100).default(20),
+  offset: z.coerce.number().min(0).default(0),
+});
+
+// Deal creation validation
+export const createDealSchema = z.object({
+  venueId: z.string().min(1, 'Venue ID is required'),
+  type: z.enum(['HAPPY_HOUR', 'INSTANT']),
+  title: z.string().min(1, 'Title is required').max(100, 'Title too long'),
+  description: z.string().min(1, 'Description is required').max(500, 'Description too long'),
+  percentOff: z.number().min(1, 'Percent off must be at least 1').max(100, 'Percent off cannot exceed 100').optional(),
+  originalPrice: z.number().min(0, 'Price cannot be negative').optional(),
+  discountedPrice: z.number().min(0, 'Price cannot be negative').optional(),
+  startAt: z.string().datetime('Invalid start date'),
+  endAt: z.string().datetime('Invalid end date'),
+  daysOfWeek: z.array(z.string()).optional(),
+  timeWindows: z.array(z.object({
+    start: z.string(),
+    end: z.string()
+  })).optional(),
+  conditions: z.array(z.string()).optional(),
+  maxRedemptions: z.number().min(1, 'Max redemptions must be at least 1').optional(),
+  perUserLimit: z.number().min(1, 'Per user limit must be at least 1').default(1),
+  priority: z.number().default(1),
+  active: z.boolean().default(true)
+});
+
+// User signup validation
+export const signupSchema = z.object({
+  firstName: z.string().min(1, 'First name is required').max(50, 'First name too long'),
+  lastName: z.string().min(1, 'Last name is required').max(50, 'Last name too long'),
+  email: z.string().email('Invalid email address'),
+  phone: z.string()
+    .optional()
+    .refine((phone) => {
+      if (!phone) return true; // Optional field
+      const cleaned = phone.replace(/[^\d+]/g, '');
+      return /^(\+\d{7,15}|\d{7,15})$/.test(cleaned);
+    }, 'Please enter a valid phone number (7-15 digits, optionally starting with +)'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+});
+
+// Merchant signup validation
+export const merchantSignupSchema = z.object({
+  businessName: z.string().min(1, 'Business name is required').max(100, 'Business name too long'),
+  contactName: z.string().min(1, 'Contact name is required').max(100, 'Contact name too long'),
+  email: z.string().email('Invalid email address'),
+  phone: z.string()
+    .optional()
+    .refine((phone) => {
+      if (!phone) return true; // Optional field
+      const cleaned = phone.replace(/[^\d+]/g, '');
+      return /^(\+\d{7,15}|\d{7,15})$/.test(cleaned);
+    }, 'Please enter a valid phone number (7-15 digits, optionally starting with +)'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+});
+
+// Venue creation validation
+export const createVenueSchema = z.object({
+  name: z.string().min(1, 'Venue name is required').max(100, 'Venue name too long'),
+  address: z.string().min(1, 'Address is required').max(200, 'Address too long'),
+  city: z.string().min(1, 'City is required').max(50, 'City name too long'),
+  state: z.string().min(1, 'State is required').max(50, 'State name too long'),
+  zip: z.string().min(5, 'Invalid ZIP code').max(10, 'Invalid ZIP code'),
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  timezone: z.string().default('America/New_York'),
+  hours: z.record(z.string(), z.string()).optional(),
+  priceTier: z.enum(['BUDGET', 'MID_RANGE', 'PREMIUM', 'LUXURY']).default('MID_RANGE'),
+});
 
 // Email validation
-export const validateEmail = (email: string): string | null => {
-  if (!email.trim()) {
-    return 'Email is required';
-  }
-  
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return 'Please enter a valid email address';
-  }
-  
-  return null;
-};
+export const emailSchema = z.string().email('Invalid email address');
+
+// Phone validation - more flexible
+export const phoneSchema = z.string()
+  .optional()
+  .refine((phone) => {
+    if (!phone) return true; // Optional field
+    // Remove all non-digit characters except + at the beginning
+    const cleaned = phone.replace(/[^\d+]/g, '');
+    // Must start with + or be 7-15 digits
+    return /^(\+\d{7,15}|\d{7,15})$/.test(cleaned);
+  }, 'Please enter a valid phone number (7-15 digits, optionally starting with +)');
 
 // Password validation
-export const validatePassword = (password: string): { isValid: boolean; errors: string[] } => {
-  const errors: string[] = [];
-  
-  if (!password) {
-    return { isValid: false, errors: ['Password is required'] };
+export const passwordSchema = z.string()
+  .min(8, 'Password must be at least 8 characters')
+  .regex(/(?=.*[a-z])/, 'Password must contain at least one lowercase letter')
+  .regex(/(?=.*[A-Z])/, 'Password must contain at least one uppercase letter')
+  .regex(/(?=.*\d)/, 'Password must contain at least one number');
+
+// Password strength calculation
+export function calculatePasswordStrength(password: string): {
+  score: number;
+  feedback: string[];
+} {
+  const feedback: string[] = [];
+  let score = 0;
+
+  if (password.length >= 8) {
+    score += 1;
+  } else {
+    feedback.push('Use at least 8 characters');
   }
+
+  if (/[a-z]/.test(password)) {
+    score += 1;
+  } else {
+    feedback.push('Add lowercase letters');
+  }
+
+  if (/[A-Z]/.test(password)) {
+    score += 1;
+  } else {
+    feedback.push('Add uppercase letters');
+  }
+
+  if (/\d/.test(password)) {
+    score += 1;
+  } else {
+    feedback.push('Add numbers');
+  }
+
+  if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    score += 1;
+  } else {
+    feedback.push('Add special characters');
+  }
+
+  if (password.length >= 12) {
+    score += 1;
+  }
+
+  return { score, feedback };
+}
+
+// Password validation function
+export function validatePassword(password: string): {
+  isValid: boolean;
+  errors: string[];
+} {
+  const errors: string[] = [];
   
   if (password.length < 8) {
     errors.push('Password must be at least 8 characters long');
-  }
-  
-  if (!/[A-Z]/.test(password)) {
-    errors.push('Password must contain at least one uppercase letter');
   }
   
   if (!/[a-z]/.test(password)) {
     errors.push('Password must contain at least one lowercase letter');
   }
   
+  if (!/[A-Z]/.test(password)) {
+    errors.push('Password must contain at least one uppercase letter');
+  }
+  
   if (!/\d/.test(password)) {
     errors.push('Password must contain at least one number');
   }
   
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
     errors.push('Password must contain at least one special character');
   }
   
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
-};
+}
 
-// Password strength calculation
-export const calculatePasswordStrength = (password: string): {
-  score: number;
-  label: string;
-  color: string;
-} => {
-  let score = 0;
-  
-  if (password.length >= 8) score += 1;
-  if (password.length >= 12) score += 1;
-  if (/[A-Z]/.test(password)) score += 1;
-  if (/[a-z]/.test(password)) score += 1;
-  if (/\d/.test(password)) score += 1;
-  if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) score += 1;
-  
-  if (score <= 2) {
-    return { score, label: 'Weak', color: 'text-red-600' };
-  } else if (score <= 4) {
-    return { score, label: 'Medium', color: 'text-yellow-600' };
-  } else {
-    return { score, label: 'Strong', color: 'text-green-600' };
-  }
-};
+// Generic ID validation
+export const idSchema = z.string().min(1, 'ID is required');
 
-// Name validation
-export const validateName = (name: string, fieldName: string = 'Name'): string | null => {
-  if (!name.trim()) {
-    return `${fieldName} is required`;
-  }
-  
-  if (name.trim().length < 2) {
-    return `${fieldName} must be at least 2 characters long`;
-  }
-  
-  if (name.trim().length > 50) {
-    return `${fieldName} must be less than 50 characters`;
-  }
-  
-  if (!/^[a-zA-Z\s'-]+$/.test(name.trim())) {
-    return `${fieldName} can only contain letters, spaces, hyphens, and apostrophes`;
-  }
-  
-  return null;
-};
-
-// Phone validation
-export const validatePhone = (phone: string): string | null => {
-  if (!phone.trim()) {
-    return null; // Phone is optional
-  }
-  
-  const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-  const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
-  
-  if (!phoneRegex.test(cleanPhone)) {
-    return 'Please enter a valid phone number';
-  }
-  
-  return null;
-};
-
-// Location validation
-export const validateLocation = (location: string): string | null => {
-  if (!location.trim()) {
-    return null; // Location is optional
-  }
-  
-  if (location.trim().length < 2) {
-    return 'Location must be at least 2 characters long';
-  }
-  
-  return null;
-};
-
-// Terms acceptance validation
-export const validateTermsAcceptance = (accepted: boolean): string | null => {
-  if (!accepted) {
-    return 'You must accept the Terms of Service and Privacy Policy';
-  }
-  
-  return null;
-};
-
-// Form validation helper
-export const validateForm = (data: Record<string, any>, rules: Record<string, (value: any) => string | null>): ValidationResult => {
-  const errors: ValidationError[] = [];
-  
-  for (const [field, validator] of Object.entries(rules)) {
-    const error = validator(data[field]);
-    if (error) {
-      errors.push({ field, message: error });
-    }
-  }
-  
-  return {
-    isValid: errors.length === 0,
-    errors
-  };
-};
-
-// Get error message for a specific field
-export const getFieldError = (errors: ValidationError[], field: string): string | null => {
-  const error = errors.find(e => e.field === field);
-  return error ? error.message : null;
-};
+// Pagination validation
+export const paginationSchema = z.object({
+  limit: z.coerce.number().min(1).max(100).default(20),
+  offset: z.coerce.number().min(0).default(0),
+});
 
 // Search query validation
-export const validateSearchQuery = (query: string): string | null => {
-  if (!query || query.trim().length === 0) {
-    return 'Search query is required';
-  }
-  
-  if (query.trim().length < 2) {
-    return 'Search query must be at least 2 characters long';
-  }
-  
-  if (query.trim().length > 100) {
-    return 'Search query must be less than 100 characters';
-  }
-  
-  return null;
-};
+export const searchQuerySchema = z.string()
+  .min(1, 'Search query is required')
+  .max(100, 'Search query too long')
+  .regex(/^[a-zA-Z0-9\s\-_.,!?]+$/, 'Search query contains invalid characters');
 
-// Request validation schemas
+// Rate limiting validation
+export const rateLimitSchema = z.object({
+  windowMs: z.number().min(1000, 'Window must be at least 1 second'),
+  maxRequests: z.number().min(1, 'Max requests must be at least 1'),
+});
+
+// Utility function to validate request body
+export function validateRequestBody<T>(schema: z.ZodSchema<T>, data: unknown): T {
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    throw new Error(`Validation error: ${result.error.issues.map(e => e.message).join(', ')}`);
+  }
+  return result.data;
+}
+
+// Utility function to validate query parameters
+export function validateQueryParams<T>(schema: z.ZodSchema<T>, params: URLSearchParams): T {
+  const data = Object.fromEntries(params.entries());
+  return validateRequestBody(schema, data);
+}
+
+// Generic form validation function
+export function validateForm<T>(schema: z.ZodSchema<T>, data: unknown): {
+  isValid: boolean;
+  data?: T;
+  errors: string[];
+} {
+  const result = schema.safeParse(data);
+  if (result.success) {
+    return {
+      isValid: true,
+      data: result.data,
+      errors: [],
+    };
+  } else {
+    return {
+      isValid: false,
+      errors: result.error.issues.map(issue => issue.message),
+    };
+  }
+}
+
+// Alias for backward compatibility
+export const validateRequest = validateRequestBody;
+
+// Additional validation functions
+export function validateEmail(email: string): boolean {
+  return emailSchema.safeParse(email).success;
+}
+
+export function validateSearchQuery(query: string): boolean {
+  return searchQuerySchema.safeParse(query).success;
+}
+
+// Export all schemas for convenience
 export const schemas = {
-  dealSearch: {
-    q: validateSearchQuery,
-    location: (value: string) => value ? null : null, // Optional
-    cuisine: (value: string) => value ? null : null, // Optional
-    distance: (value: number) => value && value > 0 && value <= 100 ? null : 'Distance must be between 1 and 100 miles',
-    priceRange: (value: string) => value ? null : null, // Optional
-    rating: (value: number) => value && value >= 0 && value <= 5 ? null : 'Rating must be between 0 and 5'
-  }
-};
-
-// Generic request validation
-export const validateRequest = (schema: Record<string, (value: any) => string | null>, data: Record<string, any>): ValidationResult => {
-  return validateForm(data, schema);
+  dealSearch: dealSearchSchema,
+  createDeal: createDealSchema,
+  signup: signupSchema,
+  merchantSignup: merchantSignupSchema,
+  createVenue: createVenueSchema,
+  email: emailSchema,
+  phone: phoneSchema,
+  password: passwordSchema,
+  id: idSchema,
+  pagination: paginationSchema,
+  searchQuery: searchQuerySchema,
+  rateLimit: rateLimitSchema,
 };

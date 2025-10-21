@@ -39,9 +39,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ 
       merchant: {
         id: merchant.id,
-        businessName: merchant.businessName,
+        companyName: merchant.businessName,
         email: merchant.user.email,
-        kycStatus: merchant.kycStatus,
+        approved: merchant.kycStatus === 'APPROVED',
         venueCount: merchant.venues.length
       }
     });

@@ -1,12 +1,14 @@
 import { PrismaClient } from '@prisma/client';
 
-const globalForPrisma = global as unknown as { prisma?: PrismaClient };
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
 
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({
-  // Optimize for memory usage
-  log: process.env.NODE_ENV === 'development' ? ['error'] : ['error'],
+  log: ['error', 'warn'],
 });
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma;
-}
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+
+// Export as db for backward compatibility
+export const db = prisma;

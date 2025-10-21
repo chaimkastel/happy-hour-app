@@ -1,21 +1,24 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Heart, Menu, X, LogIn, LogOut, User, MapPin, Crosshair, Search, CreditCard, Building2, Brain, Compass } from 'lucide-react';
-import { SessionProvider } from 'next-auth/react';
+import Link from 'next/link';
+import { Moon, Sun, Heart, Menu, X, LogIn, LogOut, User, MapPin, Crosshair, Search, CreditCard, Building2, Brain, Compass, Bell, ChevronDown } from 'lucide-react';
+import { SessionProvider, useSession, signOut } from 'next-auth/react';
 import LocationSelector from '@/components/LocationSelector';
 import SkipToMain from '@/components/SkipToMain';
 import CookieConsent from '@/components/CookieConsent';
+import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import { AddressData } from '@/types/address';
 
 interface ClientLayoutProps {
   children: React.ReactNode;
 }
 
-export default function ClientLayout({ children }: ClientLayoutProps) {
+function LayoutContent({ children }: { children: React.ReactNode }) {
+  const { data: session, status } = useSession();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   // Header location control state
   const [locationQuery, setLocationQuery] = useState('');
@@ -34,6 +37,17 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
     // Load last location label for convenience
     const lastLocationLabel = localStorage.getItem('hh:lastLocationLabel');
     if (lastLocationLabel) setLocationQuery(lastLocationLabel);
+
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then((registration) => {
+          console.log('Service Worker registered successfully:', registration);
+        })
+        .catch((error) => {
+          console.error('Service Worker registration failed:', error);
+        });
+    }
   }, []);
 
   const toggleDarkMode = () => {
@@ -203,15 +217,14 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   };
 
   return (
-    <SessionProvider>
-      <div className={`min-h-screen transition-all duration-500 ${isHydrated && isDarkMode ? 'dark' : ''}`}>
+    <div className={`min-h-screen transition-all duration-500 ${isHydrated && isDarkMode ? 'dark' : ''}`}>
       <SkipToMain />
       {/* Professional Header */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200" role="banner">
         <div className="container">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <a href="/" className="flex items-center space-x-3">
+            <Link href="/" className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-amber-600 rounded-lg flex items-center justify-center">
                 <span className="text-white text-lg font-bold">🍺</span>
                 </div>
@@ -219,7 +232,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                 <h1 className="text-xl font-bold text-gray-900">Happy Hour</h1>
                 <p className="text-xs text-gray-500">Find deals near you</p>
               </div>
-            </a>
+            </Link>
 
             {/* Location Selector */}
             <div className="hidden md:flex items-center space-x-2 bg-gray-50 rounded-lg px-3 py-2">
@@ -229,39 +242,110 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
             {/* Navigation */}
             <nav className="hidden md:flex items-center space-x-1" role="navigation" aria-label="Main navigation">
-              <a href="/explore" className="nav-link" aria-label="Explore deals and restaurants">
+              <Link href="/explore" className="nav-link" aria-label="Explore deals and restaurants">
                 <Compass className="w-5 h-5 mr-2" aria-hidden="true" />
                   Explore
-                </a>
-              <a href="/favorites" className="nav-link" aria-label="View your favorite deals">
+                </Link>
+              <Link href="/favorites" className="nav-link" aria-label="View your favorite deals">
                 <Heart className="w-5 h-5 mr-2" aria-hidden="true" />
                   Favorites
-                </a>
-              <a href="/account" className="nav-link" aria-label="Account settings and profile">
+                </Link>
+              <Link href="/account" className="nav-link" aria-label="Account settings and profile">
                 <User className="w-5 h-5 mr-2" aria-hidden="true" />
                   Account
-                </a>
-              <a href="/wallet" className="nav-link" aria-label="View your wallet and redeemed deals">
+                </Link>
+              <Link href="/wallet" className="nav-link" aria-label="View your wallet and redeemed deals">
                 <CreditCard className="w-5 h-5 mr-2" aria-hidden="true" />
                   Wallet
-                </a>
+                </Link>
             </nav>
 
             {/* Auth & Merchant Access */}
             <div className="hidden md:flex items-center space-x-4">
               <div className="flex items-center space-x-1 bg-gray-50 rounded-lg px-3 py-2 border border-gray-200">
                 <Building2 className="w-4 h-4 text-gray-500" />
-                <a href="/merchant" className="text-sm font-medium text-gray-700 hover:text-amber-600 transition-colors">
+                <Link href="/merchant" className="text-sm font-medium text-gray-700 hover:text-amber-600 transition-colors">
                   For Restaurants
-                </a>
+                </Link>
               </div>
-              <a href="/login" className="btn-secondary">
-                Sign In
-              </a>
-              <a href="/signup" className="btn-primary">
-                Sign Up
-                        </a>
-                      </div>
+              
+              {status === 'authenticated' && session ? (
+                <>
+                  <Link href="/account" className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative">
+                    <Bell className="w-5 h-5 text-gray-600" />
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                  </Link>
+                  
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowUserMenu(!showUserMenu)}
+                      className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <User className="w-5 h-5 text-gray-600" />
+                      <span className="text-sm font-medium text-gray-700">
+                        {(session.user as any)?.firstName || 'User'}
+                      </span>
+                      <ChevronDown className="w-4 h-4 text-gray-500" />
+                    </button>
+                    
+                    {showUserMenu && (
+                      <>
+                        <div 
+                          className="fixed inset-0 z-40" 
+                          onClick={() => setShowUserMenu(false)}
+                        ></div>
+                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                          <Link
+                            href="/account"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                            onClick={() => setShowUserMenu(false)}
+                          >
+                            <User className="w-4 h-4 inline mr-2" />
+                            My Account
+                          </Link>
+                          <Link
+                            href="/favorites"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                            onClick={() => setShowUserMenu(false)}
+                          >
+                            <Heart className="w-4 h-4 inline mr-2" />
+                            Favorites
+                          </Link>
+                          <Link
+                            href="/wallet"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                            onClick={() => setShowUserMenu(false)}
+                          >
+                            <CreditCard className="w-4 h-4 inline mr-2" />
+                            Wallet
+                          </Link>
+                          <hr className="my-2" />
+                          <button
+                            onClick={() => {
+                              setShowUserMenu(false);
+                              signOut({ callbackUrl: '/' });
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                          >
+                            <LogOut className="w-4 h-4 inline mr-2" />
+                            Sign Out
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" className="btn-secondary">
+                    Sign In
+                  </Link>
+                  <Link href="/signup" className="btn-primary">
+                    Sign Up
+                  </Link>
+                </>
+              )}
+            </div>
 
             {/* Mobile Menu Button */}
               <button 
@@ -300,16 +384,16 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                 ].map((item) => {
                   const IconComponent = item.icon;
                   return (
-                    <a 
+                    <Link 
                       key={item.path}
-                      href={item.path}
+                      href={item.path as any}
                   onClick={() => setIsMobileMenuOpen(false)}
                       className="w-full text-left text-gray-600 py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors flex items-center"
                       aria-label={item.ariaLabel}
                     >
                       <IconComponent className="w-5 h-5 mr-3" aria-hidden="true" />
                       <span className="font-medium">{item.label}</span>
-                    </a>
+                    </Link>
                   );
                 })}
               </nav>
@@ -317,30 +401,54 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
               <div className="pt-4 border-t border-gray-200 space-y-3">
                 <div className="flex items-center justify-center space-x-2 bg-gray-50 rounded-lg px-4 py-3 border border-gray-200">
                   <Building2 className="w-4 h-4 text-gray-500" />
-                  <a
+                  <Link
                     href="/merchant"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={() => setIsMobileMenuOpen(false)}
                     className="text-sm font-medium text-gray-700 hover:text-amber-600 transition-colors"
-                >
+                  >
                     For Restaurants
-                </a>
+                  </Link>
                 </div>
-                <a 
-                  href="/login"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="w-full btn-secondary text-center py-2 px-4"
-                >
-                  Sign In
-                </a>
-                <a 
-                  href="/signup"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="w-full btn-primary text-center py-2 px-4"
-                >
-                  Sign Up
-                </a>
+                
+                {status === 'authenticated' && session ? (
+                  <>
+                    <div className="bg-gray-50 rounded-lg px-4 py-3 border border-gray-200">
+                      <p className="text-sm font-medium text-gray-700">
+                        {(session.user as any)?.firstName || 'User'}
+                      </p>
+                      <p className="text-xs text-gray-500">{session.user?.email}</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        signOut({ callbackUrl: '/' });
+                      }}
+                      className="w-full btn-secondary text-center py-2 px-4 text-red-600 border-red-300 hover:bg-red-50"
+                    >
+                      <LogOut className="w-4 h-4 inline mr-2" />
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link 
+                      href="/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="w-full btn-secondary text-center py-2 px-4"
+                    >
+                      Sign In
+                    </Link>
+                    <Link 
+                      href="/signup"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="w-full btn-primary text-center py-2 px-4"
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                )}
               </div>
-              </div>
+            </div>
           </div>
         )}
       </header>
@@ -357,10 +465,10 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
             <div className="footer-section">
               <h3 className="text-lg font-bold text-white mb-6">For Customers</h3>
               <div className="space-y-3">
-                <a href="/explore" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Explore Deals</a>
-                <a href="/favorites" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Favorites</a>
-                <a href="/account" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">My Account</a>
-                <a href="/wallet" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Wallet</a>
+                <Link href="/explore" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Explore Deals</Link>
+                <Link href="/favorites" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Favorites</Link>
+                <Link href="/account" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">My Account</Link>
+                <Link href="/wallet" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Wallet</Link>
               </div>
             </div>
 
@@ -368,10 +476,10 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
             <div className="footer-section">
               <h3 className="text-lg font-bold text-white mb-6">For Restaurants</h3>
               <div className="space-y-3">
-                <a href="/merchant/signup" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400 font-medium">List Your Restaurant</a>
-                <a href="/merchant" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Merchant Portal</a>
-                <a href="/merchant/pricing" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Pricing</a>
-                <a href="/contact" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Contact Sales</a>
+                <Link href="/merchant/signup" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400 font-medium">List Your Restaurant</Link>
+                <Link href="/merchant" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Merchant Portal</Link>
+                <Link href="/pricing" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Pricing</Link>
+                <Link href="/contact" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Contact Sales</Link>
               </div>
             </div>
 
@@ -379,10 +487,10 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
             <div className="footer-section">
               <h3 className="text-lg font-bold text-white mb-6">Company</h3>
               <div className="space-y-3">
-                <a href="/about" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">About Us</a>
-                <a href="/how-it-works" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">How It Works</a>
-                <a href="/faq" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">FAQ</a>
-                <a href="/contact" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Contact</a>
+                <Link href="/about" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">About Us</Link>
+                <Link href="/how-it-works" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">How It Works</Link>
+                <Link href="/faq" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">FAQ</Link>
+                <Link href="/contact" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Contact</Link>
               </div>
             </div>
 
@@ -390,9 +498,9 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
             <div className="footer-section">
               <h3 className="text-lg font-bold text-white mb-6">Legal</h3>
               <div className="space-y-3">
-                <a href="/privacy" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Privacy Policy</a>
-                <a href="/terms" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Terms of Service</a>
-                <a href="/cookies" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Cookie Policy</a>
+                <Link href="/privacy" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Privacy Policy</Link>
+                <Link href="/terms" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Terms of Service</Link>
+                <Link href="/cookies" className="block text-gray-300 hover:text-amber-400 transition-colors duration-200 focus:outline-none focus:text-amber-400">Cookie Policy</Link>
               </div>
             </div>
           </div>
@@ -464,12 +572,12 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
           {/* Brand & Copyright */}
           <div className="border-t border-gray-700 pt-8 text-center">
             <div className="flex items-center justify-center space-x-3 mb-4">
-              <a href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 rounded-lg">
+              <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-900 rounded-lg">
                 <div className="w-10 h-10 bg-amber-600 rounded-lg flex items-center justify-center">
                   <span className="text-white text-xl font-bold">🍺</span>
                 </div>
                 <span className="text-xl font-bold text-white">Happy Hour</span>
-              </a>
+              </Link>
             </div>
             <p className="text-gray-400 text-sm">
               © 2025 Happy Hour. All rights reserved.
@@ -480,7 +588,17 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
       {/* Cookie Consent */}
       <CookieConsent />
+      
+      {/* PWA Install Prompt */}
+      <PWAInstallPrompt />
     </div>
+  );
+}
+
+export default function ClientLayout({ children }: ClientLayoutProps) {
+  return (
+    <SessionProvider>
+      <LayoutContent>{children}</LayoutContent>
     </SessionProvider>
   );
 }

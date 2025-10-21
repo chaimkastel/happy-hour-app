@@ -1,111 +1,100 @@
 import { NextResponse } from 'next/server';
+import { ZodError } from 'zod';
+import { Prisma } from '@prisma/client';
 
 export interface ApiError {
-  error: string;
-  details?: any;
+  message: string;
+  status: number;
   code?: string;
-  timestamp?: string;
-}
-
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: string;
   details?: any;
-  code?: string;
-  timestamp?: string;
 }
 
 export class AppError extends Error {
-  public statusCode: number;
+  public status: number;
   public code?: string;
   public details?: any;
 
-  constructor(message: string, statusCode: number = 500, code?: string, details?: any) {
+  constructor(message: string, status: number = 500, code?: string, details?: any) {
     super(message);
-    this.statusCode = statusCode;
+    this.status = status;
     this.code = code;
     this.details = details;
     this.name = 'AppError';
   }
 }
 
-export function createErrorResponse(
-  error: string,
-  statusCode: number = 500,
-  code?: string,
-  details?: any
-): NextResponse {
-  const errorResponse: ApiError = {
-    error,
-    code,
-    details,
-    timestamp: new Date().toISOString()
-  };
-
-  // Log error for monitoring
-  console.error(`API Error [${statusCode}]:`, {
-    error,
-    code,
-    details,
-    timestamp: errorResponse.timestamp
-  });
-
-  return NextResponse.json(errorResponse, { status: statusCode });
-}
-
-export function createSuccessResponse<T>(
-  data: T,
-  statusCode: number = 200
-): NextResponse {
-  const response: ApiResponse<T> = {
-    success: true,
-    data,
-    timestamp: new Date().toISOString()
-  };
-
-  return NextResponse.json(response, { status: statusCode });
-}
-
 export function handleApiError(error: unknown): NextResponse {
+  console.error('API Error:', error);
+
+  // Zod validation errors
+  if (error instanceof ZodError) {
+    return NextResponse.json(
+      {
+        error: 'Validation failed',
+        details: error.issues.map(err => ({
+          field: err.path.join('.'),
+          message: err.message,
+        })),
+      },
+      { status: 400 }
+    );
+  }
+
+  // Prisma errors
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    switch (error.code) {
+      case 'P2002':
+        return NextResponse.json(
+          { error: 'A record with this information already exists' },
+          { status: 409 }
+        );
+      case 'P2025':
+        return NextResponse.json(
+          { error: 'Record not found' },
+          { status: 404 }
+        );
+      case 'P2003':
+        return NextResponse.json(
+          { error: 'Invalid reference to related record' },
+          { status: 400 }
+        );
+      default:
+        return NextResponse.json(
+          { error: 'Database operation failed' },
+          { status: 500 }
+        );
+    }
+  }
+
+  // Custom app errors
   if (error instanceof AppError) {
-    return createErrorResponse(
-      error.message,
-      error.statusCode,
-      error.code,
-      error.details
+    return NextResponse.json(
+      {
+        error: error.message,
+        code: error.code,
+        details: error.details,
+      },
+      { status: error.status }
     );
   }
 
+  // Generic errors
   if (error instanceof Error) {
-    // Log unexpected errors
-    console.error('Unexpected API Error:', {
-      message: error.message,
-      stack: error.stack,
-      timestamp: new Date().toISOString()
-    });
-
-    return createErrorResponse(
-      'An unexpected error occurred. Please try again.',
-      500,
-      'INTERNAL_ERROR'
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
     );
   }
 
-  // Handle non-Error objects
-  console.error('Unknown API Error:', {
-    error,
-    timestamp: new Date().toISOString()
-  });
-
-  return createErrorResponse(
-    'An unknown error occurred. Please try again.',
-    500,
-    'UNKNOWN_ERROR'
+  // Unknown errors
+  return NextResponse.json(
+    { error: 'An unexpected error occurred' },
+    { status: 500 }
   );
 }
 
-export function withErrorHandling<T extends any[], R>(
+// Utility function to wrap API handlers with error handling
+export function withErrorHandling<T extends any[]>(
   handler: (...args: T) => Promise<NextResponse>
 ) {
   return async (...args: T): Promise<NextResponse> => {
@@ -117,38 +106,41 @@ export function withErrorHandling<T extends any[], R>(
   };
 }
 
-// Common error codes
-export const ERROR_CODES = {
-  VALIDATION_ERROR: 'VALIDATION_ERROR',
-  AUTHENTICATION_ERROR: 'AUTHENTICATION_ERROR',
-  AUTHORIZATION_ERROR: 'AUTHORIZATION_ERROR',
-  NOT_FOUND: 'NOT_FOUND',
-  CONFLICT: 'CONFLICT',
-  RATE_LIMIT_EXCEEDED: 'RATE_LIMIT_EXCEEDED',
-  INTERNAL_ERROR: 'INTERNAL_ERROR',
-  DATABASE_ERROR: 'DATABASE_ERROR',
-  EXTERNAL_SERVICE_ERROR: 'EXTERNAL_SERVICE_ERROR',
-  INVALID_INPUT: 'INVALID_INPUT',
-  MISSING_REQUIRED_FIELD: 'MISSING_REQUIRED_FIELD',
-  INVALID_FORMAT: 'INVALID_FORMAT',
-  RESOURCE_NOT_FOUND: 'RESOURCE_NOT_FOUND',
-  DUPLICATE_RESOURCE: 'DUPLICATE_RESOURCE',
-  OPERATION_NOT_ALLOWED: 'OPERATION_NOT_ALLOWED'
-} as const;
-
-// Common HTTP status codes
-export const HTTP_STATUS = {
-  OK: 200,
-  CREATED: 201,
-  NO_CONTENT: 204,
-  BAD_REQUEST: 400,
-  UNAUTHORIZED: 401,
-  FORBIDDEN: 403,
-  NOT_FOUND: 404,
-  CONFLICT: 409,
-  UNPROCESSABLE_ENTITY: 422,
-  TOO_MANY_REQUESTS: 429,
-  INTERNAL_SERVER_ERROR: 500,
-  BAD_GATEWAY: 502,
-  SERVICE_UNAVAILABLE: 503
-} as const;
+// Common error responses
+export const ErrorResponses = {
+  unauthorized: () => NextResponse.json(
+    { error: 'Unauthorized' },
+    { status: 401 }
+  ),
+  forbidden: () => NextResponse.json(
+    { error: 'Forbidden' },
+    { status: 403 }
+  ),
+  notFound: (resource: string = 'Resource') => NextResponse.json(
+    { error: `${resource} not found` },
+    { status: 404 }
+  ),
+  badRequest: (message: string = 'Bad request') => NextResponse.json(
+    { error: message },
+    { status: 400 }
+  ),
+  conflict: (message: string = 'Conflict') => NextResponse.json(
+    { error: message },
+    { status: 409 }
+  ),
+  tooManyRequests: (retryAfter?: number) => NextResponse.json(
+    { error: 'Too many requests' },
+    { 
+      status: 429,
+      headers: retryAfter ? { 'Retry-After': retryAfter.toString() } : undefined,
+    }
+  ),
+  internalServerError: (message: string = 'Internal server error') => NextResponse.json(
+    { error: message },
+    { status: 500 }
+  ),
+  serviceUnavailable: (message: string = 'Service temporarily unavailable') => NextResponse.json(
+    { error: message },
+    { status: 503 }
+  ),
+};

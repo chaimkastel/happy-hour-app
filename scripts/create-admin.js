@@ -5,25 +5,27 @@ const prisma = new PrismaClient();
 
 async function createAdmin() {
   try {
-    // Check if admin already exists
-    const existingAdmin = await prisma.user.findFirst({
+    // Delete any existing user with the target email
+    console.log('Deleting existing user with email chaimkastel@hotmail.com...');
+    await prisma.user.deleteMany({
+      where: { email: 'chaimkastel@hotmail.com' }
+    });
+
+    // Delete existing admin users
+    console.log('Deleting existing admin users...');
+    await prisma.user.deleteMany({
       where: { role: 'ADMIN' }
     });
 
-    if (existingAdmin) {
-      console.log('Admin user already exists:', existingAdmin.email);
-      return;
-    }
-
-    // Create admin user
-    const hashedPassword = await bcrypt.hash('admin123!', 12);
+    // Create new admin user
+    const hashedPassword = await bcrypt.hash('CHAIMrox11!', 12);
     
     const admin = await prisma.user.create({
       data: {
-        email: 'admin@happyhour.com',
+        email: 'chaimkastel@hotmail.com',
         password: hashedPassword,
-        firstName: 'Admin',
-        lastName: 'User',
+        firstName: 'Chaim',
+        lastName: 'Kastel',
         phone: '+1234567890',
         role: 'ADMIN',
         emailVerified: true,
@@ -35,7 +37,7 @@ async function createAdmin() {
     });
 
     console.log('Admin user created successfully:', admin.email);
-    console.log('Password: admin123!');
+    console.log('Password: CHAIMrox11!');
   } catch (error) {
     console.error('Error creating admin user:', error);
   } finally {

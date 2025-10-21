@@ -19,13 +19,24 @@ export default function PasswordStrengthMeter({
   onChange,
   className = '' 
 }: PasswordStrengthMeterProps) {
-  const [strength, setStrength] = useState(calculatePasswordStrength(password));
+  const [strength, setStrength] = useState(() => {
+    const result = calculatePasswordStrength(password);
+    return {
+      ...result,
+      label: result.score <= 2 ? 'Weak' : result.score <= 4 ? 'Medium' : 'Strong',
+      color: result.score <= 2 ? 'text-red-600' : result.score <= 4 ? 'text-yellow-600' : 'text-green-600'
+    };
+  });
   const [validation, setValidation] = useState(validatePassword(password));
 
   useEffect(() => {
-    const newStrength = calculatePasswordStrength(password);
+    const result = calculatePasswordStrength(password);
     const newValidation = validatePassword(password);
-    setStrength(newStrength);
+    setStrength({
+      ...result,
+      label: result.score <= 2 ? 'Weak' : result.score <= 4 ? 'Medium' : 'Strong',
+      color: result.score <= 2 ? 'text-red-600' : result.score <= 4 ? 'text-yellow-600' : 'text-green-600'
+    });
     setValidation(newValidation);
   }, [password]);
 
@@ -107,7 +118,7 @@ export default function PasswordStrengthMeter({
       </div>
 
       {/* Error Messages */}
-      {validation.errors.length > 0 && (
+      {validation && !validation.isValid && (
         <div className="space-y-1">
           {validation.errors.map((error, index) => (
             <p key={index} className="text-sm text-red-600 flex items-center space-x-1">

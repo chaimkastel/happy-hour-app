@@ -1,33 +1,37 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const runtime = 'nodejs';
+
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const sessionData = useSession();
+  const { data: session, status } = sessionData || { data: null, status: 'loading' };
   const router = useRouter();
 
   useEffect(() => {
-    // Check admin authentication
-    if (typeof window !== 'undefined') {
-      const adminAuth = localStorage.getItem('admin-authenticated');
-      
-      if (adminAuth === 'true') {
-        setIsAuthenticated(true);
-      } else {
-        router.push('/admin-access');
-      }
-    }
-    
-    setLoading(false);
-  }, [router]);
+    if (status === 'loading') return; // Still loading
 
-  if (loading) {
+    if (!session?.user) {
+      router.push('/admin/login');
+      return;
+    }
+
+    if (session.user.role !== 'ADMIN') {
+      router.push('/admin/login');
+      return;
+    }
+  }, [session, status, router]);
+
+  if (status === 'loading') {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
         <div className="text-center">
@@ -38,7 +42,7 @@ export default function AdminLayout({
     );
   }
 
-  if (!isAuthenticated) {
+  if (!session?.user || session.user.role !== 'ADMIN') {
     return null; // Will redirect to login
   }
 

@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     
     let whereClause: any = {};
     if (status) {
-      whereClause.kycStatus = status;
+      whereClause.approved = status === 'approved';
     }
 
     // Get merchants with pending KYC status (these are new applications)
@@ -27,14 +27,16 @@ export async function GET(request: NextRequest) {
     const applications = merchants.map(merchant => ({
       id: merchant.id,
       businessName: merchant.businessName,
-      contactName: merchant.user.email.split('@')[0], // Fallback
+      contactName: merchant.user.firstName && merchant.user.lastName 
+        ? `${merchant.user.firstName} ${merchant.user.lastName}` 
+        : merchant.user.email.split('@')[0],
       email: merchant.user.email,
       phone: merchant.user.phone || 'Not provided',
       address: merchant.venues[0]?.address || 'Not provided',
-      businessType: merchant.venues[0]?.businessType || 'Restaurant',
+      businessType: 'Restaurant',
       description: `Business application for ${merchant.businessName}`,
       submittedAt: merchant.createdAt,
-      status: merchant.kycStatus,
+      status: merchant.kycStatus === 'APPROVED' ? 'approved' : 'pending',
       documents: {
         businessLicense: 'BL-' + merchant.id.slice(-6),
         taxId: 'TAX-' + merchant.id.slice(-9),
@@ -68,11 +70,11 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Update the merchant KYC status
+    // Update the merchant approval status
     const updatedMerchant = await prisma.merchant.update({
       where: { id: applicationId },
       data: {
-        kycStatus: status,
+        kycStatus: status === 'approved' ? 'APPROVED' : 'PENDING',
         updatedAt: new Date()
       },
       include: {
@@ -82,7 +84,7 @@ export async function PUT(request: NextRequest) {
     });
 
     // Log the admin action
-    console.log(`Admin action: Application ${applicationId} status changed to ${status}`, {
+    if (process.env.NODE_ENV !== 'production') console.log(`Admin action: Application ${applicationId} status changed to ${status}`, {
       adminNotes,
       timestamp: new Date().toISOString()
     });
@@ -93,7 +95,7 @@ export async function PUT(request: NextRequest) {
       application: {
         id: updatedMerchant.id,
         businessName: updatedMerchant.businessName,
-        status: updatedMerchant.kycStatus,
+        status: updatedMerchant.kycStatus === 'APPROVED' ? 'approved' : 'pending',
         email: updatedMerchant.user.email
       }
     });

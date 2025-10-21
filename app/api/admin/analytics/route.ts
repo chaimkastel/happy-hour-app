@@ -1,59 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get user location analytics
-    const userLocations = await prisma.user.findMany({
+    // Calculate total stats
+    const totalUsers = await db.user.count({ where: { role: 'USER' } });
+    const totalMerchants = await db.merchant.count();
+    const totalDeals = await db.deal.count();
+    const totalVouchers = await db.redemption.count();
+    const totalFavorites = await db.favorite.count();
+
+    // Recent activity (last 24 hours)
+    const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const recentUsers = await db.user.count({
       where: {
         role: 'USER',
-        location: { not: null }
-      },
-      select: {
-        location: true,
-        createdAt: true
+        createdAt: { gte: last24Hours }
       }
     });
-
-    // Process location data
-    const locationStats = userLocations.reduce((acc, user) => {
-      if (user.location) {
-        const location = user.location;
-        if (!acc[location]) {
-          acc[location] = { count: 0, recent: 0 };
-        }
-        acc[location].count++;
-        
-        // Count recent users (last 30 days)
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        if (user.createdAt > thirtyDaysAgo) {
-          acc[location].recent++;
-        }
-      }
-      return acc;
-    }, {} as Record<string, { count: number; recent: number }>);
-
-    // Get redemption analytics by location
-    const redemptionsWithLocation = await prisma.redemption.findMany({
-      include: {
-        user: {
-          select: { location: true }
-        },
-        deal: {
-          include: {
-            venue: {
-              select: { name: true, address: true }
-            }
-          }
-        }
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 50
+    const recentVouchers = await db.redemption.count({
+      where: { createdAt: { gte: last24Hours } }
     });
 
     // Get deal performance by venue
-    const dealPerformance = await prisma.deal.findMany({
+    const dealPerformance = await db.deal.findMany({
       include: {
         venue: {
           select: { name: true, address: true }
@@ -61,31 +31,16 @@ export async function GET(request: NextRequest) {
         _count: {
           select: { redemptions: true }
         }
-      }
-    });
-
-    // Get user growth over time
-    const userGrowth = await prisma.user.groupBy({
-      by: ['createdAt'],
-      where: {
-        role: 'USER',
-        createdAt: {
-          gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
-        }
       },
-      _count: {
-        id: true
-      },
-      orderBy: {
-        createdAt: 'asc'
-      }
+      orderBy: { createdAt: 'desc' },
+      take: 20
     });
 
     // Get merchant analytics
-    const merchantStats = await prisma.merchant.findMany({
+    const merchantStats = await db.merchant.findMany({
       include: {
         user: {
-          select: { location: true, createdAt: true }
+          select: { firstName: true, lastName: true, email: true, createdAt: true }
         },
         venues: {
           include: {
@@ -101,68 +56,38 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // Calculate total stats
-    const totalUsers = await prisma.user.count({ where: { role: 'USER' } });
-    const totalMerchants = await prisma.merchant.count();
-    const totalDeals = await prisma.deal.count();
-    const totalRedemptions = await prisma.redemption.count();
-    const totalFavorites = 0; // Favorite model not implemented yet
-
-    // Recent activity (last 24 hours)
-    const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const recentUsers = await prisma.user.count({
-      where: {
-        role: 'USER',
-        createdAt: { gte: last24Hours }
-      }
-    });
-    const recentRedemptions = await prisma.redemption.count({
-      where: { createdAt: { gte: last24Hours } }
-    });
-
     return NextResponse.json({
       overview: {
         totalUsers,
         totalMerchants,
         totalDeals,
-        totalRedemptions,
+        totalVouchers,
         totalFavorites,
         recentUsers,
-        recentRedemptions
+        recentVouchers
       },
-      locationAnalytics: {
-        userLocations: locationStats,
-        topLocations: Object.entries(locationStats)
-          .sort(([,a], [,b]) => b.count - a.count)
-          .slice(0, 10)
-          .map(([location, stats]) => ({ location, ...stats }))
-      },
-      redemptionAnalytics: {
-        recentRedemptions: redemptionsWithLocation.slice(0, 20),
+      dealAnalytics: {
+        recentDeals: dealPerformance.slice(0, 10),
         dealPerformance: dealPerformance.map(deal => ({
           id: deal.id,
           title: deal.title,
           venue: deal.venue.name,
           venueAddress: deal.venue.address,
           redemptions: deal._count.redemptions,
-          favorites: 0, // Favorite model not implemented yet
-          status: deal.status
+          status: deal.status === 'ACTIVE' ? 'active' : 'inactive'
         }))
       },
       merchantAnalytics: merchantStats.map(merchant => ({
         id: merchant.id,
-        businessName: merchant.businessName,
-        location: merchant.user.location,
+        companyName: merchant.businessName,
+        contactEmail: merchant.user.email,
         venueCount: merchant.venues.length,
         totalDeals: merchant.venues.reduce((sum, venue) => sum + venue.deals.length, 0),
-        totalRedemptions: merchant.venues.reduce((sum, venue) => 
+        totalVouchers: merchant.venues.reduce((sum, venue) => 
           sum + venue.deals.reduce((dealSum, deal) => dealSum + deal._count.redemptions, 0), 0
         ),
-        kycStatus: merchant.kycStatus
-      })),
-      userGrowth: userGrowth.map(day => ({
-        date: day.createdAt.toISOString().split('T')[0],
-        count: day._count.id
+        subscriptionStatus: 'INACTIVE', // Simplified for now
+        approved: merchant.kycStatus === 'APPROVED'
       }))
     });
 

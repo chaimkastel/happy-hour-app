@@ -82,20 +82,32 @@ export default function SubscriptionTiers() {
         },
         body: JSON.stringify({ 
           plan: planId,
-          action: action
+          action: action,
+          returnUrl: window.location.href
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
+        
+        // If Stripe is configured, redirect to checkout
+        if (data.url) {
+          window.location.href = data.url;
+          return;
+        }
+        
+        // Otherwise, show success message for database-only subscription
         console.log('Subscription response:', data);
         setSelectedPlan(planId);
-        // You could show a success message here
+        alert(data.message || 'Subscription updated successfully!');
       } else {
-        console.error('Failed to subscribe');
+        const errorData = await response.json();
+        console.error('Failed to subscribe:', errorData);
+        alert(errorData.error || 'Failed to update subscription');
       }
     } catch (error) {
       console.error('Subscription error:', error);
+      alert('An error occurred while updating your subscription');
     } finally {
       setIsLoading(false);
     }

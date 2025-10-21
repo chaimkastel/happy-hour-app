@@ -45,7 +45,7 @@ export default function MobileExplorePage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const handleNavigation = (path: string) => {
-    router.push(path);
+    router.push(path as any);
     setShowMobileMenu(false);
   };
 

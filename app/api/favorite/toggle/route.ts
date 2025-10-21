@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { prisma } from '@/lib/db';
 import { authOptions } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 // POST /api/favorite/toggle - Toggle favorite status
 export async function POST(request: NextRequest) {
   try {
@@ -51,8 +53,7 @@ export async function POST(request: NextRequest) {
       await prisma.favorite.create({
         data: {
           userId: session.user.id,
-          dealId: dealId,
-          addedAt: new Date()
+          dealId: dealId
         }
       });
 

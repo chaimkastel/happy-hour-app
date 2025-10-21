@@ -8,13 +8,12 @@ async function main() {
   // Clear existing data
   console.log('🧹 Clearing existing data...')
   await prisma.redemption.deleteMany()
+  await prisma.favorite.deleteMany()
+  await prisma.newsletter.deleteMany()
+  await prisma.auditLog.deleteMany()
   await prisma.deal.deleteMany()
   await prisma.venue.deleteMany()
-  await prisma.merchantSettings.deleteMany()
-  await prisma.auditLog.deleteMany()
-  await prisma.settlement.deleteMany()
   await prisma.merchant.deleteMany()
-  await prisma.walletCard.deleteMany()
   await prisma.user.deleteMany()
 
   // Create sample users
@@ -23,8 +22,7 @@ async function main() {
     data: {
       email: 'merchant@happyhour.com',
       phone: '+1234567890',
-      role: 'MERCHANT',
-      preferredCities: '["Brooklyn", "Manhattan"]'
+      role: 'MERCHANT'
     }
   })
 
@@ -32,26 +30,7 @@ async function main() {
     data: {
       email: 'john@example.com',
       phone: '+1234567891',
-      role: 'USER',
-      preferredCities: '["Brooklyn"]'
-    }
-  })
-
-  const customer2 = await prisma.user.create({
-    data: {
-      email: 'sarah@example.com',
-      phone: '+1234567892',
-      role: 'USER',
-      preferredCities: '["Manhattan", "Brooklyn"]'
-    }
-  })
-
-  const customer3 = await prisma.user.create({
-    data: {
-      email: 'mike@example.com',
-      phone: '+1234567893',
-      role: 'USER',
-      preferredCities: '["Brooklyn"]'
+      role: 'USER'
     }
   })
 
@@ -61,109 +40,33 @@ async function main() {
     data: {
       userId: merchantUser.id,
       businessName: 'Brooklyn Eats Collective',
-      abnOrEIN: '12-3456789',
-      kycStatus: 'VERIFIED'
+      companyName: 'Brooklyn Eats Collective',
+      contactEmail: 'merchant@happyhour.com'
     }
   })
 
-  // Create venues
-  console.log('📍 Creating venues...')
-  const venue1 = await prisma.venue.create({
+  // Create venue
+  console.log('📍 Creating venue...')
+  const venue = await prisma.venue.create({
     data: {
       merchantId: merchant.id,
       name: 'The Local Tavern',
-      slug: 'local-tavern',
+      slug: 'the-local-tavern',
       address: '123 Bedford Ave, Brooklyn, NY 11211',
       latitude: 40.7182,
       longitude: -73.9581,
-      businessType: '["American", "Pub Food", "Craft Beer"]',
-      priceTier: 'MODERATE',
+      priceTier: 'MID_RANGE',
       hours: JSON.stringify({
-        monday: { open: '11:00', close: '23:00', closed: false },
-        tuesday: { open: '11:00', close: '23:00', closed: false },
-        wednesday: { open: '11:00', close: '23:00', closed: false },
-        thursday: { open: '11:00', close: '23:00', closed: false },
-        friday: { open: '11:00', close: '01:00', closed: false },
-        saturday: { open: '10:00', close: '01:00', closed: false },
-        sunday: { open: '10:00', close: '22:00', closed: false }
+        monday: { open: '11:00', close: '23:00' },
+        tuesday: { open: '11:00', close: '23:00' },
+        wednesday: { open: '11:00', close: '23:00' },
+        thursday: { open: '11:00', close: '23:00' },
+        friday: { open: '11:00', close: '01:00' },
+        saturday: { open: '10:00', close: '01:00' },
+        sunday: { open: '10:00', close: '22:00' }
       }),
       rating: 4.2,
-      photos: '["https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800", "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800"]',
-      isVerified: true
-    }
-  })
-
-  const venue2 = await prisma.venue.create({
-    data: {
-      merchantId: merchant.id,
-      name: 'Pizza Palace',
-      slug: 'pizza-palace',
-      address: '456 Grand St, Brooklyn, NY 11211',
-      latitude: 40.7156,
-      longitude: -73.9567,
-      businessType: '["Italian", "Pizza", "Pasta"]',
-      priceTier: 'BUDGET',
-      hours: JSON.stringify({
-        monday: { open: '12:00', close: '22:00', closed: false },
-        tuesday: { open: '12:00', close: '22:00', closed: false },
-        wednesday: { open: '12:00', close: '22:00', closed: false },
-        thursday: { open: '12:00', close: '22:00', closed: false },
-        friday: { open: '12:00', close: '23:00', closed: false },
-        saturday: { open: '12:00', close: '23:00', closed: false },
-        sunday: { open: '12:00', close: '21:00', closed: false }
-      }),
-      rating: 4.5,
-      photos: '["https://images.unsplash.com/photo-1513104890138-7c74966a5a99?w=800", "https://images.unsplash.com/photo-1565299624942-b28ea40c0df1?w=800"]',
-      isVerified: true
-    }
-  })
-
-  const venue3 = await prisma.venue.create({
-    data: {
-      merchantId: merchant.id,
-      name: 'Sushi Express',
-      slug: 'sushi-express',
-      address: '789 Lorimer St, Brooklyn, NY 11211',
-      latitude: 40.7168,
-      longitude: -73.9559,
-      businessType: '["Japanese", "Sushi", "Asian Fusion"]',
-      priceTier: 'PREMIUM',
-      hours: JSON.stringify({
-        monday: { open: '17:00', close: '22:00', closed: false },
-        tuesday: { open: '17:00', close: '22:00', closed: false },
-        wednesday: { open: '17:00', close: '22:00', closed: false },
-        thursday: { open: '17:00', close: '22:00', closed: false },
-        friday: { open: '17:00', close: '23:00', closed: false },
-        saturday: { open: '17:00', close: '23:00', closed: false },
-        sunday: { open: '17:00', close: '21:00', closed: false }
-      }),
-      rating: 4.7,
-      photos: '["https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=800", "https://images.unsplash.com/photo-1553621042-f6e147245754?w=800"]',
-      isVerified: true
-    }
-  })
-
-  const venue4 = await prisma.venue.create({
-    data: {
-      merchantId: merchant.id,
-      name: 'Craft Coffee Co.',
-      slug: 'craft-coffee',
-      address: '321 Metropolitan Ave, Brooklyn, NY 11211',
-      latitude: 40.7175,
-      longitude: -73.9573,
-      businessType: '["Coffee", "Breakfast", "Pastries"]',
-      priceTier: 'BUDGET',
-      hours: JSON.stringify({
-        monday: { open: '07:00', close: '18:00', closed: false },
-        tuesday: { open: '07:00', close: '18:00', closed: false },
-        wednesday: { open: '07:00', close: '18:00', closed: false },
-        thursday: { open: '07:00', close: '18:00', closed: false },
-        friday: { open: '07:00', close: '19:00', closed: false },
-        saturday: { open: '08:00', close: '19:00', closed: false },
-        sunday: { open: '08:00', close: '17:00', closed: false }
-      }),
-      rating: 4.3,
-      photos: '["https://images.unsplash.com/photo-1501339847302-ac426a4a7cce?w=800", "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800"]',
+      photos: JSON.stringify(["https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800"]),
       isVerified: true
     }
   })
@@ -172,217 +75,33 @@ async function main() {
   console.log('🎯 Creating deals...')
   const deal1 = await prisma.deal.create({
     data: {
-      venueId: venue1.id,
+      venueId: venue.id,
+      type: 'HAPPY_HOUR',
       title: 'Happy Hour Special',
-      description: '50% off all appetizers and $2 off craft beers during happy hour',
+      description: '50% off all drinks and appetizers',
       percentOff: 50,
-      startAt: new Date('2024-01-15T16:00:00Z'),
-      endAt: new Date('2024-12-31T19:00:00Z'),
+      originalPrice: 2000,
+      discountedPrice: 1000,
+      startAt: new Date(),
+      endAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+      conditions: JSON.stringify(['Valid for dine-in only']),
       maxRedemptions: 100,
-      redeemedCount: 0,
-      minSpend: 15.0,
-      inPersonOnly: true,
-      tags: '["Happy Hour", "Appetizers", "Beer"]',
-      status: 'LIVE'
+      perUserLimit: 1,
+      active: true,
+      priority: 1
     }
   })
 
-  const deal2 = await prisma.deal.create({
-    data: {
-      venueId: venue2.id,
-      title: 'Lunch Special',
-      description: 'Buy any large pizza, get a medium pizza free',
-      percentOff: 40,
-      startAt: new Date('2024-01-15T11:00:00Z'),
-      endAt: new Date('2024-12-31T15:00:00Z'),
-      maxRedemptions: 75,
-      redeemedCount: 0,
-      minSpend: 25.0,
-      inPersonOnly: false,
-      tags: '["Lunch", "Pizza", "BOGO"]',
-      status: 'LIVE'
-    }
-  })
-
-  const deal3 = await prisma.deal.create({
-    data: {
-      venueId: venue3.id,
-      title: 'Early Bird Special',
-      description: '30% off all rolls and 20% off sake before 7 PM',
-      percentOff: 30,
-      startAt: new Date('2024-01-15T17:00:00Z'),
-      endAt: new Date('2024-12-31T19:00:00Z'),
-      maxRedemptions: 50,
-      redeemedCount: 0,
-      minSpend: 30.0,
-      inPersonOnly: true,
-      tags: '["Early Bird", "Sushi", "Sake"]',
-      status: 'LIVE'
-    }
-  })
-
-  const deal4 = await prisma.deal.create({
-    data: {
-      venueId: venue4.id,
-      title: 'Morning Boost',
-      description: 'Free pastry with any coffee purchase over $5',
-      percentOff: 25,
-      startAt: new Date('2024-01-15T07:00:00Z'),
-      endAt: new Date('2024-12-31T11:00:00Z'),
-      maxRedemptions: 120,
-      redeemedCount: 0,
-      minSpend: 5.0,
-      inPersonOnly: false,
-      tags: '["Breakfast", "Coffee", "Pastry"]',
-      status: 'LIVE'
-    }
-  })
-
-  const deal5 = await prisma.deal.create({
-    data: {
-      venueId: venue1.id,
-      title: 'Weekend Brunch',
-      description: '25% off all brunch items and $5 mimosas',
-      percentOff: 25,
-      startAt: new Date('2024-01-15T10:00:00Z'),
-      endAt: new Date('2024-12-31T15:00:00Z'),
-      maxRedemptions: 60,
-      redeemedCount: 0,
-      minSpend: 20.0,
-      inPersonOnly: true,
-      tags: '["Brunch", "Weekend", "Mimosas"]',
-      status: 'LIVE'
-    }
-  })
-
-  const deal6 = await prisma.deal.create({
-    data: {
-      venueId: venue2.id,
-      title: 'Family Night',
-      description: 'Kids eat free with any adult entree purchase',
-      percentOff: 100,
-      startAt: new Date('2024-01-15T17:00:00Z'),
-      endAt: new Date('2024-12-31T20:00:00Z'),
-      maxRedemptions: 40,
-      redeemedCount: 0,
-      minSpend: 18.0,
-      inPersonOnly: true,
-      tags: '["Family", "Kids", "Dinner"]',
-      status: 'LIVE'
-    }
-  })
-
-  // Create merchant settings
-  console.log('⚙️ Creating merchant settings...')
-  await prisma.merchantSettings.create({
-    data: {
-      merchantId: merchant.id,
-      businessHours: JSON.stringify({
-        monday: { open: '11:00', close: '23:00', closed: false },
-        tuesday: { open: '11:00', close: '23:00', closed: false },
-        wednesday: { open: '11:00', close: '23:00', closed: false },
-        thursday: { open: '11:00', close: '23:00', closed: false },
-        friday: { open: '11:00', close: '01:00', closed: false },
-        saturday: { open: '10:00', close: '01:00', closed: false },
-        sunday: { open: '10:00', close: '22:00', closed: false }
-      }),
-      quietWindows: JSON.stringify([
-        {
-          startTime: '14:00',
-          endTime: '16:00',
-          days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
-          reason: 'Afternoon lull period'
-        }
-      ]),
-      defaultRules: JSON.stringify({
-        maxDealDuration: 30,
-        minDealPercentOff: 10,
-        maxDealPercentOff: 50,
-        requireMinSpend: true,
-        defaultMinSpend: 15.0,
-        autoPauseExpired: true,
-        allowDineInOnly: true,
-        allowTakeaway: true
-      }),
-      notifications: JSON.stringify({
-        email: true,
-        sms: false,
-        dealExpiryReminder: true,
-        lowInventoryAlert: true,
-        weeklyReport: true
-      }),
-      payoutSettings: JSON.stringify({
-        autoPayout: true,
-        payoutThreshold: 100.0,
-        payoutSchedule: 'WEEKLY',
-        payoutDay: 1
-      })
-    }
-  })
-
-  // Create sample redemptions
-  console.log('🎫 Creating sample redemptions...')
-  await prisma.redemption.create({
-    data: {
-      dealId: deal1.id,
-      userId: customer1.id,
-      status: 'CLAIMED',
-      code: 'HH001-ABC123',
-      expiresAt: new Date('2024-12-31T23:59:59Z')
-    }
-  })
-
-  await prisma.redemption.create({
-    data: {
-      dealId: deal2.id,
-      userId: customer2.id,
-      status: 'SCANNED',
-      code: 'HH002-DEF456',
-      expiresAt: new Date('2024-12-31T23:59:59Z')
-    }
-  })
-
-  await prisma.redemption.create({
-    data: {
-      dealId: deal3.id,
-      userId: customer3.id,
-      status: 'PAID',
-      code: 'HH003-GHI789',
-      expiresAt: new Date('2024-12-31T23:59:59Z')
-    }
-  })
-
-  // Create audit logs
-  console.log('📝 Creating audit logs...')
-  await prisma.auditLog.create({
-    data: {
-      merchantId: merchant.id,
-      entityType: 'VENUE',
-      entityId: venue1.id,
-      action: 'CREATE',
-      changes: JSON.stringify({ name: 'The Local Tavern', address: '123 Bedford Ave' }),
-      metadata: JSON.stringify({ userAgent: 'Seed Script', ip: '127.0.0.1' })
-    }
-  })
-
-  await prisma.auditLog.create({
-    data: {
-      merchantId: merchant.id,
-      entityType: 'DEAL',
-      entityId: deal1.id,
-      action: 'CREATE',
-      changes: JSON.stringify({ title: 'Happy Hour Special', percentOff: 50 }),
-      metadata: JSON.stringify({ userAgent: 'Seed Script', ip: '127.0.0.1' })
-    }
-  })
-
-  console.log('✅ Production seed completed successfully!')
-  console.log(`📊 Created: ${await prisma.user.count()} users, ${await prisma.venue.count()} venues, ${await prisma.deal.count()} deals`)
+  console.log('✅ Production seed completed!')
+  console.log(`Created ${await prisma.user.count()} users`)
+  console.log(`Created ${await prisma.merchant.count()} merchants`)
+  console.log(`Created ${await prisma.venue.count()} venues`)
+  console.log(`Created ${await prisma.deal.count()} deals`)
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Seed failed:', e)
+    console.error(e)
     process.exit(1)
   })
   .finally(async () => {

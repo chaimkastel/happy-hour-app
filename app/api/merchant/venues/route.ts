@@ -2,90 +2,124 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { rateLimit, createRateLimitResponse } from '@/lib/rate-limit';
+import { logAuditEvent, AUDIT_ACTIONS } from '@/lib/audit';
+import { z } from 'zod';
+
+export const dynamic = 'force-dynamic';
+
+const venueRateLimit = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  maxRequests: 20,
+});
+
+const VenueSchema = z.object({
+  name: z.string().min(1).max(100),
+  address: z.string().min(1).max(200),
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  timezone: z.string().default('America/New_York'),
+  hours: z.record(z.string(), z.object({
+    open: z.string().regex(/^\d{2}:\d{2}$/),
+    close: z.string().regex(/^\d{2}:\d{2}$/),
+  })).optional(),
+  priceTier: z.enum(['BUDGET', 'MID_RANGE', 'PREMIUM', 'LUXURY']).default('MID_RANGE'),
+  photos: z.array(z.string().url()).optional().default([]),
+});
 
 export async function GET(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user || session.user.role !== 'MERCHANT') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const merchant = await prisma.merchant.findUnique({
+      where: { userId: session.user.id },
+    });
+
+    if (!merchant) {
+      return NextResponse.json({ error: 'Merchant not found' }, { status: 404 });
     }
 
-    // Check if user has merchant or admin role
-    if (session.user.role !== 'MERCHANT' && session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    // Get merchant's venues
     const venues = await prisma.venue.findMany({
-      where: { merchantId: session.user.id },
-      include: {
-        deals: {
-          select: {
-            id: true,
-            title: true,
-            percentOff: true,
-            status: true,
-            startAt: true,
-            endAt: true
-          }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
+      where: { merchantId: merchant.id },
+      orderBy: { createdAt: 'desc' },
     });
 
     return NextResponse.json({ venues });
   } catch (error) {
-    console.error('Error fetching merchant venues:', error);
-    return NextResponse.json({ error: 'Failed to fetch venues' }, { status: 500 });
+    console.error('Get venues error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch venues' },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user || session.user.role !== 'MERCHANT') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Rate limiting
+  const rateLimitResult = await venueRateLimit(request);
+  if (!rateLimitResult.success) {
+    return createRateLimitResponse(
+      rateLimitResult.remaining,
+      rateLimitResult.resetTime || Date.now() + 15 * 60 * 1000
+    );
+  }
+
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const merchant = await prisma.merchant.findUnique({
+      where: { userId: session.user.id },
+    });
+
+    if (!merchant) {
+      return NextResponse.json({ error: 'Merchant not found' }, { status: 404 });
     }
 
-    // Check if user has merchant or admin role
-    if (session.user.role !== 'MERCHANT' && session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    // Check subscription status
+    if (merchant.subscriptionStatus !== 'ACTIVE') {
+      return NextResponse.json({ 
+        error: 'Active subscription required to create venues' 
+      }, { status: 403 });
     }
 
     const body = await request.json();
-    const { name, address, latitude, longitude, businessType, priceTier, hours, photos } = body;
+    const venueData = VenueSchema.parse(body);
 
-    // Validate required fields
-    if (!name || !address || !latitude || !longitude) {
-      return NextResponse.json({ error: 'Name, address, and coordinates are required' }, { status: 400 });
-    }
-
-    // Generate slug from name
-    const slug = name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '') + '-' + Date.now();
-
-    // Create venue
     const venue = await prisma.venue.create({
       data: {
-        merchantId: session.user.id,
-        name,
-        slug,
-        address,
-        latitude: parseFloat(latitude),
-        longitude: parseFloat(longitude),
-        businessType: businessType || '[]',
-        priceTier: priceTier || 'MODERATE',
-        hours: hours || '{}',
-        photos: photos || '[]',
-        isVerified: false
-      }
+        merchantId: merchant.id,
+        ...venueData,
+        slug: venueData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+        hours: JSON.stringify(venueData.hours || {}),
+        photos: JSON.stringify(venueData.photos || []),
+      },
+    });
+
+    await logAuditEvent({
+      actorUserId: session.user.id,
+      action: AUDIT_ACTIONS.MERCHANT_CREATE_VENUE,
+      entity: 'venue',
+      entityId: venue.id,
+      metadata: { name: venue.name, address: venue.address },
     });
 
     return NextResponse.json({ venue }, { status: 201 });
   } catch (error) {
-    console.error('Error creating venue:', error);
-    return NextResponse.json({ error: 'Failed to create venue' }, { status: 500 });
+    console.error('Create venue error:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Invalid venue data', details: error.issues }, { status: 400 });
+    }
+    return NextResponse.json(
+      { error: 'Failed to create venue' },
+      { status: 500 }
+    );
   }
 }

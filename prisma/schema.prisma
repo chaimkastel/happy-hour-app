@@ -30,7 +30,10 @@ model User {
   redemptions     Redemption[]
   walletCard      WalletCard?
   adminAuditLogs  AdminAuditLog[] @relation("AdminAuditLogs")
+  auditLogs       AuditLog[]
   favorites       Favorite[]
+  abuseReports    AbuseReport[]
+  vouchers        Voucher[]
 
   @@map("users")
 }
@@ -60,26 +63,30 @@ model Venue {
 }
 
 model Merchant {
-  id              String            @id @default(cuid())
-  userId          String            @unique
-  businessName    String
-  firstName       String?
-  lastName        String?
-  businessAddress String?
-  cuisineType     String?
-  website         String?
-  abnOrEIN        String?
-  payoutAccountId String?
-  kycStatus       String            @default("PENDING")
-  termsAcceptedAt DateTime?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  auditLogs       AuditLog[]
-  settings        MerchantSettings?
-  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  settlements     Settlement[]
-  subscription    Subscription?
-  venues          Venue[]
+  id                String            @id @default(cuid())
+  userId            String            @unique
+  businessName      String
+  companyName       String?
+  firstName         String?
+  lastName          String?
+  contactEmail      String?
+  businessAddress   String?
+  cuisineType       String?
+  website           String?
+  abnOrEIN          String?
+  payoutAccountId   String?
+  kycStatus         String            @default("PENDING")
+  approved          Boolean           @default(false)
+  subscriptionStatus String           @default("TRIAL")
+  stripeCustomerId  String?
+  termsAcceptedAt   DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  settings          MerchantSettings?
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  settlements       Settlement[]
+  subscription      Subscription?
+  venues            Venue[]
 
   @@map("merchants")
 }
@@ -104,15 +111,22 @@ model Subscription {
 model Deal {
   id             String       @id @default(cuid())
   venueId        String
+  type           String       @default("HAPPY_HOUR")
   title          String
   description    String
   percentOff     Int
+  originalPrice  Float?
+  discountedPrice Float?
   startAt        DateTime
   endAt          DateTime
-  maxRedemptions Int
+  maxRedemptions Int?
   redeemedCount  Int          @default(0)
+  perUserLimit   Int          @default(1)
+  priority       Int          @default(0)
   minSpend       Float?
   inPersonOnly   Boolean      @default(true)
+  active         Boolean      @default(true)
+  conditions     String       @default("[]")
   tags           String       @default("[]")
   status         String       @default("DRAFT")
   createdAt      DateTime     @default(now())
@@ -120,9 +134,12 @@ model Deal {
   venue          Venue        @relation(fields: [venueId], references: [id], onDelete: Cascade)
   redemptions    Redemption[]
   favorites      Favorite[]
+  abuseReports   AbuseReport[]
+  vouchers       Voucher[]
 
   @@index([venueId, startAt, endAt])
   @@index([status])
+  @@index([active])
   @@map("deals")
 }
 
@@ -145,7 +162,9 @@ model Redemption {
   userId    String
   status    String   @default("CLAIMED")
   code      String   @unique
+  qrData    String?
   expiresAt DateTime
+  redeemedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -153,6 +172,44 @@ model Redemption {
 
   @@index([code])
   @@map("redemptions")
+}
+
+model IdempotencyKey {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  response  String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([key])
+  @@map("idempotency_keys")
+}
+
+model AbuseReport {
+  id          String   @id @default(cuid())
+  dealId      String
+  userId      String
+  reason      String
+  description String?
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deal        Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([dealId])
+  @@index([userId])
+  @@index([status])
+  @@map("abuse_reports")
+}
+
+model ProcessedEvent {
+  id          String   @id @default(cuid())
+  eventId     String   @unique
+  type        String
+  processedAt DateTime @default(now())
+
+  @@map("processed_events")
 }
 
 model DynamicPricingHint {
@@ -211,18 +268,15 @@ model MerchantSettings {
 }
 
 model AuditLog {
-  id         String   @id @default(cuid())
-  merchantId String
-  entityType String
-  entityId   String
-  action     String
-  changes    String   @default("{}")
-  metadata   String   @default("{}")
-  createdAt  DateTime @default(now())
-  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  id          String   @id @default(cuid())
+  actorUserId String?
+  action      String
+  entity      String
+  entityId    String
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now())
+  actor       User?    @relation(fields: [actorUserId], references: [id])
 
-  @@index([merchantId, entityType, createdAt])
-  @@index([entityType, entityId])
   @@map("audit_logs")
 }
 
@@ -256,5 +310,33 @@ model AdminNotification {
   @@index([type, createdAt])
   @@index([read, createdAt])
   @@map("admin_notifications")
+}
+
+model Newsletter {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  subscribed Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("newsletters")
+}
+
+model Voucher {
+  id        String   @id @default(cuid())
+  dealId    String
+  userId    String
+  code      String   @unique
+  status    String   @default("ACTIVE")
+  expiresAt DateTime
+  redeemedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([code])
+  @@index([userId])
+  @@map("vouchers")
 }
 // Force deployment with PostgreSQL schema - Thu Aug 28 12:45:10 EDT 2025

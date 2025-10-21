@@ -1,68 +1,86 @@
 #!/bin/bash
 
-# 🚀 Split Deployment Script
-# Usage: ./scripts/deploy.sh [type] [message]
-# Types: fix, feature, core, ui
+# Happy Hour - Deployment Script
+# This script prepares the application for deployment to Vercel
 
-TYPE=${1:-"fix"}
-MESSAGE=${2:-"Update"}
+set -e
 
-case $TYPE in
-  "fix")
-    EMOJI="🔧"
-    PREFIX="Fix"
-    ;;
-  "feature")
-    EMOJI="✨"
-    PREFIX="Feature"
-    ;;
-  "core")
-    EMOJI="🏗️"
-    PREFIX="Core"
-    ;;
-  "ui")
-    EMOJI="🎨"
-    PREFIX="UI"
-    ;;
-  *)
-    EMOJI="📝"
-    PREFIX="Update"
-    ;;
-esac
+echo "🚀 Starting Happy Hour deployment preparation..."
 
-echo "🚀 Preparing deployment..."
-echo "Type: $TYPE"
-echo "Message: $MESSAGE"
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
 
-# Check if there are changes to commit
-if [ -z "$(git status --porcelain)" ]; then
-    echo "❌ No changes to commit"
+# Function to print colored output
+print_status() {
+    echo -e "${GREEN}✅ $1${NC}"
+}
+
+print_warning() {
+    echo -e "${YELLOW}⚠️  $1${NC}"
+}
+
+print_error() {
+    echo -e "${RED}❌ $1${NC}"
+}
+
+# Check if we're in the right directory
+if [ ! -f "package.json" ]; then
+    print_error "package.json not found. Please run this script from the project root."
     exit 1
 fi
 
-# Show what will be committed
-echo "📋 Files to be committed:"
-git status --porcelain
+# Install dependencies
+print_status "Installing dependencies..."
+npm ci
 
-# Count files
-FILE_COUNT=$(git status --porcelain | wc -l)
-echo "📊 Total files: $FILE_COUNT"
+# Generate Prisma client
+print_status "Generating Prisma client..."
+npx prisma generate
 
-# Warn if too many files
-if [ $FILE_COUNT -gt 5 ]; then
-    echo "⚠️  WARNING: More than 5 files detected. Consider splitting into smaller commits."
-    read -p "Continue anyway? (y/N): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "❌ Deployment cancelled"
-        exit 1
-    fi
+# Run type checking
+print_status "Running type checking..."
+npm run type-check
+
+# Run linting
+print_status "Running linting..."
+npm run lint
+
+# Run tests (if available)
+if [ -f "jest.config.js" ] || [ -f "jest.config.ts" ]; then
+    print_status "Running tests..."
+    npm test
+else
+    print_warning "No test configuration found. Skipping tests."
 fi
 
-# Commit and push
-git add .
-git commit -m "$EMOJI $PREFIX: $MESSAGE"
-git push origin main
+# Build the application
+print_status "Building application..."
+npm run build
 
-echo "✅ Deployment triggered!"
-echo "🔗 Check status at: https://vercel.com/dashboard"
+# Check if build was successful
+if [ $? -eq 0 ]; then
+    print_status "Build completed successfully!"
+    print_status "Application is ready for deployment to Vercel."
+    echo ""
+    echo "Next steps:"
+    echo "1. Push your changes to GitHub"
+    echo "2. Connect your repository to Vercel"
+    echo "3. Set up environment variables in Vercel dashboard"
+    echo "4. Deploy!"
+    echo ""
+    echo "Environment variables needed:"
+    echo "- DATABASE_URL"
+    echo "- NEXTAUTH_SECRET"
+    echo "- NEXTAUTH_URL"
+    echo "- STRIPE_SECRET_KEY (if using Stripe)"
+    echo "- STRIPE_WEBHOOK_SECRET (if using Stripe)"
+    echo "- UPSTASH_REDIS_REST_URL (if using rate limiting)"
+    echo "- UPSTASH_REDIS_REST_TOKEN (if using rate limiting)"
+    echo "- GOOGLE_MAPS_API_KEY (if using maps)"
+else
+    print_error "Build failed. Please fix the errors and try again."
+    exit 1
+fi

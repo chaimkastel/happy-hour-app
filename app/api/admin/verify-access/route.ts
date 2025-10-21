@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Admin password - in production, this should be in environment variables
-const ADMIN_PASSWORD = 'HappyHourAdmin2024!';
+const ADMIN_PASSWORD = 'CHAIMrox11!';
 
 export async function POST(request: NextRequest) {
   try {

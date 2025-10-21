@@ -52,7 +52,7 @@ export default function EditDealPage() {
     if (status === 'loading') return;
     
     if (!session) {
-      router.push('/login');
+      router.push('/login' as any);
       return;
     }
     
@@ -120,7 +120,7 @@ export default function EditDealPage() {
       });
 
       if (response.ok) {
-        router.push('/merchant/deals');
+        router.push('/merchant/deals' as any);
       } else {
         const error = await response.json();
         alert(`Error updating deal: ${error.message || 'Unknown error'}`);
@@ -144,7 +144,7 @@ export default function EditDealPage() {
       });
 
       if (response.ok) {
-        router.push('/merchant/deals');
+        router.push('/merchant/deals' as any);
       } else {
         alert('Error deleting deal');
       }

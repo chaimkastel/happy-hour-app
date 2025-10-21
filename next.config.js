@@ -1,104 +1,70 @@
+const { withSentryConfig } = require('@sentry/nextjs');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable React strict mode
   reactStrictMode: true,
-  
-  // Optimize for production
-  output: 'standalone',
-  
-  // Domain redirects
-  async redirects() {
-    return [
-      {
-        source: '/:path*',
-        has: [
-          {
-            type: 'host',
-            value: 'orderhappyhour.com',
-          },
-        ],
-        destination: 'https://www.orderhappyhour.com/:path*',
-        permanent: true,
-      },
-    ];
+  swcMinify: true,
+  poweredByHeader: false,
+  experimental: { 
+    typedRoutes: true,
+    instrumentationHook: true,
   },
-  
-  // Reduce bundle size
-  experimental: {
-    optimizePackageImports: ['lucide-react', 'framer-motion'],
-  },
-  
-  // Compress images
+  productionBrowserSourceMaps: false,
   images: {
-    formats: ['image/webp', 'image/avif'],
-    minimumCacheTTL: 60,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
-  
-  // Security headers for production
   async headers() {
     return [
       {
         source: '/(.*)',
         headers: [
           {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains; preload'
-          },
-          {
             key: 'X-Frame-Options',
-            value: 'DENY'
+            value: 'DENY',
           },
           {
             key: 'X-Content-Type-Options',
-            value: 'nosniff'
+            value: 'nosniff',
           },
           {
             key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin'
+            value: 'origin-when-cross-origin',
           },
-          {
-            key: 'Permissions-Policy',
-            value: 'geolocation=(self), camera=(), microphone=()'
-          },
-          {
-            key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'none'; upgrade-insecure-requests;"
-          }
         ],
       },
     ];
   },
-  
-  // Reduce memory usage during build
-  webpack: (config, { dev, isServer }) => {
-    if (!dev && !isServer) {
-      // Optimize for production builds
-      config.optimization.splitChunks = {
-        chunks: 'all',
-        cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
-          },
-        },
-      };
-    }
+  webpack: (config, { isServer }) => {
+    // Exclude test files from the build
+    config.module.rules.push({
+      test: /\.(test|spec)\.(ts|tsx|js|jsx)$/,
+      loader: 'ignore-loader',
+    });
+    
+    // Exclude test directories
+    config.module.rules.push({
+      test: /test\/.*\.(ts|tsx|js|jsx)$/,
+      loader: 'ignore-loader',
+    });
     
     return config;
   },
-  
-  // Disable source maps in production to save space
-  productionBrowserSourceMaps: false,
-  
-  // Optimize CSS
-  swcMinify: true,
-  
-  // Reduce memory usage
-  onDemandEntries: {
-    maxInactiveAge: 25 * 1000,
-    pagesBufferLength: 2,
-  },
 };
 
-module.exports = nextConfig;
+module.exports = withSentryConfig(nextConfig, {
+  org: "chaim-kastel",
+  project: "javascript-nextjs",
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  hideSourceMaps: true,
+  disableLogger: true,
+  automaticVercelMonitors: true,
+  tunnelRoute: "/monitoring",
+});

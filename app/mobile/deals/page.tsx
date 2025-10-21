@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Search, Filter, MapPin, Clock, Star, Heart, Share2, ChevronDown } from 'lucide-react';
+import Image from 'next/image';
 
 interface Deal {
   id: string;
@@ -65,7 +66,7 @@ export default function MobileDealsPage() {
             rating: 4.5,
             distance: 0.8
           },
-          image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop',
+          image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=300&fit=crop',
           timeLeft: 45,
           isFavorite: false
         },
@@ -217,9 +218,11 @@ export default function MobileDealsPage() {
               <div key={deal.id} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                 <div className="flex gap-4">
                   <div className="relative">
-                    <img
+                    <Image
                       src={deal.image}
                       alt={deal.title}
+                      width={80}
+                      height={80}
                       className="w-20 h-20 rounded-lg object-cover"
                     />
                     <div className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full">

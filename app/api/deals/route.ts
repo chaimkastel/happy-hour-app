@@ -1,124 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { rateLimit, rateLimitConfigs } from '@/lib/rate-limit';
-import { validateRequest, schemas } from '@/lib/validation';
+import { fetchDeals, DealFilters } from '@/lib/server/deals';
+import { checkRateLimit } from '@/lib/rbac';
 
-// Force dynamic rendering for deals API
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    // Apply rate limiting
-    const rateLimitResult = rateLimit(request, rateLimitConfigs.api);
-    if (!rateLimitResult.success) {
-      return NextResponse.json(
-        { error: 'Too many requests. Please try again later.' },
-        { 
-          status: 429,
-          headers: {
-            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-            'X-RateLimit-Reset': rateLimitResult.resetTime.toString(),
-            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
-          }
-        }
-      );
-    }
+    // Check rate limiting
+    const rateLimitError = checkRateLimit(request);
+    if (rateLimitError) return rateLimitError;
 
     const { searchParams } = new URL(request.url);
     
-    // Validate input parameters
-    const validation = validateRequest(schemas.dealSearch, {
-      search: searchParams.get('search'),
-      limit: searchParams.get('limit'),
-      offset: searchParams.get('offset'),
-      cuisine: searchParams.get('cuisine'),
-      maxDistance: searchParams.get('maxDistance'),
-      minDiscount: searchParams.get('minDiscount'),
-      openNow: searchParams.get('openNow')
-    });
-
-    if (!validation.isValid) {
-      return NextResponse.json(
-        { error: 'Invalid parameters', details: validation.errors },
-        { status: 400 }
-      );
-    }
-
-    const { search, limit, offset, cuisine, maxDistance, minDiscount, openNow } = {
-      search: searchParams.get('search') || '',
-      limit: parseInt(searchParams.get('limit') || '20'),
-      offset: parseInt(searchParams.get('offset') || '0'),
-      cuisine: searchParams.get('cuisine'),
-      maxDistance: searchParams.get('maxDistance'),
-      minDiscount: searchParams.get('minDiscount'),
-      openNow: searchParams.get('openNow')
+    // Parse query parameters
+    const filters: DealFilters = {
+      search: searchParams.get('search') || searchParams.get('q') || '',
+      cuisine: searchParams.get('cuisine') || '',
+      minDiscount: searchParams.get('minDiscount') || '',
+      openNow: searchParams.get('openNow') === 'true' || searchParams.get('openNow') === '1',
+      sortBy: (searchParams.get('sortBy') || searchParams.get('sort') || 'newest') as any,
+      limit: parseInt(searchParams.get('limit') || searchParams.get('take') || '20'),
+      offset: parseInt(searchParams.get('offset') || '0')
     };
 
-    // Build where clause
-    const where: any = {
-      status: 'LIVE'
-    };
+    // Fetch deals using server-side function
+    const result = await fetchDeals(filters);
 
-    if (search) {
-      where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { venue: { name: { contains: search, mode: 'insensitive' } } }
-      ];
-    }
-
-    if (cuisine) {
-      where.venue = {
-        ...where.venue,
-        businessType: { has: cuisine }
-      };
-    }
-
-    if (minDiscount && parseInt(minDiscount) > 0) {
-      where.percentOff = { gte: parseInt(minDiscount) };
-    }
-
-    // Get deals with pagination
-    const deals = await prisma.deal.findMany({
-      where,
-      include: {
-        venue: {
-          select: {
-            id: true,
-            name: true,
-            address: true,
-            businessType: true,
-            priceTier: true,
-            rating: true,
-            latitude: true,
-            longitude: true,
-            photos: true
-          }
-        }
-      },
-      orderBy: [
-        { createdAt: 'desc' }
-      ],
-      take: limit,
-      skip: offset
-    });
-
-    // Get total count
-    const total = await prisma.deal.count({ where });
-
-    return NextResponse.json({
-      deals,
-      total,
-      limit,
-      offset,
-      hasMore: offset + limit < total
-    });
+    return NextResponse.json(result);
 
   } catch (error) {
-    console.error('Error fetching deals:', error);
+    console.error('Error in deals API:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch deals' },
+      { 
+        error: 'Failed to fetch deals',
+        deals: [],
+        total: 0,
+        limit: 20,
+        offset: 0,
+        hasMore: false
+      },
       { status: 500 }
     );
   }

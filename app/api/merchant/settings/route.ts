@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 // Type assertion for session
 type SessionWithUser = {
   user: {
@@ -20,10 +22,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get the merchant settings for this user
+    // Get the merchant for this user
     const merchant = await prisma.merchant.findFirst({
-      where: { user: { email: session.user.email } },
-      include: { settings: true }
+      where: { user: { email: session.user.email } }
     });
 
     if (!merchant) {
@@ -31,11 +32,16 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ 
-      settings: merchant.settings || {},
+      settings: {
+        companyName: merchant.companyName,
+        contactEmail: merchant.contactEmail,
+        approved: merchant.approved,
+        subscriptionStatus: merchant.subscriptionStatus
+      },
       merchant: {
         id: merchant.id,
-        businessName: merchant.businessName,
-        kycStatus: merchant.kycStatus
+        companyName: merchant.companyName,
+        approved: merchant.approved
       }
     });
   } catch (error) {
@@ -54,7 +60,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { businessHours, quietWindows, defaultRules, notifications, payoutSettings } = body;
+    const { companyName, contactEmail } = body;
 
     // Get the merchant for this user
     const merchant = await prisma.merchant.findFirst({
@@ -65,27 +71,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Merchant not found' }, { status: 404 });
     }
 
-    // Update or create settings
-    const settings = await prisma.merchantSettings.upsert({
-      where: { merchantId: merchant.id },
-      update: {
-        businessHours: businessHours ? JSON.stringify(businessHours) : undefined,
-        quietWindows: quietWindows ? JSON.stringify(quietWindows) : undefined,
-        defaultRules: defaultRules ? JSON.stringify(defaultRules) : undefined,
-        notifications: notifications ? JSON.stringify(notifications) : undefined,
-        payoutSettings: payoutSettings ? JSON.stringify(payoutSettings) : undefined
-      },
-      create: {
-        merchantId: merchant.id,
-        businessHours: businessHours ? JSON.stringify(businessHours) : '{}',
-        quietWindows: quietWindows ? JSON.stringify(quietWindows) : '[]',
-        defaultRules: defaultRules ? JSON.stringify(defaultRules) : '{}',
-        notifications: notifications ? JSON.stringify(notifications) : '{}',
-        payoutSettings: payoutSettings ? JSON.stringify(payoutSettings) : '{}'
+    // Update merchant basic info
+    const updatedMerchant = await prisma.merchant.update({
+      where: { id: merchant.id },
+      data: {
+        companyName: companyName || merchant.companyName,
+        contactEmail: contactEmail || merchant.contactEmail
       }
     });
 
-    return NextResponse.json({ settings });
+    return NextResponse.json({ 
+      message: 'Settings updated successfully',
+      merchant: updatedMerchant
+    });
   } catch (error) {
     console.error('Error updating merchant settings:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

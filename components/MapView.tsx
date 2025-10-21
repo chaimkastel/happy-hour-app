@@ -83,12 +83,12 @@ export default function MapView({ deals, onDealSelect, className = '' }: MapView
     }
   }, []);
 
-  // Generate mock coordinates for deals if not provided
-  const dealsWithCoordinates = deals.map((deal, index) => ({
+  // Use actual coordinates from venue data
+  const dealsWithCoordinates = deals.map((deal) => ({
     ...deal,
-    coordinates: deal.coordinates || {
-      lat: deal.venue.latitude || defaultLocation.lat + (Math.random() - 0.5) * 0.02,
-      lng: deal.venue.longitude || defaultLocation.lng + (Math.random() - 0.5) * 0.02
+    coordinates: {
+      lat: deal.venue.latitude || defaultLocation.lat,
+      lng: deal.venue.longitude || defaultLocation.lng
     }
   }));
 

@@ -22,41 +22,8 @@ interface Deal {
   validUntil?: string;
 }
 
-// Mock data
-const mockDeals: Deal[] = [
-  {
-    id: '1',
-    title: 'Happy Hour Special',
-    description: '50% off all drinks and appetizers during happy hour',
-    percentOff: 50,
-    venue: {
-      name: 'The Local Pub',
-      address: '123 Main St, Downtown'
-    },
-    distance: '0.3 mi',
-    rating: 4.5,
-    isOpen: true,
-    category: 'Drinks',
-    validUntil: '7:00 PM'
-  },
-  {
-    id: '2',
-    title: 'Lunch Deal',
-    description: '30% off lunch entrees and sides',
-    percentOff: 30,
-    venue: {
-      name: 'Bella Vista',
-      address: '456 Oak Ave, Midtown'
-    },
-    distance: '0.7 mi',
-    rating: 4.2,
-    isOpen: true,
-    category: 'Food',
-    validUntil: '3:00 PM'
-  }
-];
-
-const recentSearches = ['sushi', 'happy hour', 'pizza', 'cocktails'];
+// No mock data - fetch from API
+const recentSearches: string[] = [];
 const trendingCuisines = ['Italian', 'Mexican', 'Asian', 'American', 'Mediterranean'];
 
 export default function MobileSearchPage() {
@@ -83,17 +50,25 @@ export default function MobileSearchPage() {
     setIsSearching(true);
     setShowSuggestions(false);
 
-    // Simulate API call
-    setTimeout(() => {
-      const filtered = mockDeals.filter(deal => 
-        deal.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        deal.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        deal.venue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        deal.category.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setResults(filtered);
-      setIsSearching(false);
-    }, 500);
+    // Search API call
+    const searchDeals = async () => {
+      try {
+        const response = await fetch(`/api/deals/search?q=${encodeURIComponent(searchQuery)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setResults(data.deals || []);
+        } else {
+          setResults([]);
+        }
+      } catch (error) {
+        console.error('Error searching deals:', error);
+        setResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    searchDeals();
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -188,14 +188,14 @@ export default function OwnerDashboard() {
             </div>
             <div className="flex space-x-3">
               <Link 
-                href="/owner/merchants"
+                href={"/owner/merchants" as any}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Manage Merchants
               </Link>
               <Link 
-                href="/owner/settings"
+                href={"/owner/settings" as any}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 <Settings className="w-4 h-4 mr-2" />
@@ -411,7 +411,7 @@ export default function OwnerDashboard() {
               <div className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Link 
-                    href="/owner/merchants"
+                    href={"/owner/merchants" as any}
                     className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
                   >
                     <Users className="h-6 w-6 text-indigo-600 mr-3" />
@@ -422,7 +422,7 @@ export default function OwnerDashboard() {
                   </Link>
 
                   <Link 
-                    href="/owner/analytics"
+                    href={"/owner/analytics" as any}
                     className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
                   >
                     <BarChart3 className="h-6 w-6 text-green-600 mr-3" />
@@ -433,7 +433,7 @@ export default function OwnerDashboard() {
                   </Link>
 
                   <Link 
-                    href="/owner/settings"
+                    href={"/owner/settings" as any}
                     className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
                   >
                     <Settings className="h-6 w-6 text-gray-600 mr-3" />
@@ -453,7 +453,7 @@ export default function OwnerDashboard() {
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-gray-900">Merchant Management</h2>
               <Link 
-                href="/owner/merchants"
+                href={"/owner/merchants" as any}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
               >
                 <Eye className="w-4 h-4 mr-2" />

@@ -1,491 +1,354 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import AuthGuard from '@/lib/auth-guard';
-import { 
-  CreditCard, 
-  Tag, 
-  Clock, 
-  MapPin, 
-  Star, 
-  CheckCircle, 
-  AlertCircle, 
-  Calendar,
-  DollarSign,
-  Building2,
-  RefreshCw
-} from 'lucide-react';
 import Link from 'next/link';
+import { CreditCard, QrCode, Clock, CheckCircle, XCircle, Star } from 'lucide-react';
 
-interface Deal {
+interface Voucher {
   id: string;
-  title: string;
-  description: string;
-  percentOff: number;
-  startAt: string;
-  endAt: string;
-  maxRedemptions: number;
-  redeemedCount: number;
-  minSpend?: number;
-  inPersonOnly: boolean;
-  tags: string[];
-  status: string;
-  venue: {
+  code: string;
+  qrData: string;
+  status: 'ISSUED' | 'REDEEMED' | 'CANCELLED' | 'EXPIRED';
+  issuedAt: string;
+  expiresAt?: string;
+  redeemedAt?: string;
+  deal: {
     id: string;
-    name: string;
-    address: string;
-    rating: number;
-    latitude: number;
-    longitude: number;
-    photos: string[];
+    title: string;
+    description: string;
+    percentOff?: number;
+    originalPrice?: number;
+    discountedPrice?: number;
+    venue: {
+      name: string;
+      address: string;
+    };
   };
 }
 
-interface Redemption {
-  id: string;
-  dealId: string;
-  code: string;
-  expiresAt: string;
-  status: 'CLAIMED' | 'USED' | 'EXPIRED';
-  createdAt: string;
-  updatedAt: string;
-  deal: Deal;
-}
-
-interface WalletStats {
-  totalDeals: number;
-  activeDeals: number;
-  usedDeals: number;
-  expiredDeals: number;
-  totalSavings: number;
-}
-
 export default function WalletPage() {
+  const { data: session, status } = useSession();
   const router = useRouter();
-  const [redemptions, setRedemptions] = useState<Redemption[]>([]);
-  const [stats, setStats] = useState<WalletStats>({
-    totalDeals: 0,
-    activeDeals: 0,
-    usedDeals: 0,
-    expiredDeals: 0,
-    totalSavings: 0
-  });
+  const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'all' | 'active' | 'used' | 'expired'>('all');
+  const [activeTab, setActiveTab] = useState<'active' | 'redeemed' | 'expired'>('active');
 
   useEffect(() => {
-    fetchWalletData();
-  }, []);
+    if (status === 'unauthenticated') {
+      router.push('/login');
+      return;
+    }
 
-  const fetchWalletData = async () => {
+    if (status === 'authenticated') {
+      fetchVouchers();
+    }
+  }, [status, router]);
+
+  const fetchVouchers = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await fetch('/api/wallet/redemptions');
-      
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.push('/login');
-          return;
-        }
-        throw new Error('Failed to fetch wallet data');
+      const response = await fetch('/api/wallet/vouchers');
+      if (response.ok) {
+        const data = await response.json();
+        setVouchers(data.vouchers || []);
       }
-
-      const data = await response.json();
-      const fetchedRedemptions = data.redemptions || [];
-      
-      // Update expired deals
-      const now = new Date();
-      const updatedRedemptions = await Promise.all(
-        fetchedRedemptions.map(async (redemption: Redemption) => {
-          if (redemption.status === 'CLAIMED') {
-            const isExpired = new Date(redemption.expiresAt) < now;
-            if (isExpired) {
-              // Update status to expired
-              try {
-                await fetch('/api/wallet/redeem', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ redemptionId: redemption.id })
-                });
-              } catch (err) {
-                console.error('Error updating expired deal:', err);
-              }
-              return { ...redemption, status: 'EXPIRED' as const };
-            }
-          }
-          return redemption;
-        })
-      );
-      
-      setRedemptions(updatedRedemptions);
-      
-      // Calculate stats
-      const totalDeals = updatedRedemptions.length;
-      const activeDeals = updatedRedemptions.filter(r => r.status === 'CLAIMED').length;
-      const usedDeals = updatedRedemptions.filter(r => r.status === 'USED').length;
-      const expiredDeals = updatedRedemptions.filter(r => r.status === 'EXPIRED').length;
-      
-      // Calculate total savings (simplified)
-      const totalSavings = updatedRedemptions.reduce((sum: number, r: Redemption) => {
-        if (r.status === 'USED') {
-          return sum + (r.deal.minSpend || 20) * (r.deal.percentOff / 100);
-        }
-        return sum;
-      }, 0);
-
-      setStats({
-        totalDeals,
-        activeDeals,
-        usedDeals,
-        expiredDeals,
-        totalSavings
-      });
-    } catch (err) {
-      console.error('Error fetching wallet data:', err);
-      setError('Failed to load wallet data. Please try again.');
-      setRedemptions([]);
-      setStats({
-        totalDeals: 0,
-        activeDeals: 0,
-        usedDeals: 0,
-        expiredDeals: 0,
-        totalSavings: 0
-      });
+    } catch (error) {
+      console.error('Error fetching vouchers:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRedeemDeal = async (redemptionId: string) => {
-    try {
-      const response = await fetch('/api/wallet/redeem', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ redemptionId })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to redeem deal');
-      }
-
-      // Refresh wallet data
-      await fetchWalletData();
-    } catch (err) {
-      console.error('Error redeeming deal:', err);
-      alert(err instanceof Error ? err.message : 'Failed to redeem deal. Please try again.');
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'ISSUED':
+        return <Clock className="w-5 h-5 text-blue-500" />;
+      case 'REDEEMED':
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case 'EXPIRED':
+        return <XCircle className="w-5 h-5 text-red-500" />;
+      default:
+        return <Clock className="w-5 h-5 text-gray-500" />;
     }
   };
 
-  const getTimeRemaining = (expiresAt: string): { hours: number; minutes: number } => {
-    const now = new Date();
-    const end = new Date(expiresAt);
-    const diff = end.getTime() - now.getTime();
-    
-    if (diff <= 0) return { hours: 0, minutes: 0 };
-    
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
-    return { hours, minutes };
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'ISSUED':
+        return 'Active';
+      case 'REDEEMED':
+        return 'Redeemed';
+      case 'EXPIRED':
+        return 'Expired';
+      default:
+        return 'Unknown';
+    }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'CLAIMED': return 'bg-green-100 text-green-800';
-      case 'USED': return 'bg-blue-100 text-blue-800';
-      case 'EXPIRED': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'ISSUED':
+        return 'text-blue-600 bg-blue-50';
+      case 'REDEEMED':
+        return 'text-green-600 bg-green-50';
+      case 'EXPIRED':
+        return 'text-red-600 bg-red-50';
+      default:
+        return 'text-gray-600 bg-gray-50';
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'CLAIMED': return <CheckCircle className="w-4 h-4" />;
-      case 'USED': return <CheckCircle className="w-4 h-4" />;
-      case 'EXPIRED': return <AlertCircle className="w-4 h-4" />;
-      default: return <Clock className="w-4 h-4" />;
+  const filteredVouchers = vouchers.filter(voucher => {
+    switch (activeTab) {
+      case 'active':
+        return voucher.status === 'ISSUED';
+      case 'redeemed':
+        return voucher.status === 'REDEEMED';
+      case 'expired':
+        return voucher.status === 'EXPIRED';
+      default:
+        return true;
     }
-  };
-
-  const filteredRedemptions = redemptions.filter(redemption => {
-    if (activeTab === 'all') return true;
-    if (activeTab === 'active') return redemption.status === 'CLAIMED';
-    return redemption.status === activeTab.toUpperCase();
   });
 
-  if (loading) {
+  if (status === 'loading' || loading) {
     return (
-      <AuthGuard>
-        <div className="min-h-screen bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="animate-pulse">
-              <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="h-24 bg-gray-200 rounded-lg"></div>
-                ))}
-              </div>
-              <div className="space-y-4">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </AuthGuard>
-    );
-  }
-
-  if (error) {
-    return (
-      <AuthGuard>
-        <div className="min-h-screen bg-white flex items-center justify-center">
-          <div className="text-center">
-            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong</h2>
-            <p className="text-gray-600 mb-4">{error}</p>
-            <button
-              onClick={fetchWalletData}
-              className="bg-amber-600 text-white px-6 py-2 rounded-lg hover:bg-amber-700 transition-colors"
-            >
-              Try Again
-            </button>
-          </div>
-        </div>
-      </AuthGuard>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      </div>
     );
   }
 
   return (
-    <AuthGuard>
-      <div className="min-h-screen bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Page Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">My Wallet</h1>
-              <p className="text-gray-600">Manage your deals and track your savings</p>
-            </div>
-            <button
-              onClick={fetchWalletData}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Refresh
-            </button>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center">
-                <Tag className="h-8 w-8 text-amber-600" />
-                <div className="ml-5">
-                  <dt className="text-sm font-medium text-gray-500">Total Deals</dt>
-                  <dd className="text-lg font-medium text-gray-900">{stats.totalDeals}</dd>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center">
-                <CheckCircle className="h-8 w-8 text-green-600" />
-                <div className="ml-5">
-                  <dt className="text-sm font-medium text-gray-500">Active Deals</dt>
-                  <dd className="text-lg font-medium text-gray-900">{stats.activeDeals}</dd>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center">
-                <CheckCircle className="h-8 w-8 text-blue-600" />
-                <div className="ml-5">
-                  <dt className="text-sm font-medium text-gray-500">Used Deals</dt>
-                  <dd className="text-lg font-medium text-gray-900">{stats.usedDeals}</dd>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center">
-                <DollarSign className="h-8 w-8 text-amber-600" />
-                <div className="ml-5">
-                  <dt className="text-sm font-medium text-gray-500">Total Savings</dt>
-                  <dd className="text-lg font-medium text-gray-900">${stats.totalSavings.toFixed(2)}</dd>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Filter Tabs */}
-          <div className="bg-white rounded-lg shadow-md mb-6">
-            <div className="border-b border-gray-200">
-              <nav className="flex space-x-8 px-6">
-                {[
-                  { id: 'all', label: 'All Deals', count: stats.totalDeals },
-                  { id: 'active', label: 'Active', count: stats.activeDeals },
-                  { id: 'used', label: 'Used', count: stats.usedDeals },
-                  { id: 'expired', label: 'Expired', count: stats.expiredDeals }
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
-                      activeTab === tab.id
-                        ? 'border-amber-500 text-amber-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    <span>{tab.label}</span>
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      activeTab === tab.id ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-600'
-                    }`}>
-                      {tab.count}
-                    </span>
-                  </button>
-                ))}
-              </nav>
-            </div>
-          </div>
-
-          {/* Deals List */}
-          {filteredRedemptions.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-lg shadow-md">
-              <CreditCard className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No deals in your wallet</h3>
-              <p className="text-gray-500 mb-6">
-                {activeTab === 'all' 
-                  ? "You haven't redeemed any deals yet. Visit Explore to claim your first deal and start saving!"
-                  : `No ${activeTab} deals found.`
-                }
-              </p>
-              {activeTab === 'all' && (
-                <div className="space-y-4">
-                  <Link 
-                    href="/explore"
-                    className="inline-flex items-center bg-amber-600 text-white px-6 py-3 rounded-lg hover:bg-amber-700 transition-colors font-medium"
-                  >
-                    <Tag className="w-4 h-4 mr-2" />
-                    Find Your First Deal
-                  </Link>
-                  <div className="text-sm text-gray-500">
-                    <p>💡 <strong>Tip:</strong> Look for deals marked with "Claim Deal" buttons</p>
-                    <p>🎯 Filter by "Near Me" to find deals close to you</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredRedemptions.map((redemption) => {
-                const timeRemaining = getTimeRemaining(redemption.expiresAt);
-                const isExpired = new Date(redemption.expiresAt) < new Date();
-                
-                return (
-                  <div key={redemption.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                    {/* Deal Header */}
-                    <div className="p-6 border-b border-gray-200">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center space-x-3">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(redemption.status)}`}>
-                            {getStatusIcon(redemption.status)}
-                            <span className="ml-1">{redemption.status}</span>
-                          </span>
-                          {redemption.status === 'CLAIMED' && !isExpired && (
-                            <span className="text-xs text-gray-500">
-                              {timeRemaining.hours}h {timeRemaining.minutes}m left
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-amber-600">{redemption.deal.percentOff}%</div>
-                          <div className="text-sm text-gray-500">OFF</div>
-                        </div>
-                      </div>
-                      
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">{redemption.deal.title}</h3>
-                      <p className="text-gray-600 text-sm mb-4">{redemption.deal.description}</p>
-                      
-                      {/* Tags */}
-                      {redemption.deal.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {redemption.deal.tags.slice(0, 3).map((tag, index) => (
-                            <span key={index} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Venue Info */}
-                    <div className="p-6">
-                      <div className="flex items-center space-x-3 mb-4">
-                        <Building2 className="h-5 w-5 text-gray-400" />
-                        <div>
-                          <h4 className="font-medium text-gray-900">{redemption.deal.venue.name}</h4>
-                          <div className="flex items-center space-x-2 text-sm text-gray-500">
-                            <MapPin className="w-4 h-4" />
-                            <span>{redemption.deal.venue.address}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center space-x-2">
-                          <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                          <span className="text-gray-600">{redemption.deal.venue.rating.toFixed(1)}</span>
-                        </div>
-                        {redemption.deal.minSpend && (
-                          <div className="text-gray-500">
-                            Min spend: ${redemption.deal.minSpend}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Redemption Details */}
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <div className="flex items-center justify-between text-sm text-gray-500">
-                          <div className="flex items-center space-x-2">
-                            <Calendar className="w-4 h-4" />
-                            <span>Claimed: {new Date(redemption.createdAt).toLocaleDateString()}</span>
-                          </div>
-                          {redemption.status === 'USED' && (
-                            <div className="flex items-center space-x-2">
-                              <CheckCircle className="w-4 h-4 text-green-500" />
-                              <span>Used: {new Date(redemption.updatedAt).toLocaleDateString()}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Action Buttons */}
-                      {redemption.status === 'CLAIMED' && !isExpired && (
-                        <div className="mt-4 pt-4 border-t border-gray-200">
-                          <button
-                            onClick={() => handleRedeemDeal(redemption.id)}
-                            className="w-full bg-amber-600 text-white py-2 px-4 rounded-lg hover:bg-amber-700 transition-colors font-medium flex items-center justify-center"
-                          >
-                            <Tag className="w-4 h-4 mr-2" />
-                            Use Deal
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <h1 className="text-2xl font-bold text-gray-900">My Wallet</h1>
+          <p className="text-gray-600 mt-1">Manage your vouchers and deals</p>
         </div>
       </div>
-    </AuthGuard>
+
+      {/* Empty State */}
+      {!loading && filteredVouchers.length === 0 && (
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="text-center">
+            <QrCode className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              {activeTab === 'active' ? 'No active vouchers' : 
+               activeTab === 'redeemed' ? 'No redeemed vouchers' : 
+               'No expired vouchers'}
+            </h3>
+            <p className="text-gray-500 mb-6">
+              {activeTab === 'active' ? 'Claim some deals to see your vouchers here.' :
+               activeTab === 'redeemed' ? 'Your redeemed vouchers will appear here.' :
+               'Expired vouchers will appear here.'}
+            </p>
+            {activeTab === 'active' && (
+              <Link
+                href="/explore"
+                className="inline-flex items-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+              >
+                Browse Deals
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <CreditCard className="w-6 h-6 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Active Vouchers</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {vouchers.filter(v => v.status === 'ISSUED').length}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-50 rounded-lg">
+                <CheckCircle className="w-6 h-6 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Redeemed</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {vouchers.filter(v => v.status === 'REDEEMED').length}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-orange-50 rounded-lg">
+                <Star className="w-6 h-6 text-orange-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Total Savings</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  ${vouchers
+                    .filter(v => v.status === 'REDEEMED' && v.deal.originalPrice && v.deal.discountedPrice)
+                    .reduce((total, v) => total + (v.deal.originalPrice! - v.deal.discountedPrice!), 0)
+                    .toFixed(2)}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="bg-white rounded-lg shadow-sm mb-6">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8 px-6">
+              <button
+                onClick={() => setActiveTab('active')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'active'
+                    ? 'border-orange-500 text-orange-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Active Vouchers ({vouchers.filter(v => v.status === 'ISSUED').length})
+              </button>
+              <button
+                onClick={() => setActiveTab('redeemed')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'redeemed'
+                    ? 'border-orange-500 text-orange-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Redeemed ({vouchers.filter(v => v.status === 'REDEEMED').length})
+              </button>
+              <button
+                onClick={() => setActiveTab('expired')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'expired'
+                    ? 'border-orange-500 text-orange-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Expired ({vouchers.filter(v => v.status === 'EXPIRED').length})
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        {/* Vouchers List */}
+        {filteredVouchers.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+            <CreditCard className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {activeTab === 'active' && 'No active vouchers'}
+              {activeTab === 'redeemed' && 'No redeemed vouchers'}
+              {activeTab === 'expired' && 'No expired vouchers'}
+            </h3>
+            <p className="text-gray-600 mb-6">
+              {activeTab === 'active' && 'Start exploring deals to claim your first voucher!'}
+              {activeTab === 'redeemed' && 'Your redeemed vouchers will appear here.'}
+              {activeTab === 'expired' && 'Your expired vouchers will appear here.'}
+            </p>
+            {activeTab === 'active' && (
+              <Link
+                href="/explore"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
+              >
+                Browse Deals
+              </Link>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredVouchers.map((voucher) => (
+              <div key={voucher.id} className="bg-white rounded-lg shadow-sm p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center mb-2">
+                      {getStatusIcon(voucher.status)}
+                      <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(voucher.status)}`}>
+                        {getStatusText(voucher.status)}
+                      </span>
+                    </div>
+                    
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                      {voucher.deal.title}
+                    </h3>
+                    
+                    <p className="text-gray-600 mb-2">
+                      {voucher.deal.description}
+                    </p>
+                    
+                    <div className="flex items-center text-sm text-gray-500 mb-3">
+                      <span className="font-medium">{voucher.deal.venue.name}</span>
+                      <span className="mx-2">•</span>
+                      <span>{voucher.deal.venue.address}</span>
+                    </div>
+
+                    {voucher.deal.percentOff && (
+                      <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800 mb-3">
+                        {voucher.deal.percentOff}% OFF
+                      </div>
+                    )}
+
+                    {voucher.deal.originalPrice && voucher.deal.discountedPrice && (
+                      <div className="flex items-center space-x-2 mb-3">
+                        <span className="text-lg font-bold text-green-600">
+                          ${(voucher.deal.discountedPrice / 100).toFixed(2)}
+                        </span>
+                        <span className="text-sm text-gray-500 line-through">
+                          ${(voucher.deal.originalPrice / 100).toFixed(2)}
+                        </span>
+                        <span className="text-sm text-green-600 font-medium">
+                          Save ${((voucher.deal.originalPrice - voucher.deal.discountedPrice) / 100).toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="text-sm text-gray-500">
+                      <p>Code: <span className="font-mono font-medium">{voucher.code}</span></p>
+                      <p>Issued: {new Date(voucher.issuedAt).toLocaleDateString()}</p>
+                      {voucher.expiresAt && (
+                        <p>Expires: {new Date(voucher.expiresAt).toLocaleDateString()}</p>
+                      )}
+                      {voucher.redeemedAt && (
+                        <p>Redeemed: {new Date(voucher.redeemedAt).toLocaleDateString()}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {voucher.status === 'ISSUED' && (
+                    <div className="ml-6 flex flex-col items-center">
+                      <div className="bg-gray-100 p-4 rounded-lg mb-3">
+                        <QrCode className="w-12 h-12 text-gray-600" />
+                      </div>
+                      <button
+                        onClick={() => {
+                          // Copy code to clipboard
+                          navigator.clipboard.writeText(voucher.code);
+                          // You could add a toast notification here
+                        }}
+                        className="text-sm text-orange-600 hover:text-orange-700 font-medium"
+                      >
+                        Copy Code
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

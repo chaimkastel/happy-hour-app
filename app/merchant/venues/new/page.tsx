@@ -168,7 +168,7 @@ export default function NewVenuePage() {
       });
 
       if (response.ok) {
-        router.push('/merchant/venues');
+        router.push('/merchant/venues' as any);
       } else {
         const error = await response.json();
         console.error('Venue creation error:', error);
@@ -207,7 +207,7 @@ export default function NewVenuePage() {
                 <span className="text-yellow-400 font-bold text-sm">CREATE VENUE</span>
               </div>
               <h1 className="text-4xl md:text-5xl font-black text-white mb-2">
-                🏢 <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Add</span> New Venue
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Add</span> New Venue
               </h1>
               <p className="text-xl text-white/80">Create a new restaurant or business location with all the details!</p>
             </div>

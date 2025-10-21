@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -10,8 +12,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get user's redemptions with deal and venue info
-    const redemptions = await prisma.redemption.findMany({
+    // Get user's vouchers with deal and venue info
+    const vouchers = await prisma.redemption.findMany({
       where: { userId: session.user.id },
       include: {
         deal: {
@@ -23,7 +25,7 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ deals: redemptions });
+    return NextResponse.json({ deals: vouchers });
   } catch (error) {
     console.error('Error fetching account deals:', error);
     return NextResponse.json({ error: 'Failed to fetch deals' }, { status: 500 });

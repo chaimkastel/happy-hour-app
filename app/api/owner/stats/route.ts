@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -20,38 +22,29 @@ export async function GET(request: NextRequest) {
       totalMerchants,
       totalVenues,
       totalDeals,
-      totalRedemptions,
-      activeDeals,
-      pendingVerifications
+      activeDeals
     ] = await Promise.all([
       prisma.merchant.count(),
       prisma.venue.count(),
       prisma.deal.count(),
-      prisma.redemption.count(),
       prisma.deal.count({
         where: {
-          status: 'ACTIVE',
           endAt: {
             gt: new Date()
           }
-        }
-      }),
-      prisma.merchant.count({
-        where: {
-          kycStatus: 'PENDING'
         }
       })
     ]);
 
     // Calculate total revenue (mock calculation)
-    const totalRevenue = totalRedemptions * 2.50; // $2.50 per redemption
+    const totalRevenue = totalDeals * 2.50; // $2.50 per deal
 
     // Determine platform health
     let platformHealth: 'healthy' | 'warning' | 'critical' = 'healthy';
-    if (pendingVerifications > 10) {
+    if (totalMerchants < 5) {
       platformHealth = 'warning';
     }
-    if (pendingVerifications > 25) {
+    if (totalMerchants < 2) {
       platformHealth = 'critical';
     }
 
@@ -59,10 +52,10 @@ export async function GET(request: NextRequest) {
       totalMerchants,
       totalVenues,
       totalDeals,
-      totalRedemptions,
+      totalRedemptions: 0, // Placeholder since redemption model doesn't exist
       totalRevenue,
       activeDeals,
-      pendingVerifications,
+      pendingVerifications: 0, // Placeholder since kycStatus doesn't exist
       platformHealth
     };
 

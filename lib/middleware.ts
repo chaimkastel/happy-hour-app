@@ -25,7 +25,7 @@ export function withMiddleware(
       // Rate limiting
       if (config.rateLimit) {
         const rateLimiter = createRateLimiter(config.rateLimit)
-        const rateLimitResult = rateLimiter(req)
+        const rateLimitResult = await rateLimiter(req)
         
         if (!rateLimitResult.success) {
           return NextResponse.json(
@@ -52,7 +52,7 @@ export function withMiddleware(
         if (config.validation.validateBody && req.method !== 'GET') {
           try {
             const body = await req.json()
-            const validation = validateForm(body, config.validation.schema)
+            const validation = validateForm(config.validation.schema, body)
             if (!validation.isValid) {
               return NextResponse.json(
                 { error: 'Validation failed', details: validation.errors }, 
@@ -69,7 +69,7 @@ export function withMiddleware(
 
         if (config.validation.validateQuery) {
           const queryParams = Object.fromEntries(req.nextUrl.searchParams.entries())
-          const validation = validateForm(queryParams, config.validation.schema)
+          const validation = validateForm(config.validation.schema, queryParams)
           if (!validation.isValid) {
             return NextResponse.json(
               { error: 'Invalid query parameters', details: validation.errors }, 

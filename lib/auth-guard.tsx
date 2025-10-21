@@ -27,7 +27,7 @@ export default function AuthGuard({
 
     if (!session) {
       // Not authenticated, redirect to login
-      router.push(`${redirectTo}?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
+      router.push(`${redirectTo}?callbackUrl=${encodeURIComponent(window.location.pathname)}` as any);
       return;
     }
 
@@ -38,7 +38,7 @@ export default function AuthGuard({
       } else if (requiredRole === 'ADMIN') {
         router.push('/admin-access?message=Admin access required');
       } else {
-        router.push(redirectTo);
+        router.push(redirectTo as any);
       }
       return;
     }

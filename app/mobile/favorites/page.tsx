@@ -20,39 +20,7 @@ interface Deal {
   validUntil?: string;
 }
 
-// Mock favorites data
-const mockFavorites: Deal[] = [
-  {
-    id: '1',
-    title: 'Happy Hour Special',
-    description: '50% off all drinks and appetizers during happy hour',
-    percentOff: 50,
-    venue: {
-      name: 'The Local Pub',
-      address: '123 Main St, Downtown'
-    },
-    distance: '0.3 mi',
-    rating: 4.5,
-    isOpen: true,
-    category: 'Drinks',
-    validUntil: '7:00 PM'
-  },
-  {
-    id: '4',
-    title: 'Weekend Brunch',
-    description: '25% off brunch items and bottomless mimosas',
-    percentOff: 25,
-    venue: {
-      name: 'Sunrise Cafe',
-      address: '321 Elm St, Riverside'
-    },
-    distance: '0.8 mi',
-    rating: 4.2,
-    isOpen: true,
-    category: 'Food',
-    validUntil: '2:00 PM'
-  }
-];
+// No mock data - fetch from API
 
 export default function MobileFavoritesPage() {
   const [favorites, setFavorites] = useState<Deal[]>([]);
@@ -68,11 +36,25 @@ export default function MobileFavoritesPage() {
   };
 
   useEffect(() => {
-    // Simulate loading
-    setTimeout(() => {
-      setFavorites(mockFavorites);
-      setLoading(false);
-    }, 1000);
+    // Load favorites from API
+    const loadFavorites = async () => {
+      try {
+        const response = await fetch('/api/favorites');
+        if (response.ok) {
+          const data = await response.json();
+          setFavorites(data.favorites || []);
+        } else {
+          setFavorites([]);
+        }
+      } catch (error) {
+        console.error('Error loading favorites:', error);
+        setFavorites([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadFavorites();
   }, []);
 
   return (

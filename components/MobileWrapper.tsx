@@ -19,7 +19,7 @@ export default function MobileWrapper({ children }: MobileWrapperProps) {
     if (isMobile) {
       const mobilePath = getMobileRedirectPath(pathname);
       if (mobilePath && pathname !== mobilePath) {
-        router.replace(mobilePath);
+        router.replace(mobilePath as any);
       }
     }
   }, [isMobile, isHydrated, pathname, router]);

@@ -1,579 +1,385 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import AuthGuard from '@/lib/auth-guard';
-import { 
-  User, 
-  MapPin, 
-  Star, 
-  Clock, 
-  Tag, 
-  Heart, 
-  Trophy, 
-  Zap, 
-  TrendingUp, 
-  Calendar,
-  Bell,
-  Settings,
-  CreditCard,
-  History,
-  Award,
-  Target,
-  Users,
-  Gift,
-  ChevronRight,
-  ArrowRight,
-  XCircle
-} from 'lucide-react';
-import { Deal, UserStats } from '@/types';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useSession, signOut } from 'next-auth/react';
+import { User, Settings, Bell, Shield, CreditCard, HelpCircle, LogOut, Edit3, Camera, Star, TrendingUp, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
-interface AccountStats {
-  totalRedemptions: number;
-  activeDeals: number;
-  usedDeals: number;
-  expiredDeals: number;
-  totalSavings: number;
-  streakDays: number;
-  points: number;
-  badges: string[];
-}
+const stats = [
+  { label: 'Total Saved', value: '$156.99', icon: TrendingUp, color: 'text-green-600' },
+  { label: 'Deals Used', value: '47', icon: Star, color: 'text-blue-600' },
+  { label: 'Points Earned', value: '1,250', icon: Clock, color: 'text-orange-600' },
+];
 
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  isRead: boolean;
-  createdAt: string;
-}
+const settingsSections = [
+  {
+    title: 'Account',
+    items: [
+      { icon: User, label: 'Personal Information', description: 'Update your profile details' },
+      { icon: Bell, label: 'Notifications', description: 'Manage notification preferences' },
+      { icon: Shield, label: 'Privacy & Security', description: 'Control your privacy settings' },
+    ],
+  },
+  {
+    title: 'Preferences',
+    items: [
+      { icon: CreditCard, label: 'Payment Methods', description: 'Manage your payment options' },
+      { icon: Settings, label: 'App Settings', description: 'Customize your app experience' },
+      { icon: HelpCircle, label: 'Help & Support', description: 'Get help and contact support' },
+    ],
+  },
+];
 
-interface Redemption {
-  id: string;
-  dealId: string;
-  code: string;
-  expiresAt: string;
-  status: 'CLAIMED' | 'USED' | 'EXPIRED';
-  createdAt: string;
-  updatedAt: string;
-  deal: Deal;
-}
+const recentActivity = [
+  {
+    id: '1',
+    action: 'Used deal at Bottega Louie',
+    time: '2 hours ago',
+    amount: '$15.50 saved',
+    type: 'saved',
+  },
+  {
+    id: '2',
+    action: 'Earned reward points',
+    time: '1 day ago',
+    amount: '+50 points',
+    type: 'earned',
+  },
+  {
+    id: '3',
+    action: 'Added new favorite',
+    time: '2 days ago',
+    amount: 'Sushi Nakazawa',
+    type: 'favorite',
+  },
+  {
+    id: '4',
+    action: 'Redeemed gift card',
+    time: '3 days ago',
+    amount: '$10.00',
+    type: 'redeemed',
+  },
+];
 
 export default function AccountPage() {
-  const [activeTab, setActiveTab] = useState('overview');
-  const [deals, setDeals] = useState<Redemption[]>([]);
-  const [stats, setStats] = useState<AccountStats | null>(null);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [isClient, setIsClient] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+  });
 
+  // Redirect if not authenticated
   useEffect(() => {
-    setIsClient(true);
-    
-    // Get user location only on client side
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
-        },
-        () => {
-          // Default to Brooklyn if location access denied
-          setUserLocation({ lat: 40.6782, lng: -73.9442 });
-        }
-      );
-    } else {
-      setUserLocation({ lat: 40.6782, lng: -73.9442 });
+    if (status === 'loading') return; // Still loading
+    if (!session) {
+      router.push('/login');
+      return;
     }
-  }, []);
+  }, [session, status, router]);
 
-  // Fetch account data
+  // Update edit data when session loads
   useEffect(() => {
-    const fetchAccountData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    if (session?.user) {
+      const user = session.user as any;
+      setEditData({
+        name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User',
+        email: user.email || '',
+        phone: user.phone || '',
+      });
+    }
+  }, [session]);
 
-        // Fetch stats, deals, and notifications in parallel
-        const [statsResponse, dealsResponse, notificationsResponse] = await Promise.all([
-          fetch('/api/account/stats'),
-          fetch('/api/account/deals'),
-          fetch('/api/account/notifications'),
-        ]);
-
-        if (!statsResponse.ok || !dealsResponse.ok || !notificationsResponse.ok) {
-          throw new Error('Failed to fetch account data');
-        }
-
-        const [statsData, dealsData, notificationsData] = await Promise.all([
-          statsResponse.json(),
-          dealsResponse.json(),
-          notificationsResponse.json(),
-        ]);
-
-        setStats(statsData.stats);
-        setDeals(dealsData.deals);
-        setNotifications(notificationsData.notifications);
-      } catch (err) {
-        console.error('Error fetching account data:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load account data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAccountData();
-  }, []);
-
-  const getDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-    const R = 6371; // Earth's radius in km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
+  const handleSave = () => {
+    // In a real app, this would save to the database
+    console.log('Saving profile:', editData);
+    setIsEditing(false);
   };
 
-  const getTimeRemaining = (endTime: string): { hours: number; minutes: number } => {
-    const now = new Date();
-    const end = new Date(endTime);
-    const diff = end.getTime() - now.getTime();
-    
-    if (diff <= 0) return { hours: 0, minutes: 0 };
-    
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
-    return { hours, minutes };
+  const handleCancel = () => {
+    if (session?.user) {
+      const user = session.user as any;
+      setEditData({
+        name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User',
+        email: user.email || '',
+        phone: user.phone || '',
+      });
+    }
+    setIsEditing(false);
   };
 
-  const nearbyDeals = (isClient && userLocation && deals.length > 0) 
-    ? deals
-        .map(redemption => ({
-          ...redemption.deal,
-          distance: getDistance(userLocation.lat, userLocation.lng, redemption.deal.venue.latitude, redemption.deal.venue.longitude)
-        }))
-        .sort((a, b) => a.distance - b.distance)
-        .slice(0, 5)
-    : [];
+  const handleSignOut = () => {
+    signOut({ callbackUrl: '/' });
+  };
 
-  const startingSoonDeals = isClient && deals.length > 0 ? deals
-    .map(redemption => redemption.deal)
-    .filter(deal => {
-      const timeRemaining = getTimeRemaining(deal.endAt);
-      return timeRemaining.hours <= 2 && timeRemaining.hours >= 0;
-    })
-    .sort((a, b) => getTimeRemaining(a.endAt).hours - getTimeRemaining(b.endAt).hours)
-    .slice(0, 3) : [];
-
-  const tabs = [
-    { id: 'overview', label: 'Overview', icon: User },
-    { id: 'deals', label: 'My Deals', icon: Tag },
-    { id: 'rewards', label: 'Rewards', icon: Trophy },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'settings', label: 'Settings', icon: Settings }
-  ];
-
-  // Show loading state until client-side hydration is complete or data is loading
-  if (!isClient || loading) {
+  if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-900 dark:via-amber-900 dark:to-yellow-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <p className="text-slate-600 dark:text-slate-400">Loading your account...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="text-gray-600 mt-4">Loading...</p>
         </div>
       </div>
     );
   }
 
-  // Show error state
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-900 dark:via-amber-900 dark:to-yellow-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-32 h-32 bg-red-100 dark:bg-red-900/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-            <XCircle className="w-16 h-16 text-red-600 dark:text-red-400" />
-          </div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Error Loading Account</h2>
-          <p className="text-slate-600 dark:text-slate-400 mb-6">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
+  if (!session) {
+    return null; // Will redirect
   }
 
-  // Show empty state if no stats available
-  if (!stats) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-900 dark:via-amber-900 dark:to-yellow-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-32 h-32 bg-slate-100 dark:bg-slate-800 rounded-full mx-auto mb-4 flex items-center justify-center">
-            <User className="w-16 h-16 text-slate-400" />
-          </div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">No Account Data</h2>
-          <p className="text-slate-600 dark:text-slate-400">Unable to load your account information.</p>
-        </div>
-      </div>
-    );
-  }
+  const user = session.user as any;
+  const displayName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User';
+  const memberSince = new Date(user.createdAt || Date.now()).toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long' 
+  });
 
   return (
-    <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-900 dark:via-amber-900 dark:to-yellow-900">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="w-24 h-24 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full mx-auto mb-6 flex items-center justify-center">
-            <User className="w-12 h-12 text-white" />
-          </div>
-          <h1 className="text-4xl font-black text-slate-900 dark:text-white mb-4">
-            My Account
-          </h1>
-          <p className="text-xl text-slate-600 dark:text-slate-300">
-            Welcome back! Here's your personalized experience
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50">
+      {/* Header */}
+      <div className="bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-sm">
+        <div className="px-4 py-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Account</h1>
+          <p className="text-gray-600">Manage your profile and preferences</p>
         </div>
+      </div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/50 dark:border-slate-700/50">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/20 rounded-full flex items-center justify-center">
-                <Tag className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-              </div>
-              <div>
-                <div className="text-2xl font-black text-slate-900 dark:text-white">{stats.totalRedemptions}</div>
-                <div className="text-sm text-slate-600 dark:text-slate-300">Deals Claimed</div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/50 dark:border-slate-700/50">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-secondary-100 dark:bg-secondary-900/20 rounded-full flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
-              </div>
-              <div>
-                <div className="text-2xl font-black text-slate-900 dark:text-white">${stats.totalSavings}</div>
-                <div className="text-sm text-slate-600 dark:text-slate-300">Total Saved</div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/50 dark:border-slate-700/50">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-accent-100 dark:bg-accent-900/20 rounded-full flex items-center justify-center">
-                <Trophy className="w-5 h-5 text-accent-600 dark:text-accent-400" />
-              </div>
-              <div>
-                <div className="text-2xl font-black text-slate-900 dark:text-white">{stats.streakDays}</div>
-                <div className="text-sm text-slate-600 dark:text-slate-300">Day Streak</div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/50 dark:border-slate-700/50">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-warning-100 dark:bg-warning-900/20 rounded-full flex items-center justify-center">
-                <Gift className="w-5 h-5 text-warning-600 dark:text-warning-400" />
-              </div>
-              <div>
-                <div className="text-2xl font-black text-slate-900 dark:text-white">{stats.points}</div>
-                <div className="text-sm text-slate-600 dark:text-slate-300">Points</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
-                activeTab === tab.id
-                  ? 'bg-primary-600 text-white shadow-lg'
-                  : 'bg-white/90 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-primary-900/20'
-              }`}
-            >
-              <tab.icon className="w-5 h-5" />
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab Content */}
-        <div className="space-y-8">
-          {activeTab === 'overview' && (
-            <div className="space-y-8">
-              {/* Streak & Rewards */}
-              <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-slate-200/50 dark:border-slate-700/50">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center">
-                    <Zap className="w-6 h-6 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-black text-slate-900 dark:text-white">Current Streak</h2>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                  <div className="text-center">
-                    <div className="text-4xl font-black text-primary-600 dark:text-primary-400 mb-2">
-                      {stats.streakDays}
+      <div className="px-4 py-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Profile Section */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-orange-50">
+              <CardContent className="p-8">
+                <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
+                  {/* Avatar */}
+                  <div className="relative">
+                    <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                      <Image
+                        src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face"
+                        alt={displayName}
+                        width={100}
+                        height={100}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                    <div className="text-slate-600 dark:text-slate-300">Days</div>
+                    <Button
+                      size="icon"
+                      className="absolute -bottom-2 -right-2 w-8 h-8 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-lg"
+                    >
+                      <Camera className="w-4 h-4" />
+                    </Button>
                   </div>
-                  <div className="text-center">
-                    <div className="text-4xl font-black text-secondary-600 dark:text-secondary-400 mb-2">
-                      {stats.points}
-                    </div>
-                    <div className="text-slate-600 dark:text-slate-300">Points</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-4xl font-black text-accent-600 dark:text-accent-400 mb-2">
-                      {stats.badges.length}
-                    </div>
-                    <div className="text-slate-600 dark:text-slate-300">Badges</div>
-                  </div>
-                </div>
 
-                <div className="flex flex-wrap gap-2">
-                  {stats.badges.map((badge, index) => (
-                    <div key={index} className="bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 px-3 py-1 rounded-full text-sm font-semibold">
-                      {badge}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Nearby Deals */}
-              <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-slate-200/50 dark:border-slate-700/50">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-secondary-500 to-green-500 rounded-full flex items-center justify-center">
-                    <MapPin className="w-6 h-6 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-black text-slate-900 dark:text-white">Nearby Deals</h2>
-                </div>
-                
-                <div className="space-y-4">
-                  {nearbyDeals.map((deal) => (
-                    <div key={deal.id} className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                      <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
-                        {deal.percentOff}%
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-slate-900 dark:text-white">{deal.title}</h3>
-                        <p className="text-sm text-slate-600 dark:text-slate-300">{deal.venue.name}</p>
-                        <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400">
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {deal.distance.toFixed(1)} km
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Star className="w-3 h-3" />
-                            {deal.venue.rating}
-                          </span>
+                  {/* Profile Info */}
+                  <div className="flex-1 text-center md:text-left">
+                    {isEditing ? (
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                          <Input
+                            value={editData.name}
+                            onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                            className="w-full"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                          <Input
+                            value={editData.email}
+                            onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                            className="w-full"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                          <Input
+                            value={editData.phone}
+                            onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
+                            className="w-full"
+                          />
+                        </div>
+                        <div className="flex space-x-3">
+                          <Button onClick={handleSave} className="bg-orange-500 hover:bg-orange-600 text-white">
+                            Save Changes
+                          </Button>
+                          <Button variant="outline" onClick={handleCancel}>
+                            Cancel
+                          </Button>
                         </div>
                       </div>
-                      <button className="bg-primary-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-700 transition-colors">
-                        Claim
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Starting Soon Alerts */}
-              <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-slate-200/50 dark:border-slate-700/50">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-warning-500 to-orange-500 rounded-full flex items-center justify-center">
-                    <Clock className="w-6 h-6 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-black text-slate-900 dark:text-white">Starting Soon</h2>
-                </div>
-                
-                <div className="space-y-4">
-                  {startingSoonDeals.map((deal) => {
-                    const timeRemaining = getTimeRemaining(deal.endAt);
-                    return (
-                      <div key={deal.id} className="flex items-center gap-4 p-4 bg-warning-50 dark:bg-warning-900/20 rounded-xl border border-warning-200 dark:border-warning-800">
-                        <div className="w-16 h-16 bg-gradient-to-br from-warning-500 to-orange-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
-                          {deal.percentOff}%
+                    ) : (
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">{displayName}</h2>
+                        <p className="text-gray-600 mb-1">{user.email}</p>
+                        <p className="text-gray-600 mb-4">{user.phone || 'No phone number'}</p>
+                        <div className="flex items-center space-x-4 text-sm text-gray-500">
+                          <span>Member since {memberSince}</span>
+                          <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full font-semibold">
+                            {user.role} Member
+                          </span>
                         </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-slate-900 dark:text-white">{deal.title}</h3>
-                          <p className="text-sm text-slate-600 dark:text-slate-300">{deal.venue.name}</p>
-                          <div className="flex items-center gap-4 mt-2 text-xs text-warning-600 dark:text-warning-400">
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {timeRemaining.hours}h {timeRemaining.minutes}m left
-                            </span>
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsEditing(true)}
+                          className="mt-4 flex items-center space-x-2"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                          <span>Edit Profile</span>
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Membership Progress */}
+                  <div className="w-full md:w-64">
+                    <div className="bg-white rounded-xl p-4 shadow-lg">
+                      <h3 className="font-semibold text-gray-900 mb-3">Membership Progress</h3>
+                      <div className="space-y-3">
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-gray-600">Next Reward</span>
+                            <span className="font-semibold">250 pts</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div className="bg-gradient-to-r from-orange-500 to-pink-500 h-2 rounded-full" style={{ width: '75%' }} />
                           </div>
                         </div>
-                        <button className="bg-warning-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-warning-700 transition-colors">
-                          Claim Now
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'deals' && (
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-slate-200/50 dark:border-slate-700/50">
-              <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-6">My Claimed Deals</h2>
-              {deals.length === 0 ? (
-                <div className="text-center py-12">
-                  <Tag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No deals claimed yet</h3>
-                  <p className="text-gray-500 mb-6">Start exploring deals to claim your first one!</p>
-                  <a
-                    href="/explore"
-                    className="inline-flex items-center bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors font-medium"
-                  >
-                    <Tag className="w-4 h-4 mr-2" />
-                    Explore Deals
-                  </a>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {deals.slice(0, 10).map((redemption) => (
-                    <div key={redemption.id} className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                      <div className="w-16 h-16 bg-gradient-to-br from-success-500 to-green-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
-                        {redemption.deal.percentOff}%
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-slate-900 dark:text-white">{redemption.deal.title}</h3>
-                        <p className="text-sm text-slate-600 dark:text-slate-300">{redemption.deal.venue.name}</p>
-                        <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400">
-                          <span className="flex items-center gap-1">
-                            <Tag className="w-3 h-3" />
-                            {redemption.deal.percentOff}% off
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            Claimed {new Date(redemption.createdAt).toLocaleDateString()}
-                          </span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            redemption.status === 'CLAIMED' ? 'bg-green-100 text-green-800' :
-                            redemption.status === 'USED' ? 'bg-blue-100 text-blue-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>
-                            {redemption.status}
-                          </span>
+                        <div className="text-center">
+                          <p className="text-sm text-gray-600">Keep saving to unlock more rewards!</p>
                         </div>
                       </div>
-                      <button className="bg-slate-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-slate-700 transition-colors">
-                        View QR
-                      </button>
                     </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Stats Grid */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+          >
+            {stats.map((stat, index) => (
+              <Card key={stat.label} className="border-0 shadow-lg bg-white">
+                <CardContent className="p-6 text-center">
+                  <div className={`w-12 h-12 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center`}>
+                    <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                  </div>
+                  <div className={`text-2xl font-bold ${stat.color} mb-1`}>{stat.value}</div>
+                  <div className="text-sm text-gray-600">{stat.label}</div>
+                </CardContent>
+              </Card>
+            ))}
+          </motion.div>
+
+          {/* Settings Sections */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {settingsSections.map((section, sectionIndex) => (
+              <motion.div
+                key={section.title}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 + sectionIndex * 0.1 }}
+              >
+                <Card className="border-0 shadow-lg bg-white">
+                  <CardHeader>
+                    <CardTitle className="text-lg">{section.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {section.items.map((item, itemIndex) => (
+                      <motion.div
+                        key={item.label}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: 0.3 + sectionIndex * 0.1 + itemIndex * 0.05 }}
+                        className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                      >
+                        <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                          <item.icon className="w-5 h-5 text-orange-600" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900">{item.label}</h4>
+                          <p className="text-sm text-gray-600">{item.description}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Recent Activity */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <Card className="border-0 shadow-lg bg-white">
+              <CardHeader>
+                <CardTitle>Recent Activity</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {recentActivity.map((activity, index) => (
+                    <motion.div
+                      key={activity.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-xl"
+                    >
+                      <div>
+                        <h4 className="font-semibold text-gray-900">{activity.action}</h4>
+                        <p className="text-sm text-gray-600">{activity.time}</p>
+                      </div>
+                      <span className={`font-semibold ${
+                        activity.type === 'saved' ? 'text-green-600' :
+                        activity.type === 'earned' ? 'text-blue-600' :
+                        activity.type === 'redeemed' ? 'text-orange-600' :
+                        'text-gray-600'
+                      }`}>
+                        {activity.amount}
+                      </span>
+                    </motion.div>
                   ))}
                 </div>
-              )}
-            </div>
-          )}
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          {activeTab === 'rewards' && (
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-slate-200/50 dark:border-slate-700/50">
-              <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-6">Rewards & Badges</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl p-6 text-white">
-                  <h3 className="text-xl font-bold mb-2">Current Points</h3>
-                  <div className="text-4xl font-black mb-4">{stats.points}</div>
-                  <p className="text-primary-100">Keep claiming deals to earn more points!</p>
-                </div>
-                <div className="bg-gradient-to-br from-secondary-500 to-green-500 rounded-xl p-6 text-white">
-                  <h3 className="text-xl font-bold mb-2">Streak Bonus</h3>
-                  <div className="text-4xl font-black mb-4">{stats.streakDays} days</div>
-                  <p className="text-secondary-100">You're on fire! 🔥</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'notifications' && (
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-slate-200/50 dark:border-slate-700/50">
-              <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-6">Notifications</h2>
-              <div className="space-y-4">
-                {notifications.map((notification) => (
-                  <div key={notification.id} className={`p-4 rounded-xl border-l-4 ${
-                    notification.isRead 
-                      ? 'bg-slate-50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600' 
-                      : 'bg-primary-50 dark:bg-primary-900/20 border-primary-500'
-                  }`}>
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/20 rounded-full flex items-center justify-center">
-                        <Bell className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-slate-900 dark:text-white">{notification.title}</h3>
-                        <p className="text-slate-600 dark:text-slate-300">{notification.message}</p>
-                        <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400">
-                          <span>{new Date(notification.createdAt).toLocaleDateString()}</span>
-                          {!notification.isRead && (
-                            <span className="bg-primary-500 text-white px-2 py-1 rounded-full text-xs">New</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'settings' && (
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-slate-200/50 dark:border-slate-700/50">
-              <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-6">Account Settings</h2>
-              <div className="space-y-4">
-                <button className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <User className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-                    <span className="font-medium text-slate-900 dark:text-white">Profile Information</span>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400" />
-                </button>
-                
-                <button className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Bell className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-                    <span className="font-medium text-slate-900 dark:text-white">Notification Preferences</span>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400" />
-                </button>
-                
-                <button className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <MapPin className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-                    <span className="font-medium text-slate-900 dark:text-white">Location Settings</span>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400" />
-                </button>
-                
-                <button className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <CreditCard className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-                    <span className="font-medium text-slate-900 dark:text-white">Payment Methods</span>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400" />
-                </button>
-              </div>
-            </div>
-          )}
+          {/* Logout Button */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="text-center"
+          >
+            <Button
+              variant="outline"
+              onClick={handleSignOut}
+              className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 px-8 py-3"
+            >
+              <LogOut className="w-5 h-5 mr-2" />
+              Sign Out
+            </Button>
+          </motion.div>
         </div>
       </div>
-      </div>
-    </AuthGuard>
+    </div>
   );
 }

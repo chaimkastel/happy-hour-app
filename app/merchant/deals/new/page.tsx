@@ -2,7 +2,8 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Upload, Image, Clock, Calendar, Repeat, Zap, Target, DollarSign, MapPin, Users, Eye, EyeOff, Plus, X, Save, Sparkles, Flame, Gift, Crown, Star, AlertCircle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Upload, Image as ImageIcon, Clock, Calendar, Repeat, Zap, Target, DollarSign, MapPin, Users, Eye, EyeOff, Plus, X, Save, Sparkles, Flame, Gift, Crown, Star, AlertCircle, CheckCircle } from 'lucide-react';
+import Image from 'next/image';
 
 interface DealForm {
   title: string;
@@ -127,7 +128,7 @@ export default function CreateDealPage() {
       });
 
       if (response.ok) {
-        router.push('/merchant/deals');
+        router.push('/merchant/deals' as any);
       } else {
         const error = await response.json();
         console.error('Deal creation error:', error);
@@ -172,6 +173,7 @@ export default function CreateDealPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center py-8">
             <button
+              type="button"
               onClick={() => router.back()}
               className="inline-flex items-center text-white/80 hover:text-white mr-6 transition-colors"
             >
@@ -184,7 +186,7 @@ export default function CreateDealPage() {
                 <span className="text-yellow-400 font-bold text-sm">CREATE DEAL</span>
               </div>
               <h1 className="text-4xl md:text-5xl font-black text-white mb-2">
-                🚀 <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Create</span> Amazing Deal
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Create</span> Amazing Deal
               </h1>
               <p className="text-xl text-white/80">Set up a promotion that will attract customers and boost your revenue!</p>
             </div>
@@ -538,15 +540,18 @@ export default function CreateDealPage() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                     {form.images.map((image, index) => (
                       <div key={index} className="relative group">
-                        <img
+                        <Image
                           src={URL.createObjectURL(image)}
                           alt={`Deal image ${index + 1}`}
+                          width={128}
+                          height={128}
                           className="w-full h-32 object-cover rounded-xl"
                         />
                         <button
                           type="button"
                           onClick={() => removeImage(index)}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-2 w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          aria-label="Remove image"
                         >
                           <X className="w-4 h-4" />
                         </button>

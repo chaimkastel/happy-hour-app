@@ -14,10 +14,10 @@ export async function GET(request: NextRequest) {
       whereClause.action = action;
     }
     if (adminId) {
-      whereClause.adminId = adminId;
+      whereClause.actorUserId = adminId;
     }
 
-    const auditLogs = await prisma.adminAuditLog.findMany({
+    const auditLogs = await prisma.auditLog.findMany({
       where: whereClause,
       orderBy: {
         createdAt: 'desc'
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       take: limit,
       skip: offset,
       include: {
-        admin: {
+        actor: {
           select: {
             email: true,
             role: true
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    const total = await prisma.adminAuditLog.count({ where: whereClause });
+    const total = await prisma.auditLog.count({ where: whereClause });
 
     return NextResponse.json({
       logs: auditLogs,
@@ -55,15 +55,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { adminId, action, details, targetType, targetId } = body;
 
-    const auditLog = await prisma.adminAuditLog.create({
+    const auditLog = await prisma.auditLog.create({
       data: {
-        adminId,
+        actorUserId: adminId,
         action,
-        details: JSON.stringify(details),
-        targetType,
-        targetId,
-        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
-        userAgent: request.headers.get('user-agent') || 'unknown'
+        entity: targetType,
+        entityId: targetId,
+        metadata: details || {}
       }
     });
 

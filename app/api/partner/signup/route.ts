@@ -59,19 +59,8 @@ export async function POST(request: NextRequest) {
       data: {
         userId: user.id,
         businessName: restaurantName,
-        kycStatus: 'PENDING', // New partners start with pending KYC
-      }
-    });
-
-    // Create subscription for trial
-    const subscription = await prisma.subscription.create({
-      data: {
-        merchantId: merchant.id,
-        plan: 'TRIAL',
-        status: 'ACTIVE',
-        currentPeriodStart: new Date(),
-        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days trial
-        trialStartedAt: new Date(),
+        companyName: restaurantName,
+        contactEmail: email,
       }
     });
 
@@ -84,8 +73,7 @@ export async function POST(request: NextRequest) {
         address,
         latitude,
         longitude,
-        businessType: JSON.stringify([cuisine]),
-        priceTier: 'MODERATE',
+        priceTier: 'MID_RANGE',
         hours: JSON.stringify({
           monday: { open: '11:00', close: '22:00' },
           tuesday: { open: '11:00', close: '22:00' },
@@ -109,10 +97,7 @@ export async function POST(request: NextRequest) {
       message: 'Partner application submitted successfully! We\'ll review your application and get back to you within 24 hours.',
       partner: {
         id: merchant.id,
-        businessName: merchant.businessName,
         email: user.email,
-        kycStatus: merchant.kycStatus,
-        trialEndsAt: subscription.currentPeriodEnd
       },
       venue: {
         id: venue.id,

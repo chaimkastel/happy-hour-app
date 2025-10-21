@@ -1,676 +1,399 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { 
-  Plus, 
-  Edit, 
-  Eye, 
+  Building2, 
   TrendingUp, 
   Users, 
-  Clock, 
   DollarSign, 
-  Building2, 
-  MapPin, 
-  Star, 
-  Tag,
+  Clock, 
+  Star,
+  Plus,
   BarChart3,
   Settings,
-  QrCode,
-  Target,
-  Zap,
-  Calendar,
-  AlertCircle,
-  Receipt
+  Bell,
+  Eye,
+  Edit3
 } from 'lucide-react';
-import Link from 'next/link';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { cn } from '@/lib/utils';
 
-interface Venue {
-  id: string;
-  name: string;
-  address: string;
-  businessType: string[];
-  priceTier: string;
-  rating: number;
-  isVerified: boolean;
-  createdAt: string;
-}
+// Mock data
+const restaurantData = {
+  name: 'Mario\'s Pizzeria',
+  status: 'active',
+  totalRevenue: 15420.50,
+  totalOrders: 342,
+  averageRating: 4.8,
+  totalReviews: 124,
+  activeDeals: 3,
+  pendingDeals: 1,
+};
 
-interface Deal {
-  id: string;
-  title: string;
-  description: string;
-  percentOff: number;
-  status: string;
-  startAt: string;
-  endAt: string;
-  maxRedemptions: number;
-  redeemedCount: number;
-  minSpend?: number;
-  tags: string[];
-  venue: { id: string; name: string };
-  createdAt: string;
-}
+const recentOrders = [
+  {
+    id: '1',
+    customer: 'John Doe',
+    items: '2x Margherita Pizza',
+    total: 24.99,
+    discount: 12.49,
+    time: '2 min ago',
+    status: 'completed',
+  },
+  {
+    id: '2',
+    customer: 'Jane Smith',
+    items: '1x Pepperoni Pizza + Drinks',
+    total: 18.99,
+    discount: 5.99,
+    time: '15 min ago',
+    status: 'preparing',
+  },
+  {
+    id: '3',
+    customer: 'Mike Johnson',
+    items: '3x Calzone',
+    total: 32.97,
+    discount: 16.48,
+    time: '1 hour ago',
+    status: 'completed',
+  },
+];
 
-interface MerchantStats {
-  totalVenues: number;
-  activeDeals: number;
-  totalRedemptions: number;
-  revenueGenerated: number;
-  averageRating: number;
-  dealsThisMonth: number;
-  pendingVerification: number;
-}
+const activeDeals = [
+  {
+    id: '1',
+    title: '50% Off All Pizzas',
+    discount: 50,
+    orders: 23,
+    revenue: 287.50,
+    timeLeft: '2h 15m',
+    status: 'active',
+  },
+  {
+    id: '2',
+    title: 'Buy 1 Get 1 Free Appetizers',
+    discount: 50,
+    orders: 12,
+    revenue: 156.00,
+    timeLeft: '4h 30m',
+    status: 'active',
+  },
+  {
+    id: '3',
+    title: '30% Off Drinks',
+    discount: 30,
+    orders: 8,
+    revenue: 89.60,
+    timeLeft: '6h 45m',
+    status: 'active',
+  },
+];
 
 export default function MerchantDashboard() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-  const [venues, setVenues] = useState<Venue[]>([]);
-  const [deals, setDeals] = useState<Deal[]>([]);
-  const [stats, setStats] = useState<MerchantStats>({
-    totalVenues: 0,
-    activeDeals: 0,
-    totalRedemptions: 0,
-    revenueGenerated: 0,
-    averageRating: 0,
-    dealsThisMonth: 0,
-    pendingVerification: 0
-  });
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'venues' | 'deals' | 'analytics' | 'redemptions' | 'redeem'>('overview');
+  const [selectedTab, setSelectedTab] = useState('overview');
 
-  // Redirect if not authenticated or not a merchant
-  useEffect(() => {
-    if (status === 'loading') return; // Still loading
-    
-    if (!session) {
-      router.push('/login?callbackUrl=/merchant');
-      return;
-    }
-    
-    if (session.user.role !== 'merchant' && session.user.role !== 'admin') {
-      router.push('/merchant/signup');
-      return;
-    }
-  }, [session, status, router]);
-
-  useEffect(() => {
-    fetchMerchantData();
-  }, []);
-
-  const fetchMerchantData = async () => {
-    try {
-      setLoading(true);
-      // Fetch merchant's venues
-      const venuesResponse = await fetch('/api/merchant/venues');
-      if (venuesResponse.ok) {
-        const venuesData = await venuesResponse.json();
-        setVenues(venuesData.venues || []);
-      }
-
-      // Fetch merchant's deals
-      const dealsResponse = await fetch('/api/merchant/deals');
-      if (dealsResponse.ok) {
-        const dealsData = await dealsResponse.json();
-        setDeals(dealsData.deals || []);
-      }
-
-      // Calculate merchant-specific stats
-      const activeDeals = deals.filter(deal => deal.status === 'LIVE').length;
-      const totalRedemptions = deals.reduce((sum, deal) => sum + deal.redeemedCount, 0);
-      const averageRating = venues.length > 0 ? venues.reduce((sum, venue) => sum + venue.rating, 0) / venues.length : 0;
-      const pendingVerification = venues.filter(venue => !venue.isVerified).length;
-      
-      setStats({
-        totalVenues: venues.length,
-        activeDeals,
-        totalRedemptions,
-        revenueGenerated: totalRedemptions * 25, // Mock calculation
-        averageRating: Math.round(averageRating * 10) / 10,
-        dealsThisMonth: deals.filter(deal => {
-          const dealDate = new Date(deal.createdAt);
-          const now = new Date();
-          return dealDate.getMonth() === now.getMonth() && dealDate.getFullYear() === now.getFullYear();
-        }).length,
-        pendingVerification: pendingVerification
-      });
-    } catch (error) {
-      console.error('Error fetching merchant data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getTimeRemaining = (endTime: string): { hours: number; minutes: number } => {
-    const now = new Date();
-    const end = new Date(endTime);
-    const diff = end.getTime() - now.getTime();
-    
-    if (diff <= 0) return { hours: 0, minutes: 0 };
-    
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
-    return { hours, minutes };
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount);
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'LIVE': return 'bg-green-100 text-green-800';
-      case 'PAUSED': return 'bg-yellow-100 text-yellow-800';
-      case 'EXPIRED': return 'bg-red-100 text-red-800';
-      case 'DRAFT': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'active':
+        return 'text-success-600 bg-success-100';
+      case 'preparing':
+        return 'text-warning-600 bg-warning-100';
+      case 'completed':
+        return 'text-neutral-600 bg-neutral-100';
+      default:
+        return 'text-neutral-600 bg-neutral-100';
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-100 p-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-100">
+    <div className="min-h-screen bg-neutral-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Business Dashboard</h1>
-              <p className="text-gray-600 mt-1">Manage your venues, deals, and track your business performance</p>
-            </div>
-            <div className="flex space-x-3">
-              <Link 
-                href="/merchant/venues"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Venue
-              </Link>
-              <Link 
-                href="/merchant/deals"
-                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create Deal
-              </Link>
-            </div>
+      <div className="bg-gradient-to-r from-primary-500 to-primary-600 text-white p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">Merchant Dashboard</h1>
+            <p className="text-primary-100">{restaurantData.name}</p>
           </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-white/10"
+            >
+              <Bell className="w-6 h-6" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-white/10"
+            >
+              <Settings className="w-6 h-6" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 text-white">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold mb-1">
+                {formatCurrency(restaurantData.totalRevenue)}
+              </div>
+              <div className="text-primary-100 text-sm">Total Revenue</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 text-white">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold mb-1">
+                {restaurantData.totalOrders}
+              </div>
+              <div className="text-primary-100 text-sm">Total Orders</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 text-white">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold mb-1">
+                {restaurantData.averageRating}
+              </div>
+              <div className="text-primary-100 text-sm">Avg Rating</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 text-white">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold mb-1">
+                {restaurantData.activeDeals}
+              </div>
+              <div className="text-primary-100 text-sm">Active Deals</div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-8">
+      {/* Tabs */}
+      <div className="px-4 -mt-4">
+        <Card>
+          <div className="flex border-b border-neutral-200 overflow-x-auto">
             {[
-              { id: 'overview', label: 'Overview', icon: BarChart3 },
-              { id: 'venues', label: 'My Venues', icon: Building2 },
-              { id: 'deals', label: 'My Deals', icon: Tag },
-              { id: 'redemptions', label: 'Redemptions', icon: Receipt },
-              { id: 'redeem', label: 'Redeem Deals', icon: QrCode },
-              { id: 'analytics', label: 'Performance', icon: TrendingUp }
-            ].map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
-                    activeTab === tab.id
-                      ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-        </div>
+              { id: 'overview', label: 'Overview' },
+              { id: 'deals', label: 'Deals' },
+              { id: 'orders', label: 'Orders' },
+              { id: 'analytics', label: 'Analytics' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setSelectedTab(tab.id)}
+                className={cn(
+                  'flex-1 py-3 px-4 text-sm font-medium transition-colors whitespace-nowrap',
+                  selectedTab === tab.id
+                    ? 'text-primary-500 border-b-2 border-primary-500'
+                    : 'text-neutral-500 hover:text-neutral-700'
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </Card>
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'overview' && (
-          <div className="space-y-8">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <Building2 className="h-8 w-8 text-indigo-600" />
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">My Venues</dt>
-                      <dd className="text-lg font-medium text-gray-900">{stats.totalVenues}</dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <Tag className="h-8 w-8 text-green-600" />
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Active Deals</dt>
-                      <dd className="text-lg font-medium text-gray-900">{stats.activeDeals}</dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <Users className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Total Customers</dt>
-                      <dd className="text-lg font-medium text-gray-900">{stats.totalRedemptions}</dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <DollarSign className="h-8 w-8 text-yellow-600" />
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Revenue Generated</dt>
-                      <dd className="text-lg font-medium text-gray-900">${stats.revenueGenerated}</dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Alerts & Notifications */}
-            {stats.pendingVerification > 0 && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div className="flex">
-                  <AlertCircle className="h-5 w-5 text-yellow-400" />
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-yellow-800">
-                      Venue Verification Required
-                    </h3>
-                    <div className="mt-2 text-sm text-yellow-700">
-                      <p>You have {stats.pendingVerification} venue(s) pending verification. Verified venues get better visibility and customer trust.</p>
-                    </div>
-                    <div className="mt-4">
-                      <Link 
-                        href="/merchant/venues"
-                        className="text-sm font-medium text-yellow-800 hover:text-yellow-900 underline"
-                      >
-                        Review venues →
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
+      <div className="p-4 space-y-6">
+        {/* Overview Tab */}
+        {selectedTab === 'overview' && (
+          <motion.div
+            key="overview"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
             {/* Quick Actions */}
-            <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">Quick Actions</h3>
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Link 
-                    href="/merchant/venues"
-                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
-                  >
-                    <Building2 className="h-6 w-6 text-indigo-600 mr-3" />
-                    <div>
-                      <div className="font-medium text-gray-900">Manage Venues</div>
-                      <div className="text-sm text-gray-500">Add, edit, or update your venues</div>
-                    </div>
-                  </Link>
-
-                  <Link 
-                    href="/merchant/deals"
-                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
-                  >
-                    <Tag className="h-6 w-6 text-green-600 mr-3" />
-                    <div>
-                      <div className="font-medium text-gray-900">Create Deals</div>
-                      <div className="text-sm text-gray-500">Set up new promotions and offers</div>
-                    </div>
-                  </Link>
-
-                  <Link 
-                    href="/merchant/settings"
-                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
-                  >
-                    <Settings className="h-6 w-6 text-gray-600 mr-3" />
-                    <div>
-                      <div className="font-medium text-gray-900">Business Settings</div>
-                      <div className="text-sm text-gray-500">Configure your preferences</div>
-                    </div>
-                  </Link>
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <Button className="h-20 flex flex-col items-center justify-center space-y-2">
+                    <Plus className="w-6 h-6" />
+                    <span>Create Deal</span>
+                  </Button>
+                  <Button variant="outline" className="h-20 flex flex-col items-center justify-center space-y-2">
+                    <BarChart3 className="w-6 h-6" />
+                    <span>View Analytics</span>
+                  </Button>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            {/* Recent Activity */}
-            <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">Recent Activity</h3>
-              </div>
-              <div className="p-6">
-                <div className="space-y-4">
-                  {deals.slice(0, 5).map((deal) => (
-                    <div key={deal.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-                      <div className="flex-shrink-0">
-                        <div className={`w-3 h-3 rounded-full ${
-                          deal.status === 'LIVE' ? 'bg-green-400' : 
-                          deal.status === 'PAUSED' ? 'bg-yellow-400' : 'bg-gray-400'
-                        }`}></div>
+            {/* Recent Orders */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Orders</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="space-y-0">
+                  {recentOrders.map((order, index) => (
+                    <motion.div
+                      key={order.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                      className="flex items-center justify-between p-4 border-b border-neutral-100 last:border-b-0"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                          <Users className="w-5 h-5 text-primary-600" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-neutral-900">
+                            {order.customer}
+                          </div>
+                          <div className="text-sm text-neutral-600">
+                            {order.items}
+                          </div>
+                          <div className="text-xs text-neutral-500">
+                            {order.time}
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {deal.title} - {deal.venue.name}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {deal.redeemedCount} redemptions • {deal.percentOff}% off
-                        </p>
+                      <div className="text-right">
+                        <div className="font-semibold text-neutral-900">
+                          {formatCurrency(order.total)}
+                        </div>
+                        <div className="text-sm text-success-600">
+                          Saved {formatCurrency(order.discount)}
+                        </div>
+                        <div className={cn(
+                          'text-xs px-2 py-1 rounded-full',
+                          getStatusColor(order.status)
+                        )}>
+                          {order.status}
+                        </div>
                       </div>
-                      <div className="flex-shrink-0 text-sm text-gray-500">
-                        {new Date(deal.createdAt).toLocaleDateString()}
-                      </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
-              </div>
-            </div>
-          </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         )}
 
-        {activeTab === 'venues' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900">My Venues</h2>
-              <Link 
-                href="/merchant/venues"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-              >
+        {/* Deals Tab */}
+        {selectedTab === 'deals' && (
+          <motion.div
+            key="deals"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Active Deals</h2>
+              <Button>
                 <Plus className="w-4 h-4 mr-2" />
-                Add Venue
-              </Link>
+                Create Deal
+              </Button>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {venues.map((venue) => (
-                <div key={venue.id} className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-medium text-gray-900">{venue.name}</h3>
-                    {venue.isVerified ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Verified
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                        Pending
-                      </span>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <MapPin className="w-4 h-4 mr-2" />
-                      {venue.address}
-                    </div>
-                    
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Tag className="w-4 h-4 mr-2" />
-                      {venue.businessType.join(', ')}
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Star className="w-4 h-4 mr-1 text-yellow-400" />
-                        {venue.rating}
-                      </div>
-                      <span className="text-sm text-gray-500 capitalize">{venue.priceTier.toLowerCase()}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-4 flex space-x-2">
-                    <Link 
-                      href={`/merchant/venues/${venue.id}`}
-                      className="flex-1 inline-flex justify-center items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                    >
-                      <Edit className="w-4 h-4 mr-1" />
-                      Edit
-                    </Link>
-                    <Link 
-                      href={`/merchant/venues/${venue.id}`}
-                      className="flex-1 inline-flex justify-center items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                    >
-                      <Eye className="w-4 h-4 mr-1" />
-                      View
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
-        {activeTab === 'deals' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900">My Deals</h2>
-              <Link 
-                href="/merchant/deals"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            {activeDeals.map((deal, index) => (
+              <motion.div
+                key={deal.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Create New Deal
-              </Link>
-            </div>
-            
-            <div className="bg-white shadow overflow-hidden sm:rounded-md">
-              <ul className="divide-y divide-gray-200">
-                {deals.map((deal) => {
-                  const timeRemaining = getTimeRemaining(deal.endAt);
-                  return (
-                    <li key={deal.id} className="px-6 py-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium text-indigo-600 truncate">
-                              {deal.title}
-                            </p>
-                            <div className="flex items-center space-x-2">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(deal.status)}`}>
-                                {deal.status}
-                              </span>
-                              <span className="text-sm text-gray-500">
-                                {deal.percentOff}% off
-                              </span>
-                            </div>
-                          </div>
-                          
-                          <p className="mt-1 text-sm text-gray-600">{deal.description}</p>
-                          
-                          <div className="mt-2 flex items-center space-x-6 text-sm text-gray-500">
-                            <div className="flex items-center">
-                              <Building2 className="w-4 h-4 mr-1" />
-                              {deal.venue.name}
-                            </div>
-                            <div className="flex items-center">
-                              <Users className="w-4 h-4 mr-1" />
-                              {deal.redeemedCount}/{deal.maxRedemptions}
-                            </div>
-                            <div className="flex items-center">
-                              <Clock className="w-4 h-4 mr-1" />
-                              {timeRemaining.hours}h {timeRemaining.minutes}m left
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="ml-6 flex items-center space-x-2">
-                          <Link 
-                            href={`/merchant/deals/${deal.id}`}
-                            className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                          >
-                            <Edit className="w-4 h-4 mr-1" />
-                            Edit
-                          </Link>
-                          <Link 
-                            href={`/redeem/${deal.id}`}
-                            className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                          >
-                            <QrCode className="w-4 h-4 mr-1" />
-                            QR
-                          </Link>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-neutral-900 mb-1">
+                          {deal.title}
+                        </h3>
+                        <div className="flex items-center space-x-4 text-sm text-neutral-600">
+                          <span className="flex items-center">
+                            <TrendingUp className="w-4 h-4 mr-1" />
+                            {deal.orders} orders
+                          </span>
+                          <span className="flex items-center">
+                            <DollarSign className="w-4 h-4 mr-1" />
+                            {formatCurrency(deal.revenue)}
+                          </span>
+                          <span className="flex items-center">
+                            <Clock className="w-4 h-4 mr-1" />
+                            {deal.timeLeft} left
+                          </span>
                         </div>
                       </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </div>
+                      
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-primary-500 mb-1">
+                          {deal.discount}% off
+                        </div>
+                        <div className="text-xs text-success-600 bg-success-100 px-2 py-1 rounded-full">
+                          {deal.status}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Button variant="outline" size="sm">
+                        <Eye className="w-4 h-4 mr-2" />
+                        View
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Edit3 className="w-4 h-4 mr-2" />
+                        Edit
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
         )}
 
-        {activeTab === 'redemptions' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900">Redemptions</h2>
-              <Link
-                href="/merchant/redemptions"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                <Receipt className="w-4 h-4 mr-2" />
-                View All Redemptions
-              </Link>
-            </div>
-            
-            <div className="bg-white shadow overflow-hidden sm:rounded-md">
-              <div className="px-6 py-4">
-                <div className="text-center">
-                  <Receipt className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Manage Customer Redemptions</h3>
-                  <p className="text-gray-600 mb-4">Scan QR codes and track customer redemptions</p>
-                  <Link
-                    href="/merchant/redemptions"
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-                  >
-                    Go to Redemptions
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Orders Tab */}
+        {selectedTab === 'orders' && (
+          <motion.div
+            key="orders"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-4"
+          >
+            <h2 className="text-lg font-semibold">Order Management</h2>
+            <p className="text-neutral-600">Manage and track your restaurant orders</p>
+            {/* Orders content would go here */}
+          </motion.div>
         )}
 
-        {activeTab === 'redeem' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900">Redeem Deals</h2>
-              <Link
-                href="/merchant/redeem"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                <QrCode className="w-4 h-4 mr-2" />
-                Open QR Scanner
-              </Link>
-            </div>
-            
-            <div className="bg-white shadow overflow-hidden sm:rounded-md">
-              <div className="px-6 py-4">
-                <div className="text-center">
-                  <QrCode className="w-12 h-12 text-indigo-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">QR Code Scanner</h3>
-                  <p className="text-gray-600 mb-4">Scan customer QR codes to redeem deals in real-time</p>
-                  <Link
-                    href="/merchant/redeem"
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-                  >
-                    Start Scanning
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'analytics' && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Business Performance</h2>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Performance Overview</h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Average Rating</span>
-                    <span className="text-lg font-semibold text-gray-900">{stats.averageRating}/5.0</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Deals This Month</span>
-                    <span className="text-lg font-semibold text-gray-900">{stats.dealsThisMonth}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Total Revenue</span>
-                    <span className="text-lg font-semibold text-gray-900">${stats.revenueGenerated}</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Business Insights</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Target className="w-4 h-4 mr-2 text-blue-500" />
-                    {stats.activeDeals} active deals driving traffic
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Zap className="w-4 h-4 mr-2 text-yellow-500" />
-                    {stats.totalRedemptions} customers engaged this month
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <TrendingUp className="w-4 h-4 mr-2 text-green-500" />
-                    Revenue up from last month
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Performance Trends</h3>
-              <div className="text-center py-8 text-gray-500">
-                <BarChart3 className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                <p>Detailed analytics coming soon</p>
-                <p className="text-sm">Track your business performance, customer behavior, and revenue trends</p>
-              </div>
-            </div>
-          </div>
+        {/* Analytics Tab */}
+        {selectedTab === 'analytics' && (
+          <motion.div
+            key="analytics"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-4"
+          >
+            <h2 className="text-lg font-semibold">Analytics & Insights</h2>
+            <p className="text-neutral-600">Track your restaurant's performance and growth</p>
+            {/* Analytics content would go here */}
+          </motion.div>
         )}
       </div>
     </div>

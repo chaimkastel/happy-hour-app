@@ -1,388 +1,245 @@
-# Deployment Guide - Happy Hour App
+# Happy Hour - Deployment Guide
 
-This guide covers deploying the Happy Hour App to production environments.
+This guide will help you deploy the Happy Hour application to Vercel.
 
-## 🚀 Vercel Deployment (Recommended)
+## Prerequisites
 
-### Prerequisites
-- Vercel account
-- GitHub repository
-- Database (Neon, PlanetScale, or Supabase)
+- Node.js 18+ installed
+- A Vercel account
+- A PostgreSQL database (Supabase, PlanetScale, or Railway recommended)
+- Required API keys and secrets
 
-### Step 1: Database Setup
+## Environment Variables
 
-1. **Choose a Database Provider:**
-   - **Neon** (Recommended for PostgreSQL)
-   - **PlanetScale** (MySQL)
-   - **Supabase** (PostgreSQL)
-
-2. **Create Database:**
-   ```sql
-   -- For PostgreSQL (Neon/Supabase)
-   CREATE DATABASE happy_hour_prod;
-   ```
-
-3. **Update Prisma Schema:**
-   ```prisma
-   datasource db {
-     provider = "postgresql"
-     url      = env("DATABASE_URL")
-   }
-   ```
-
-4. **Run Migrations:**
-   ```bash
-   npx prisma migrate deploy
-   ```
-
-### Step 2: Vercel Setup
-
-1. **Connect Repository:**
-   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
-   - Click "New Project"
-   - Import your GitHub repository
-
-2. **Configure Build Settings:**
-   - Framework Preset: Next.js
-   - Root Directory: `./`
-   - Build Command: `npm run build`
-   - Output Directory: `.next`
-
-3. **Set Environment Variables:**
-   ```env
-   DATABASE_URL="postgresql://username:password@host:port/database"
-   NEXTAUTH_URL="https://your-domain.vercel.app"
-   NEXTAUTH_SECRET="your-super-secret-key-here"
-   EXTERNAL_LOGGING_ENABLED="true"
-   ```
-
-### Step 3: Deploy
-
-1. **Deploy:**
-   - Click "Deploy" in Vercel dashboard
-   - Wait for build to complete
-
-2. **Verify Deployment:**
-   - Visit your Vercel URL
-   - Test key functionality
-   - Check admin access
-
-### Step 4: Post-Deployment
-
-1. **Create Admin User:**
-   ```bash
-   # Connect to your production database
-   npx prisma studio
-   # Or run the admin creation script with production DB
-   ```
-
-2. **Set Up Domain (Optional):**
-   - Add custom domain in Vercel dashboard
-   - Update NEXTAUTH_URL to match custom domain
-
-## 🐳 Docker Deployment
-
-### Dockerfile
-
-```dockerfile
-FROM node:18-alpine AS base
-
-# Install dependencies only when needed
-FROM base AS deps
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
-
-# Install dependencies
-COPY package.json package-lock.json ./
-RUN npm ci --only=production
-
-# Rebuild the source code only when needed
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-
-# Generate Prisma Client
-RUN npx prisma generate
-
-# Build the application
-RUN npm run build
-
-# Production image
-FROM base AS runner
-WORKDIR /app
-
-ENV NODE_ENV production
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
-
-EXPOSE 3000
-
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
-
-CMD ["node", "server.js"]
-```
-
-### Docker Compose
-
-```yaml
-version: '3.8'
-
-services:
-  app:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/happy_hour
-      - NEXTAUTH_URL=http://localhost:3000
-      - NEXTAUTH_SECRET=your-secret-key
-    depends_on:
-      - db
-
-  db:
-    image: postgres:15
-    environment:
-      - POSTGRES_DB=happy_hour
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-
-volumes:
-  postgres_data:
-```
-
-### Deploy with Docker
+Create a `.env.local` file with the following variables:
 
 ```bash
-# Build and run
-docker-compose up -d
-
-# Run migrations
-docker-compose exec app npx prisma migrate deploy
-
-# Create admin user
-docker-compose exec app node scripts/create-admin.js
-```
-
-## ☁️ AWS Deployment
-
-### Using AWS Amplify
-
-1. **Connect Repository:**
-   - Go to AWS Amplify Console
-   - Connect your GitHub repository
-
-2. **Configure Build:**
-   ```yaml
-   version: 1
-   frontend:
-     phases:
-       preBuild:
-         commands:
-           - npm install
-           - npx prisma generate
-       build:
-         commands:
-           - npm run build
-     artifacts:
-       baseDirectory: .next
-       files:
-         - '**/*'
-   ```
-
-3. **Set Environment Variables:**
-   - DATABASE_URL
-   - NEXTAUTH_URL
-   - NEXTAUTH_SECRET
-
-### Using AWS ECS
-
-1. **Create ECS Cluster**
-2. **Create Task Definition**
-3. **Deploy with Application Load Balancer**
-
-## 🔧 Environment Variables
-
-### Required Variables
-
-```env
 # Database
-DATABASE_URL="postgresql://user:pass@host:port/db"
+DATABASE_URL="postgresql://username:password@host:port/database"
 
-# Authentication
-NEXTAUTH_URL="https://your-domain.com"
-NEXTAUTH_SECRET="your-secret-key"
+# NextAuth
+NEXTAUTH_SECRET="your-secret-key-here"
+NEXTAUTH_URL="https://your-domain.vercel.app"
 
-# Optional
-EXTERNAL_LOGGING_ENABLED="true"
+# Stripe (optional)
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+
+# Rate Limiting (optional)
+UPSTASH_REDIS_REST_URL="https://..."
+UPSTASH_REDIS_REST_TOKEN="..."
+
+# Google Maps (optional)
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY="AIza..."
+
+# Cron Jobs (optional)
+CRON_SECRET_TOKEN="your-cron-secret"
+
+# Site Configuration
+NEXT_PUBLIC_SITE_URL="https://your-domain.vercel.app"
 ```
 
-### Production Secrets
+## Database Setup
 
-Generate secure secrets:
+### Option 1: Supabase (Recommended)
+
+1. Create a new project at [supabase.com](https://supabase.com)
+2. Go to Settings > Database
+3. Copy the connection string
+4. Update `DATABASE_URL` in your environment variables
+
+### Option 2: PlanetScale
+
+1. Create a new database at [planetscale.com](https://planetscale.com)
+2. Create a new branch
+3. Copy the connection string
+4. Update `DATABASE_URL` in your environment variables
+
+### Option 3: Railway
+
+1. Create a new PostgreSQL service at [railway.app](https://railway.app)
+2. Copy the connection string
+3. Update `DATABASE_URL` in your environment variables
+
+## Deployment Steps
+
+### 1. Prepare the Application
 
 ```bash
-# Generate NextAuth secret
-openssl rand -base64 32
+# Install dependencies
+npm ci
 
-# Generate database password
-openssl rand -base64 16
+# Generate Prisma client
+npx prisma generate
+
+# Run the deployment script
+npm run deploy
 ```
 
-## 📊 Monitoring & Logging
+### 2. Deploy to Vercel
 
-### Vercel Analytics
-- Enable Vercel Analytics in dashboard
-- Monitor performance and errors
+#### Option A: Vercel CLI
 
-### External Logging
-- Set `EXTERNAL_LOGGING_ENABLED=true`
-- Configure external logging service
-- Monitor application logs
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Login to Vercel
+vercel login
+
+# Deploy
+vercel
+
+# Set environment variables
+vercel env add DATABASE_URL
+vercel env add NEXTAUTH_SECRET
+vercel env add NEXTAUTH_URL
+# ... add other environment variables
+```
+
+#### Option B: Vercel Dashboard
+
+1. Go to [vercel.com](https://vercel.com)
+2. Click "New Project"
+3. Import your GitHub repository
+4. Set the following build settings:
+   - Framework Preset: Next.js
+   - Build Command: `npm run vercel-build`
+   - Output Directory: `.next`
+   - Install Command: `npm ci`
+
+5. Add environment variables in the Vercel dashboard:
+   - Go to Settings > Environment Variables
+   - Add all variables from the `.env.local` file
+
+### 3. Database Migration
+
+After deployment, run the database migration:
+
+```bash
+# Using Vercel CLI
+vercel env pull .env.local
+npx prisma migrate deploy
+
+# Or using the Vercel dashboard
+# Go to your project > Functions > Create a new function
+# Name it: migrate
+# Code:
+# import { PrismaClient } from '@prisma/client'
+# const prisma = new PrismaClient()
+# export default async function handler(req, res) {
+#   await prisma.$executeRaw`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`
+#   res.status(200).json({ message: 'Migration completed' })
+# }
+```
+
+### 4. Seed Demo Data (Optional)
+
+To populate the database with demo data:
+
+```bash
+# Using Vercel CLI
+vercel env pull .env.local
+npm run db:seed:comprehensive
+```
+
+### 5. Configure Custom Domain (Optional)
+
+1. Go to your Vercel project dashboard
+2. Navigate to Settings > Domains
+3. Add your custom domain
+4. Update `NEXTAUTH_URL` and `NEXT_PUBLIC_SITE_URL` environment variables
+
+## Post-Deployment Checklist
+
+- [ ] Database connection is working
+- [ ] Authentication is working
+- [ ] API endpoints are responding
+- [ ] Static files are loading
+- [ ] Environment variables are set
+- [ ] SSL certificate is active
+- [ ] Custom domain is configured (if applicable)
+
+## Monitoring and Maintenance
 
 ### Health Checks
-- `/api/health/redis` - Redis health check
-- `/api/admin/health` - System health check
 
-## 🔒 Security Considerations
+The application includes health check endpoints:
 
-### Environment Variables
-- Never commit secrets to version control
-- Use environment-specific configurations
-- Rotate secrets regularly
+- `/api/health` - Basic health check
+- `/api/admin/health` - Detailed health check (admin only)
 
-### Database Security
-- Use connection pooling
-- Enable SSL connections
-- Regular backups
+### Logs
 
-### Authentication
-- Use strong NEXTAUTH_SECRET
-- Enable HTTPS in production
-- Implement rate limiting
+Monitor your application logs in the Vercel dashboard:
 
-## 🚨 Troubleshooting
+1. Go to your project dashboard
+2. Navigate to Functions tab
+3. Click on any function to view logs
+
+### Performance
+
+Monitor performance using:
+
+- Vercel Analytics (built-in)
+- Google PageSpeed Insights
+- Lighthouse audits
+
+## Troubleshooting
 
 ### Common Issues
 
 1. **Build Failures**
-   ```bash
-   # Check TypeScript errors
-   npm run type-check
-   
-   # Check Prisma generation
-   npx prisma generate
-   ```
+   - Check Node.js version (18+ required)
+   - Verify all environment variables are set
+   - Check for TypeScript errors
 
 2. **Database Connection Issues**
-   ```bash
-   # Test database connection
-   npx prisma db pull
-   
-   # Check environment variables
-   echo $DATABASE_URL
-   ```
+   - Verify `DATABASE_URL` is correct
+   - Check database server is accessible
+   - Ensure database exists and is running
 
 3. **Authentication Issues**
-   - Verify NEXTAUTH_URL matches domain
-   - Check NEXTAUTH_SECRET is set
-   - Ensure HTTPS in production
+   - Verify `NEXTAUTH_SECRET` is set
+   - Check `NEXTAUTH_URL` matches your domain
+   - Ensure callback URLs are configured
 
-### Debug Mode
+4. **API Errors**
+   - Check function logs in Vercel dashboard
+   - Verify environment variables are set
+   - Check for rate limiting issues
 
-```bash
-# Enable debug logging
-DEBUG=* npm run dev
+### Getting Help
 
-# Check specific modules
-DEBUG=next-auth npm run dev
-```
+If you encounter issues:
 
-## 📈 Performance Optimization
+1. Check the logs in Vercel dashboard
+2. Review the troubleshooting section above
+3. Check the GitHub issues page
+4. Contact support if needed
 
-### Database
-- Use connection pooling
-- Optimize queries
-- Add database indexes
+## Security Considerations
 
-### Next.js
-- Enable static generation where possible
-- Use dynamic imports for large components
-- Optimize images
+- Keep environment variables secure
+- Use strong passwords for database
+- Enable 2FA on all accounts
+- Regularly update dependencies
+- Monitor for security vulnerabilities
 
-### CDN
-- Use Vercel's CDN
-- Configure caching headers
-- Optimize static assets
+## Backup Strategy
 
-## 🔄 CI/CD Pipeline
+- Database backups (automated by your provider)
+- Code backups (Git repository)
+- Environment variable backups (Vercel dashboard export)
 
-### GitHub Actions Example
+## Scaling Considerations
 
-```yaml
-name: Deploy to Vercel
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - run: npm ci
-      - run: npm run build
-      - run: npm run type-check
-      - run: npx prisma generate
-```
-
-## 📋 Pre-Deployment Checklist
-
-- [ ] Environment variables configured
-- [ ] Database migrations applied
-- [ ] Admin user created
-- [ ] SSL certificate configured
-- [ ] Domain DNS configured
-- [ ] Monitoring set up
-- [ ] Backup strategy implemented
-- [ ] Error tracking configured
-- [ ] Performance monitoring enabled
-- [ ] Security headers configured
-
-## 🎯 Post-Deployment Tasks
-
-1. **Verify Functionality**
-   - Test user registration
-   - Test deal claiming
-   - Test admin access
-   - Test mobile experience
-
-2. **Monitor Performance**
-   - Check response times
-   - Monitor error rates
-   - Review logs
-
-3. **Security Audit**
-   - Test authentication flows
-   - Verify HTTPS
-   - Check for vulnerabilities
+- Monitor database performance
+- Consider connection pooling
+- Implement caching strategies
+- Monitor API rate limits
+- Plan for increased traffic
 
 ---
 
-For additional support, refer to the main README.md or create an issue in the repository.
+For more information, visit the [Happy Hour documentation](./README.md).

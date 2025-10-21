@@ -31,8 +31,7 @@ export async function GET(
                   }
                 }
               }
-            },
-            subscription: true
+            }
           }
         }
       }
@@ -49,13 +48,13 @@ export async function GET(
     const contributions = {
       totalDeals: user.merchant?.venues?.reduce((total, venue) => total + venue.deals.length, 0) || 0,
       activeDeals: user.merchant?.venues?.reduce((total, venue) => 
-        total + venue.deals.filter(deal => deal.status === 'LIVE').length, 0) || 0,
-      totalRedemptions: user.merchant?.venues?.reduce((total, venue) => 
+        total + venue.deals.filter(deal => deal.status === 'ACTIVE').length, 0) || 0,
+      totalVouchers: user.merchant?.venues?.reduce((total, venue) => 
         total + venue.deals.reduce((dealTotal, deal) => dealTotal + deal.redemptions.length, 0), 0) || 0,
       totalRevenue: 0, // You might want to calculate this from actual transactions
       venuesCount: user.merchant?.venues?.length || 0,
-      subscription: user.merchant?.subscription?.plan || 'FREE',
-      kycStatus: user.merchant?.kycStatus || 'N/A'
+      subscription: 'INCOMPLETE', // Simplified for now
+      approved: user.merchant?.kycStatus === 'APPROVED' || false
     };
 
     // Get recent activity
@@ -73,27 +72,27 @@ export async function GET(
               dealId: deal.id,
               venueName: venue.name,
               percentOff: deal.percentOff,
-              status: deal.status
+              active: deal.status === 'ACTIVE'
             }
           });
         }
       }
     }
 
-    // Add redemption activity
+    // Add voucher activity
     if (user.merchant?.venues) {
       for (const venue of user.merchant.venues) {
         for (const deal of venue.deals) {
-          for (const redemption of deal.redemptions) {
+          for (const voucher of deal.redemptions) {
             recentActivity.push({
-              type: 'redemption',
-              description: `Deal redeemed: ${deal.title}`,
-              timestamp: redemption.createdAt,
+              type: 'voucher_issued',
+              description: `Voucher issued: ${deal.title}`,
+              timestamp: voucher.createdAt,
               details: {
                 dealId: deal.id,
                 venueName: venue.name,
-                redeemerEmail: redemption.user.email,
-                amount: deal.percentOff
+                userEmail: voucher.user?.email || 'Anonymous',
+                status: voucher.status
               }
             });
           }
@@ -115,14 +114,16 @@ export async function GET(
       isActive: true, // You might want to add this field to your User model
       merchant: user.merchant ? {
         id: user.merchant.id,
-        businessName: user.merchant.businessName,
-        kycStatus: user.merchant.kycStatus,
-        subscription: user.merchant.subscription?.plan || 'FREE',
+        companyName: user.merchant.businessName,
+        contactEmail: user.email,
+        approved: user.merchant.kycStatus === 'APPROVED',
+        subscriptionStatus: 'INCOMPLETE', // Simplified for now
         venues: user.merchant.venues.map(venue => ({
           id: venue.id,
           name: venue.name,
           address: venue.address,
-          businessType: venue.businessType,
+          city: venue.address, // Using address since city field doesn't exist
+          state: 'Unknown', // Using placeholder since state field doesn't exist
           rating: venue.rating,
           isVerified: venue.isVerified,
           dealsCount: venue.deals.length,
@@ -130,9 +131,9 @@ export async function GET(
             id: deal.id,
             title: deal.title,
             percentOff: deal.percentOff,
-            status: deal.status,
+            active: deal.status === 'ACTIVE',
             createdAt: deal.createdAt,
-            redemptionsCount: deal.redemptions.length
+            vouchersCount: deal.redemptions.length
           }))
         }))
       } : null,

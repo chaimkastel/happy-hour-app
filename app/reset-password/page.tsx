@@ -50,8 +50,9 @@ function ResetPasswordForm() {
     const newErrors: FormErrors = {};
     
     // Email validation
-    const emailError = validateEmail(formData.email);
-    if (emailError) newErrors.email = emailError;
+    if (!validateEmail(formData.email)) {
+      newErrors.email = 'Invalid email address';
+    }
     
     // Password validation
     if (!formData.password.trim()) {

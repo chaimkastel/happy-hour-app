@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import MapPicker from '@/components/MapPicker';
 import { useRouter } from 'next/navigation';
 
@@ -99,7 +100,7 @@ export default function MerchantDash({ restaurants, deals }:{ restaurants:any[];
                   <div className="flex gap-2">
                     {d.isActive ? (
                       <>
-                        <a className="btn-ghost" href={`/redeem/${d.id}`}>Get QR</a>
+                        <Link className="btn-ghost" href={`/redeem/${d.id}`}>Get QR</Link>
                         <button className="btn" onClick={()=>deactivate(d.id)}>Turn Off</button>
                       </>
                     ) : (

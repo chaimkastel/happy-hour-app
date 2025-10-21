@@ -1,109 +1,174 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/db';
+import { z } from 'zod';
+
+export const dynamic = 'force-dynamic';
+
+const createDealSchema = z.object({
+  venueId: z.string().min(1),
+  type: z.enum(['HAPPY_HOUR', 'INSTANT']),
+  title: z.string().min(1),
+  description: z.string().min(1),
+  percentOff: z.number().optional(),
+  originalPrice: z.number().optional(),
+  discountedPrice: z.number().optional(),
+  startsAt: z.string(),
+  endsAt: z.string(),
+  daysOfWeek: z.array(z.string()).optional(),
+  timeWindows: z.array(z.object({
+    start: z.string(),
+    end: z.string()
+  })).optional(),
+  conditions: z.array(z.string()).optional(),
+  maxRedemptions: z.number().optional(),
+  perUserLimit: z.number().default(1),
+  priority: z.number().default(1),
+  active: z.boolean().default(true)
+});
 
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
+    
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    // Check if user has merchant or admin role
-    if (session.user.role !== 'MERCHANT' && session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    // Get merchant
+    const merchant = await db.merchant.findUnique({
+      where: { userId: session.user.id },
+      include: {
+        venues: {
+          select: { id: true }
+        }
+      }
+    });
+
+    if (!merchant) {
+      return NextResponse.json(
+        { error: 'Merchant not found' },
+        { status: 404 }
+      );
     }
 
-    // Get merchant's deals through their venues
-    const deals = await prisma.deal.findMany({
+    const venueIds = merchant.venues.map(venue => venue.id);
+
+    const deals = await db.deal.findMany({
       where: {
-        venue: {
-          merchantId: session.user.id
+        venueId: {
+          in: venueIds
         }
       },
       include: {
-        venue: {
+        venue: true,
+        _count: {
           select: {
-            id: true,
-            name: true,
-            address: true
+            vouchers: true
           }
         }
       },
       orderBy: { createdAt: 'desc' }
     });
 
-    return NextResponse.json({ deals });
+    // Calculate redemption counts
+    const dealsWithRedemptions = await Promise.all(
+      deals.map(async (deal) => {
+        const redemptionCount = await db.voucher.count({
+          where: {
+            dealId: deal.id,
+            status: 'REDEEMED'
+          }
+        });
+        return {
+          ...deal,
+          redemptionCount
+        };
+      })
+    );
+
+    return NextResponse.json({ deals: dealsWithRedemptions });
   } catch (error) {
     console.error('Error fetching merchant deals:', error);
-    return NextResponse.json({ error: 'Failed to fetch deals' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
+    
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    // Check if user has merchant or admin role
-    if (session.user.role !== 'MERCHANT' && session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    // Get merchant
+    const merchant = await db.merchant.findUnique({
+      where: { userId: session.user.id }
+    });
+
+    if (!merchant) {
+      return NextResponse.json(
+        { error: 'Merchant not found' },
+        { status: 404 }
+      );
+    }
+
+    // Check subscription status
+    if (merchant.subscriptionStatus !== 'ACTIVE') {
+      return NextResponse.json(
+        { error: 'Active subscription required to create deals' },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();
-    const { 
-      title, 
-      description, 
-      percentOff, 
-      venueId, 
-      startAt, 
-      endAt, 
-      minSpend, 
-      maxRedemptions, 
-      tags 
-    } = body;
-
-    // Validate required fields
-    if (!title || !description || !percentOff || !venueId || !startAt || !endAt) {
-      return NextResponse.json({ 
-        error: 'Title, description, percentOff, venueId, startAt, and endAt are required' 
-      }, { status: 400 });
-    }
+    const validatedData = createDealSchema.parse(body);
 
     // Verify venue belongs to merchant
-    const venue = await prisma.venue.findFirst({
+    const venue = await db.venue.findFirst({
       where: {
-        id: venueId,
-        merchantId: session.user.id
+        id: validatedData.venueId,
+        merchantId: merchant.id
       }
     });
 
     if (!venue) {
-      return NextResponse.json({ error: 'Venue not found or access denied' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Venue not found or access denied' },
+        { status: 404 }
+      );
     }
 
-    // Create deal
-    const deal = await prisma.deal.create({
+    const deal = await db.deal.create({
       data: {
-        title,
-        description,
-        percentOff: parseInt(percentOff),
-        venueId,
-        startAt: new Date(startAt),
-        endAt: new Date(endAt),
-        minSpend: minSpend ? parseFloat(minSpend) : null,
-        maxRedemptions: maxRedemptions ? parseInt(maxRedemptions) : 100,
-        tags: tags || '[]',
-        status: 'ACTIVE'
+        ...validatedData,
+        startAt: new Date(validatedData.startsAt),
+        endAt: new Date(validatedData.endsAt),
+        percentOff: validatedData.percentOff || 0,
+        conditions: JSON.stringify(validatedData.conditions || []),
+      },
+      include: {
+        venue: true
       }
     });
 
-    return NextResponse.json({ deal }, { status: 201 });
+    return NextResponse.json({ deal });
   } catch (error) {
     console.error('Error creating deal:', error);
-    return NextResponse.json({ error: 'Failed to create deal' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

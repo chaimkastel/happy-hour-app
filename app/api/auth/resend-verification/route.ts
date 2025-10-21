@@ -1,55 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import crypto from 'crypto';
+import { sendEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { token } = body;
+    const { email } = body;
 
-    if (!token) {
-      return NextResponse.json({ error: 'Token is required' }, { status: 400 });
+    if (!email) {
+      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
-    // Find user with the verification token (even if expired)
-    const user = await prisma.user.findFirst({
-      where: {
-        emailVerifyToken: token
-      }
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email }
     });
 
     if (!user) {
       return NextResponse.json({ 
-        error: 'Invalid verification token' 
-      }, { status: 400 });
+        error: 'User not found' 
+      }, { status: 404 });
     }
 
-    // Check if already verified
-    if (user.emailVerified) {
-      return NextResponse.json({ 
-        message: 'Email is already verified' 
-      }, { status: 200 });
-    }
-
-    // Generate new verification token
-    const newEmailVerifyToken = crypto.randomBytes(32).toString('hex');
-    const newEmailVerifyTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-    // Update user with new token
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        emailVerifyToken: newEmailVerifyToken,
-        emailVerifyTokenExpiry: newEmailVerifyTokenExpiry,
-      }
-    });
-
-    // Generate new verification link
-    const verificationLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/verify-email?token=${newEmailVerifyToken}`;
-    console.log(`New email verification link for ${user.email}: ${verificationLink}`);
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
     
-    // In a real app, you would send an email here
-    // await sendVerificationEmail(user.email, verificationLink);
+    // Send verification email
+    const emailResult = await sendEmail(
+      user.email,
+      'EMAIL_VERIFICATION',
+      {
+        firstName: user.firstName || 'User',
+        verificationUrl: verificationLink
+      }
+    );
+
+    if (!emailResult.success) {
+      console.error('Failed to send verification email:', emailResult.error);
+      return NextResponse.json({ error: 'Failed to send verification email' }, { status: 500 });
+    }
 
     return NextResponse.json({ 
       message: 'Verification email sent successfully' 

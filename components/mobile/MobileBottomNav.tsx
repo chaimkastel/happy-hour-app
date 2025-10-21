@@ -27,7 +27,7 @@ export default function MobileBottomNav({ className = '' }: MobileBottomNavProps
   const pathname = usePathname();
 
   const handleTabClick = (href: string) => {
-    router.push(href);
+    router.push(href as any);
   };
 
   return (

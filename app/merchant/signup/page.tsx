@@ -1,27 +1,146 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Building2, Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle, User, Phone, Star, Users, TrendingUp, Shield } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  Building2, 
+  Mail, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  AlertCircle, 
+  CheckCircle,
+  User,
+  Phone,
+  MapPin,
+  Globe,
+  Check,
+  ArrowRight,
+  ChevronDown
+} from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Card, CardContent } from '@/components/ui/Card';
+import { AddressAutocomplete, parseAddressComponents } from '@/components/ui/AddressAutocomplete';
+import Image from 'next/image';
+
+const steps = [
+  { id: 1, title: 'Business Info', description: 'Tell us about your restaurant' },
+  { id: 2, title: 'Contact Details', description: 'How can we reach you?' },
+  { id: 3, title: 'Account Setup', description: 'Create your login credentials' },
+];
+
+// Countries list for phone input
+const countries = [
+  { code: 'US', name: 'United States', flag: '🇺🇸', dialCode: '+1' },
+  { code: 'CA', name: 'Canada', flag: '🇨🇦', dialCode: '+1' },
+  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', dialCode: '+44' },
+  { code: 'AU', name: 'Australia', flag: '🇦🇺', dialCode: '+61' },
+  { code: 'DE', name: 'Germany', flag: '🇩🇪', dialCode: '+49' },
+  { code: 'FR', name: 'France', flag: '🇫🇷', dialCode: '+33' },
+  { code: 'JP', name: 'Japan', flag: '🇯🇵', dialCode: '+81' },
+  { code: 'BR', name: 'Brazil', flag: '🇧🇷', dialCode: '+55' },
+  { code: 'IN', name: 'India', flag: '🇮🇳', dialCode: '+91' },
+  { code: 'IT', name: 'Italy', flag: '🇮🇹', dialCode: '+39' },
+  { code: 'ES', name: 'Spain', flag: '🇪🇸', dialCode: '+34' },
+  { code: 'MX', name: 'Mexico', flag: '🇲🇽', dialCode: '+52' },
+];
+
+const benefits = [
+  {
+    icon: '📈',
+    title: 'Increase Revenue',
+    description: 'Fill empty tables during off-peak hours',
+  },
+  {
+    icon: '👥',
+    title: 'Reach More Customers',
+    description: 'Connect with thousands of food lovers',
+  },
+  {
+    icon: '💰',
+    title: 'Flexible Pricing',
+    description: 'Set your own discount rates',
+  },
+  {
+    icon: '🔒',
+    title: 'Secure Payments',
+    description: 'Get paid instantly and securely',
+  },
+];
 
 export default function MerchantSignupPage() {
   const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState(countries[0]); // Default to US
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    // Step 1: Business Info
     businessName: '',
+    businessType: '',
+    cuisine: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    
+    // Step 2: Contact Details
+    contactName: '',
+    email: '',
     phone: '',
-    firstName: '',
-    lastName: '',
-    businessAddress: '',
-    cuisineType: '',
     website: '',
-    acceptTerms: false
+    
+    // Step 3: Account Setup
+    password: '',
+    confirmPassword: '',
+    termsAccepted: false,
+    newsletterOptIn: false,
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  const handleInputChange = (field: string, value: string | boolean) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (error) setError('');
+  };
+
+  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const countryCode = e.target.value;
+    const country = countries.find(c => c.code === countryCode);
+    if (country) {
+      setSelectedCountry(country);
+      // Optionally reset phone number or adjust it based on new country
+      setFormData(prev => ({ ...prev, phone: '' }));
+    }
+  };
+
+  const handleAddressSelect = (place: any) => {
+    if (place.address_components) {
+      const parsed = parseAddressComponents(place.address_components);
+      setFormData(prev => ({
+        ...prev,
+        address: place.formatted_address,
+        city: parsed.city || prev.city,
+        state: parsed.state || prev.state,
+        zipCode: parsed.zipCode || prev.zipCode,
+      }));
+    }
+  };
+
+  const handleNext = () => {
+    if (currentStep < 3) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,409 +148,532 @@ export default function MerchantSignupPage() {
     setError('');
     setSuccess('');
 
-    // Validate terms acceptance
-    if (!formData.acceptTerms) {
-      setError('You must accept the terms and conditions');
-      setLoading(false);
-      return;
-    }
-
     try {
       const response = await fetch('/api/merchant/signup', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       });
 
-      const result = await response.json();
+      const data = await response.json();
 
       if (response.ok) {
-        setSuccess('✅ Merchant account created successfully! You can now sign in.');
+        setSuccess('Account created successfully! Redirecting to login...');
         setTimeout(() => {
-          router.push('/merchant/login');
+          router.push('/merchant/login' as any);
         }, 2000);
       } else {
-        setError(result.error || 'Failed to create merchant account');
+        setError(data.error || 'Signup failed. Please try again.');
       }
     } catch (error) {
       console.error('Signup error:', error);
-      setError('Signup failed. Please try again.');
+      setError('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (error) setError('');
+  const isStepValid = (step: number) => {
+    switch (step) {
+      case 1:
+        return formData.businessName && formData.businessType && formData.cuisine && formData.address;
+      case 2:
+        return formData.contactName && formData.email && formData.phone;
+      case 3:
+        return formData.password && formData.confirmPassword && formData.termsAccepted && 
+               formData.password === formData.confirmPassword;
+      default:
+        return false;
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 relative overflow-hidden">
-      {/* Enhanced Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-yellow-400/5 rounded-full blur-3xl animate-pulse delay-500"></div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex">
+      {/* Left Side - Visual */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <Image
+          src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1920&h=1080&fit=crop&crop=center"
+          alt="Restaurant kitchen"
+          fill
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/80 via-purple-500/60 to-indigo-500/80" />
+        
+        {/* Floating elements */}
+        <div className="absolute top-20 left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl animate-pulse" />
+        <div className="absolute bottom-20 right-10 w-48 h-48 bg-yellow-400/20 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-pink-400/20 rounded-full blur-xl animate-pulse delay-500" />
+
+        <div className="relative z-10 flex flex-col justify-center p-12 text-white">
+          <motion.div
+            initial={{ x: -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-8">
+              <Building2 className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-5xl font-bold mb-6 leading-tight">
+              Join
+              <span className="block bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                Happy Hour
+              </span>
+            </h1>
+            <p className="text-xl text-white/90 mb-12 leading-relaxed">
+              Start filling your restaurant during off-peak hours and boost your revenue with our platform.
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="space-y-6"
+            initial={{ x: -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            {benefits.map((benefit, index) => (
+              <div key={index} className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-2xl">
+                  {benefit.icon}
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">{benefit.title}</h3>
+                  <p className="text-white/80">{benefit.description}</p>
+                </div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
       </div>
 
-      <div className="relative z-10 flex items-center justify-center min-h-screen px-4 py-8">
-        <div className="w-full max-w-6xl">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <button
-              onClick={() => router.push('/')}
-              className="inline-flex items-center text-white/80 hover:text-white mb-8 transition-colors group"
-            >
-              <ArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
-              Back to Home
-            </button>
-            
-            <div className="inline-flex items-center gap-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-6 py-3 mb-6 shadow-lg">
-              <Building2 className="w-6 h-6 text-white" />
-              <span className="text-white font-bold text-sm tracking-wide">MERCHANT SIGNUP</span>
+      {/* Right Side - Form */}
+      <div className="flex-1 flex items-center justify-center p-8 lg:p-12">
+        <motion.div
+          className="w-full max-w-2xl"
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.8 }}
+        >
+          {/* Mobile Logo */}
+          <div className="lg:hidden text-center mb-8">
+            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Building2 className="w-8 h-8 text-white" />
             </div>
-            
-            <h1 className="text-5xl md:text-6xl font-black text-white mb-4 leading-tight">
-              🍺 <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Join</span> Our Network
-            </h1>
-            <p className="text-white/90 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
-              Start attracting customers with amazing deals and boost your revenue during quiet hours
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900">Join as Merchant</h1>
+            <p className="text-gray-600 mt-2">Start your restaurant journey with us</p>
           </div>
 
-          {/* Stats Section */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 text-center hover:bg-white/15 transition-all duration-300">
-              <div className="w-12 h-12 bg-yellow-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-6 h-6 text-yellow-400" />
-              </div>
-              <div className="text-3xl font-bold text-white mb-2">10,000+</div>
-              <div className="text-white/80 text-sm">Active Partners</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 text-center hover:bg-white/15 transition-all duration-300">
-              <div className="w-12 h-12 bg-green-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <TrendingUp className="w-6 h-6 text-green-400" />
-              </div>
-              <div className="text-3xl font-bold text-white mb-2">$2M+</div>
-              <div className="text-white/80 text-sm">Revenue Generated</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 text-center hover:bg-white/15 transition-all duration-300">
-              <div className="w-12 h-12 bg-blue-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Star className="w-6 h-6 text-blue-400" />
-              </div>
-              <div className="text-3xl font-bold text-white mb-2">4.9★</div>
-              <div className="text-white/80 text-sm">Partner Rating</div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            {/* Benefits Section */}
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-3xl font-bold text-white mb-6">Why Join Happy Hour?</h2>
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-yellow-400/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <TrendingUp className="w-5 h-5 text-yellow-400" />
+          <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur-xl">
+            <CardContent className="p-8">
+              {/* Progress Steps */}
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  {steps.map((step, index) => (
+                    <div key={step.id} className="flex items-center">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
+                        currentStep >= step.id
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200 text-gray-500'
+                      }`}>
+                        {currentStep > step.id ? <Check className="w-4 h-4" /> : step.id}
+                      </div>
+                      {index < steps.length - 1 && (
+                        <div className={`w-16 h-1 mx-2 ${
+                          currentStep > step.id ? 'bg-blue-500' : 'bg-gray-200'
+                        }`} />
+                      )}
                     </div>
-                    <div>
-                      <h3 className="text-white font-semibold text-lg mb-2">Boost Revenue</h3>
-                      <p className="text-white/80">Fill empty tables during quiet hours and increase your daily revenue by up to 40%</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-green-400/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <Users className="w-5 h-5 text-green-400" />
-                    </div>
-                    <div>
-                      <h3 className="text-white font-semibold text-lg mb-2">New Customers</h3>
-                      <p className="text-white/80">Attract new customers who discover your restaurant through our platform</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-blue-400/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <Shield className="w-5 h-5 text-blue-400" />
-                    </div>
-                    <div>
-                      <h3 className="text-white font-semibold text-lg mb-2">Easy Management</h3>
-                      <p className="text-white/80">Simple dashboard to manage deals, track performance, and view analytics</p>
-                    </div>
-                  </div>
+                  ))}
+                </div>
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-gray-900">{steps[currentStep - 1].title}</h3>
+                  <p className="text-gray-600">{steps[currentStep - 1].description}</p>
                 </div>
               </div>
-            </div>
-              </div>
 
-            {/* Signup Form */}
-            <div className="bg-white/15 backdrop-blur-xl border border-white/30 rounded-3xl p-8 shadow-2xl">
-              <div className="mb-6">
-                <h3 className="text-2xl font-bold text-white mb-2">Get Started Today</h3>
-                <p className="text-white/80">Join thousands of restaurants already growing with Happy Hour</p>
-              </div>
-              
-              <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Error/Success Messages */}
               {error && (
-                <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4 flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-                  <span className="text-red-200 text-sm">{error}</span>
-                </div>
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center space-x-3"
+                >
+                  <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                  <span className="text-red-700 text-sm">{error}</span>
+                </motion.div>
               )}
 
               {success && (
-                <div className="bg-green-500/20 border border-green-500/30 rounded-xl p-4 flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-                  <span className="text-green-200 text-sm">{success}</span>
-                </div>
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center space-x-3"
+                >
+                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  <span className="text-green-700 text-sm">{success}</span>
+                </motion.div>
               )}
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-bold text-white/90 mb-3">
-                      First Name
-                    </label>
-                    <div className="relative">
-                      <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
-                      <input
-                        type="text"
+              <form onSubmit={handleSubmit}>
+                {/* Step 1: Business Info */}
+                {currentStep === 1 && (
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="space-y-6"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Restaurant Name *
+                        </label>
+                        <div className="relative">
+                          <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <Input
+                            placeholder="Enter restaurant name"
+                            value={formData.businessName}
+                            onChange={(e) => handleInputChange('businessName', e.target.value)}
+                            className="pl-12 h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Business Type *
+                        </label>
+                        <select
+                          value={formData.businessType}
+                          onChange={(e) => handleInputChange('businessType', e.target.value)}
+                          className="w-full h-12 px-4 border-2 border-gray-200 focus:border-blue-500 rounded-xl focus:ring-0"
+                          required
+                        >
+                          <option value="">Select type</option>
+                          <option value="restaurant">Restaurant</option>
+                          <option value="cafe">Cafe</option>
+                          <option value="bar">Bar</option>
+                          <option value="food_truck">Food Truck</option>
+                          <option value="bakery">Bakery</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Cuisine Type *
+                      </label>
+                      <select
+                        value={formData.cuisine}
+                        onChange={(e) => handleInputChange('cuisine', e.target.value)}
+                        className="w-full h-12 px-4 border-2 border-gray-200 focus:border-blue-500 rounded-xl focus:ring-0"
                         required
-                        value={formData.firstName}
-                        onChange={(e) => handleInputChange('firstName', e.target.value)}
-                        className="w-full pl-12 pr-4 py-4 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:bg-white shadow-sm"
-                        placeholder="John"
+                      >
+                        <option value="">Select cuisine</option>
+                        <option value="italian">Italian</option>
+                        <option value="mexican">Mexican</option>
+                        <option value="asian">Asian</option>
+                        <option value="american">American</option>
+                        <option value="mediterranean">Mediterranean</option>
+                        <option value="indian">Indian</option>
+                        <option value="thai">Thai</option>
+                        <option value="chinese">Chinese</option>
+                        <option value="japanese">Japanese</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Address *
+                      </label>
+                      <AddressAutocomplete
+                        value={formData.address}
+                        onChange={(address) => handleInputChange('address', address)}
+                        onAddressSelect={handleAddressSelect}
+                        placeholder="Enter full address"
+                        className="border-2 border-gray-200 focus:border-blue-500 rounded-xl"
+                        required
                       />
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-white/90 mb-3">
-                      Last Name
-                    </label>
-                    <div className="relative">
-                      <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
-                      <input
-                        type="text"
-                        required
-                        value={formData.lastName}
-                        onChange={(e) => handleInputChange('lastName', e.target.value)}
-                        className="w-full pl-12 pr-4 py-4 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:bg-white shadow-sm"
-                        placeholder="Doe"
-                      />
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          City *
+                        </label>
+                        <Input
+                          placeholder="City"
+                          value={formData.city}
+                          onChange={(e) => handleInputChange('city', e.target.value)}
+                          className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          State *
+                        </label>
+                        <Input
+                          placeholder="State"
+                          value={formData.state}
+                          onChange={(e) => handleInputChange('state', e.target.value)}
+                          className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          ZIP Code *
+                        </label>
+                        <Input
+                          placeholder="ZIP"
+                          value={formData.zipCode}
+                          onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                          className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl"
+                          required
+                        />
+                      </div>
                     </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-white/90 mb-3">
-                    Business Name
-                  </label>
-                  <div className="relative">
-                    <Building2 className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
-                    <input
-                      type="text"
-                      required
-                      value={formData.businessName}
-                      onChange={(e) => handleInputChange('businessName', e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:bg-white shadow-sm"
-                      placeholder="Your Restaurant Name"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-white/90 mb-3">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
-                    <input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:bg-white shadow-sm"
-                      placeholder="your@email.com"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-white/90 mb-3">
-                    Phone Number
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
-                    <input
-                      type="tel"
-                      required
-                      value={formData.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:bg-white shadow-sm"
-                      placeholder="(555) 123-4567"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-white/90 mb-3">
-                    Business Address
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      required
-                      value={formData.businessAddress}
-                      onChange={(e) => handleInputChange('businessAddress', e.target.value)}
-                      className="w-full pl-4 pr-4 py-4 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:bg-white shadow-sm"
-                      placeholder="123 Main St, City, State ZIP"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-white/90 mb-3">
-                    Cuisine Type / Business Category
-                  </label>
-                  <div className="relative">
-                    <select
-                      required
-                      value={formData.cuisineType}
-                      onChange={(e) => handleInputChange('cuisineType', e.target.value)}
-                      className="w-full pl-4 pr-4 py-4 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-900 transition-all duration-300 hover:bg-white shadow-sm"
-                    >
-                      <option value="">Select cuisine type</option>
-                      <option value="american">American</option>
-                      <option value="italian">Italian</option>
-                      <option value="mexican">Mexican</option>
-                      <option value="chinese">Chinese</option>
-                      <option value="japanese">Japanese</option>
-                      <option value="indian">Indian</option>
-                      <option value="thai">Thai</option>
-                      <option value="mediterranean">Mediterranean</option>
-                      <option value="french">French</option>
-                      <option value="greek">Greek</option>
-                      <option value="spanish">Spanish</option>
-                      <option value="middle-eastern">Middle Eastern</option>
-                      <option value="caribbean">Caribbean</option>
-                      <option value="latin-american">Latin American</option>
-                      <option value="african">African</option>
-                      <option value="seafood">Seafood</option>
-                      <option value="steakhouse">Steakhouse</option>
-                      <option value="pizza">Pizza</option>
-                      <option value="burger">Burger</option>
-                      <option value="sushi">Sushi</option>
-                      <option value="bbq">BBQ</option>
-                      <option value="vegetarian">Vegetarian</option>
-                      <option value="vegan">Vegan</option>
-                      <option value="gluten-free">Gluten-Free</option>
-                      <option value="dessert">Dessert</option>
-                      <option value="coffee">Coffee/Tea</option>
-                      <option value="bar">Bar/Pub</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-white/90 mb-3">
-                    Website / Social Media URL (Optional)
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="url"
-                      value={formData.website}
-                      onChange={(e) => handleInputChange('website', e.target.value)}
-                      className="w-full pl-4 pr-4 py-4 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:bg-white shadow-sm"
-                      placeholder="https://yourwebsite.com or @socialmedia"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-white/90 mb-3">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      value={formData.password}
-                      onChange={(e) => handleInputChange('password', e.target.value)}
-                      className="w-full pl-12 pr-12 py-4 bg-white/90 backdrop-blur-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:bg-white shadow-sm"
-                      placeholder="Create a password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Terms and Conditions */}
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    id="terms"
-                    required
-                    checked={formData.acceptTerms}
-                    onChange={(e) => setFormData(prev => ({ ...prev, acceptTerms: e.target.checked }))}
-                    className="mt-1 w-4 h-4 text-yellow-400 bg-white/10 border-white/30 rounded focus:ring-yellow-400 focus:ring-2"
-                  />
-                  <label htmlFor="terms" className="text-white/80 text-sm leading-relaxed">
-                    I agree to the{' '}
-                    <button
-                      type="button"
-                      className="text-yellow-400 hover:text-yellow-300 underline"
-                      onClick={() => router.push('/terms')}
-                    >
-                      Terms of Service
-                    </button>{' '}
-                    and{' '}
-                    <button
-                      type="button"
-                      className="text-yellow-400 hover:text-yellow-300 underline"
-                      onClick={() => router.push('/privacy')}
-                    >
-                      Privacy Policy
-                    </button>
-                  </label>
-                </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-black rounded-2xl font-bold hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 flex items-center justify-center gap-2 shadow-lg transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                {loading ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                    Creating Account...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-5 h-5" />
-                    Create Merchant Account
-                  </>
+                  </motion.div>
                 )}
-              </button>
-            </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-white/70 text-sm">
-                Already have a merchant account?{' '}
+                {/* Step 2: Contact Details */}
+                {currentStep === 2 && (
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="space-y-6"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Contact Name *
+                        </label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <Input
+                            placeholder="Your full name"
+                            value={formData.contactName}
+                            onChange={(e) => handleInputChange('contactName', e.target.value)}
+                            className="pl-12 h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Business Email *
+                        </label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <Input
+                            type="email"
+                            placeholder="business@restaurant.com"
+                            value={formData.email}
+                            onChange={(e) => handleInputChange('email', e.target.value)}
+                            className="pl-12 h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Phone Number *
+                        </label>
+                        <div className="flex">
+                          <div className="relative">
+                            <select
+                              value={selectedCountry.code}
+                              onChange={handleCountryChange}
+                              className="flex items-center px-3 py-3 border-2 border-gray-200 rounded-l-xl bg-gray-50 hover:bg-gray-100 focus:outline-none focus:border-blue-500 appearance-none pr-8 h-12"
+                            >
+                              {countries.map(country => (
+                                <option key={country.code} value={country.code}>
+                                  {country.flag} {country.dialCode}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none w-4 h-4" />
+                          </div>
+                          <input
+                            type="tel"
+                            placeholder="(123) 456-7890"
+                            value={formData.phone}
+                            onChange={(e) => handleInputChange('phone', e.target.value)}
+                            className="flex-1 px-3 py-3 border-2 border-gray-200 rounded-r-xl focus:outline-none focus:border-blue-500 h-12"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Website (Optional)
+                        </label>
+                        <div className="relative">
+                          <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <Input
+                            type="url"
+                            placeholder="https://yourrestaurant.com"
+                            value={formData.website}
+                            onChange={(e) => handleInputChange('website', e.target.value)}
+                            className="pl-12 h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Step 3: Account Setup */}
+                {currentStep === 3 && (
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="space-y-6"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Password *
+                        </label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <Input
+                            type={showPassword ? 'text' : 'password'}
+                            placeholder="Create a strong password"
+                            value={formData.password}
+                            onChange={(e) => handleInputChange('password', e.target.value)}
+                            className="pl-12 pr-12 h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl"
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          >
+                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Confirm Password *
+                        </label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <Input
+                            type="password"
+                            placeholder="Confirm your password"
+                            value={formData.confirmPassword}
+                            onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                            className="pl-12 h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <label className="flex items-start space-x-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.termsAccepted}
+                          onChange={(e) => handleInputChange('termsAccepted', e.target.checked)}
+                          className="w-5 h-5 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mt-0.5"
+                          required
+                        />
+                        <span className="text-sm text-gray-600">
+                          I agree to the{' '}
+                          <button type="button" className="text-blue-600 hover:text-blue-700 font-medium">
+                            Terms of Service
+                          </button>{' '}
+                          and{' '}
+                          <button type="button" className="text-blue-600 hover:text-blue-700 font-medium">
+                            Privacy Policy
+                          </button>
+                        </span>
+                      </label>
+
+                      <label className="flex items-start space-x-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.newsletterOptIn}
+                          onChange={(e) => handleInputChange('newsletterOptIn', e.target.checked)}
+                          className="w-5 h-5 text-blue-500 border-gray-300 rounded focus:ring-blue-500 mt-0.5"
+                        />
+                        <span className="text-sm text-gray-600">
+                          Send me updates about new features and restaurant tips
+                        </span>
+                      </label>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Navigation Buttons */}
+                <div className="flex items-center justify-between mt-8">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleBack}
+                    disabled={currentStep === 1}
+                    className="px-6 py-3 border-2 border-gray-200 text-gray-600 hover:border-gray-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back
+                  </Button>
+
+                  {currentStep < 3 ? (
+                    <Button
+                      type="button"
+                      onClick={handleNext}
+                      disabled={!isStepValid(currentStep)}
+                      className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  ) : (
+                    <Button
+                      type="submit"
+                      disabled={loading || !isStepValid(currentStep)}
+                      className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loading ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span>Creating Account...</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <Building2 className="w-4 h-4" />
+                          <span>Create Account</span>
+                        </div>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </form>
+
+              {/* Back to Consumer Signup */}
+              <div className="mt-6 text-center">
                 <button
-                  onClick={() => router.push('/merchant/login')}
-                  className="text-yellow-400 hover:text-yellow-300 font-semibold transition-colors"
+                  onClick={() => router.push('/login' as any)}
+                  className="text-sm text-gray-500 hover:text-gray-700 flex items-center justify-center space-x-1 mx-auto"
                 >
-                  Sign in here
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Back to customer login</span>
                 </button>
-              </p>
-            </div>
-          </div>
-        </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );

@@ -1,429 +1,483 @@
 'use client';
 
-import { useState } from 'react';
-import { Building2, Users, TrendingUp, DollarSign, Clock, CheckCircle, ArrowRight, Star, Shield, Zap, Target, Award, Globe, Smartphone, CreditCard, Timer, Sparkles, Crown, Diamond, Brain, Lightbulb, Sparkle, Wand2, MapPin, Heart, Search, Filter, Grid, List } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { CheckCircle, Star, Users, TrendingUp, DollarSign, Clock, Shield, Zap, ArrowRight, Phone, Mail, MapPin } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Card, CardContent } from '@/components/ui/Card';
+import Image from 'next/image';
+import Link from 'next/link';
+
+const features = [
+  {
+    icon: <Users className="w-8 h-8" />,
+    title: "Reach More Customers",
+    description: "Connect with thousands of hungry customers looking for great deals in your area."
+  },
+  {
+    icon: <TrendingUp className="w-8 h-8" />,
+    title: "Increase Sales",
+    description: "Boost revenue during slow periods with targeted happy hour and instant deals."
+  },
+  {
+    icon: <DollarSign className="w-8 h-8" />,
+    title: "Flexible Pricing",
+    description: "Start with our affordable monthly plan and scale as your business grows."
+  },
+  {
+    icon: <Clock className="w-8 h-8" />,
+    title: "Easy Management",
+    description: "Create and manage deals in minutes with our intuitive dashboard."
+  },
+  {
+    icon: <Shield className="w-8 h-8" />,
+    title: "Secure Payments",
+    description: "Get paid reliably through our secure payment processing system."
+  },
+  {
+    icon: <Zap className="w-8 h-8" />,
+    title: "Real-time Analytics",
+    description: "Track performance and optimize your deals with detailed insights."
+  }
+];
+
+const testimonials = [
+  {
+    name: "Sarah Chen",
+    restaurant: "Bamboo Garden",
+    location: "San Francisco, CA",
+    rating: 5,
+    text: "OrderHappyHour has transformed our slow Tuesday afternoons. We're now consistently busy during happy hour!"
+  },
+  {
+    name: "Marcus Rodriguez",
+    restaurant: "El Mariachi",
+    location: "Austin, TX",
+    rating: 5,
+    text: "The instant deals feature is a game-changer. We can respond to demand in real-time and fill empty tables."
+  },
+  {
+    name: "Jennifer Kim",
+    restaurant: "Sakura Sushi",
+    location: "Seattle, WA",
+    rating: 5,
+    text: "Customer acquisition cost dropped by 60% since joining. The platform pays for itself in the first week."
+  }
+];
+
+const pricing = {
+  monthly: {
+    price: 99,
+    features: [
+      "Up to 5 active deals",
+      "Unlimited redemptions",
+      "Real-time analytics",
+      "Customer support",
+      "Mobile app access",
+      "QR code generation"
+    ]
+  }
+};
 
 export default function PartnerPage() {
-  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    restaurant: '',
+    city: '',
+    state: '',
+    message: ''
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsFormSubmitted(true);
+    setSubmitting(true);
     
-    const formData = new FormData(e.target as HTMLFormElement);
-    const data = {
-      restaurantName: formData.get('restaurantName'),
-      contactName: formData.get('contactName'),
-      email: formData.get('email'),
-      phone: formData.get('phone'),
-      address: formData.get('address'),
-      cuisine: formData.get('cuisine'),
-      description: formData.get('description')
-    };
-
-    try {
-      const response = await fetch('/api/partner/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to submit application');
-      }
-      
-      console.log('Partner application submitted:', result);
-    } catch (error) {
-      console.error('Error submitting partner application:', error);
-      setIsFormSubmitted(false);
-      alert('Failed to submit application. Please try again.');
-    }
+    // Simulate form submission
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    setSubmitted(true);
+    setSubmitting(false);
   };
 
-  const benefits = [
-    {
-      icon: <TrendingUp className="w-8 h-8" />,
-      title: "Increase Revenue",
-      description: "Fill your quiet hours with customers and boost your bottom line during off-peak times."
-    },
-    {
-      icon: <Users className="w-8 h-8" />,
-      title: "Attract New Customers",
-      description: "Reach thousands of local food lovers who are actively looking for great deals."
-    },
-    {
-      icon: <DollarSign className="w-8 h-8" />,
-      title: "Flexible Pricing",
-      description: "Set your own discount rates and time windows. You control your margins."
-    },
-    {
-      icon: <Clock className="w-8 h-8" />,
-      title: "Real-time Control",
-      description: "Activate and deactivate deals instantly based on your current capacity."
-    },
-    {
-      icon: <Shield className="w-8 h-8" />,
-      title: "Secure Payments",
-      description: "Get paid quickly and securely with our integrated payment system."
-    },
-    {
-      icon: <Brain className="w-8 h-8" />,
-      title: "Smart Analytics",
-      description: "Track performance with detailed insights and customer behavior data."
-    }
-  ];
-
-  const features = [
-    {
-      icon: <Zap className="w-6 h-6" />,
-      title: "Instant Activation",
-      description: "Turn deals on/off in real-time"
-    },
-    {
-      icon: <Target className="w-6 h-6" />,
-      title: "Targeted Marketing",
-      description: "Reach customers in your area"
-    },
-    {
-      icon: <Award className="w-6 h-6" />,
-      title: "Quality Control",
-      description: "All deals are reviewed for quality"
-    },
-    {
-      icon: <Globe className="w-6 h-6" />,
-      title: "Wide Reach",
-      description: "Access to thousands of users"
-    }
-  ];
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-900">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-6">
-              <Building2 className="w-5 h-5" />
-              <span className="font-semibold text-sm">For Restaurant Partners</span>
-            </div>
+      <section className="relative bg-gradient-to-br from-orange-500 via-pink-500 to-purple-600 text-white overflow-hidden">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative max-w-7xl mx-auto px-4 py-20 lg:py-32">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <h1 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                Grow Your Restaurant with{' '}
+                <span className="text-yellow-300">OrderHappyHour</span>
+              </h1>
+              <p className="text-xl lg:text-2xl text-orange-100 mb-8 leading-relaxed">
+                Join thousands of restaurants using our platform to attract customers, 
+                increase sales, and build lasting relationships.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link href="#pricing">
+                  <Button size="lg" className="bg-white text-orange-600 hover:bg-gray-100 px-8 py-4 text-lg font-semibold rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300">
+                    Start Free Trial
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </Link>
+                <Link href="#contact">
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-orange-600 px-8 py-4 text-lg font-semibold rounded-xl">
+                    Contact Sales
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
             
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black mb-6 leading-tight">
-              Partner with <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Happy Hour</span>
-            </h1>
-            
-            <p className="text-xl text-white/90 max-w-3xl mx-auto mb-8 leading-relaxed">
-              Fill your quiet hours with customers and boost your revenue during off-peak times. 
-              Join thousands of restaurants already growing with Happy Hour.
-            </p>
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="relative"
+            >
+              <div className="relative z-10">
+                <Image
+                  src="https://images.unsplash.com/photo-1555396273-367a4b4c6837?w=600&h=400&fit=crop"
+                  alt="Restaurant partnership"
+                  width={600}
+                  height={400}
+                  className="rounded-2xl shadow-2xl"
+                />
+              </div>
+              <div className="absolute -top-4 -right-4 w-32 h-32 bg-yellow-300 rounded-full opacity-20"></div>
+              <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-pink-300 rounded-full opacity-20"></div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
 
-            <div className="flex justify-center items-center">
-              <button 
-                onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
-                className="bg-white text-indigo-600 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-gray-100 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                Get Started Free
-                <ArrowRight className="w-5 h-5 inline ml-2" />
-              </button>
+      {/* Stats Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-orange-500 mb-2">10K+</div>
+              <div className="text-gray-600">Active Restaurants</div>
             </div>
-
-            <div className="mt-12 flex items-center justify-center gap-8 text-white/80">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white">10,000+</div>
-                <div className="text-sm">Active Partners</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white">$2M+</div>
-                <div className="text-sm">Revenue Generated</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white">4.9★</div>
-                <div className="text-sm">Partner Rating</div>
-              </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-orange-500 mb-2">2M+</div>
+              <div className="text-gray-600">Deals Redeemed</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-orange-500 mb-2">$50M+</div>
+              <div className="text-gray-600">Customer Savings</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-orange-500 mb-2">4.9★</div>
+              <div className="text-gray-600">Average Rating</div>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Benefits Section */}
-      <div className="py-20 bg-slate-50 dark:bg-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4">
-              Why Partner with Happy Hour?
-            </h2>
-            <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-              Join the platform that's helping restaurants thrive during their quiet hours
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {benefits.map((benefit, index) => (
-              <div key={index} className="bg-white dark:bg-slate-900 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200 dark:border-slate-700">
-                <div className="text-indigo-600 mb-4">
-                  {benefit.icon}
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">
-                  {benefit.title}
-                </h3>
-                <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                  {benefit.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      </section>
 
       {/* Features Section */}
-      <div className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
               Everything You Need to Succeed
             </h2>
-            <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-              Powerful tools and features designed specifically for restaurant partners
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Our comprehensive platform gives you all the tools to attract customers, 
+              manage deals, and grow your business.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <div key={index} className="text-center p-6">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-xl text-indigo-600 mb-4">
-                  {feature.icon}
-                </div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">
-                  {feature.description}
-                </p>
-              </div>
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <Card className="h-full hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
+                  <CardContent className="p-8 text-center">
+                    <div className="w-16 h-16 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                      {feature.icon}
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">{feature.title}</h3>
+                    <p className="text-gray-600">{feature.description}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* How It Works Section */}
-      <div className="py-20 bg-slate-50 dark:bg-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Pricing Section */}
+      <section id="pricing" className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4">
-              How It Works
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Simple, Transparent Pricing
             </h2>
-            <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-              Get started in minutes and start seeing results immediately
+            <p className="text-xl text-gray-600">
+              Start with our basic plan and upgrade as you grow
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 text-white rounded-full text-2xl font-bold mb-6">
-                1
+          <div className="max-w-md mx-auto">
+            <Card className="relative overflow-hidden border-0 shadow-2xl">
+              <div className="absolute top-0 right-0 bg-orange-500 text-white px-4 py-2 text-sm font-semibold">
+                Most Popular
               </div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">
-                Sign Up & Set Up
-              </h3>
-              <p className="text-slate-600 dark:text-slate-400">
-                Create your restaurant profile and set your preferences for deals and timing.
-              </p>
-            </div>
+              <CardContent className="p-8">
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Merchant Pro</h3>
+                  <div className="text-5xl font-bold text-orange-500 mb-2">
+                    ${pricing.monthly.price}
+                    <span className="text-lg text-gray-500 font-normal">/month</span>
+                  </div>
+                  <p className="text-gray-600">Perfect for growing restaurants</p>
+                </div>
 
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 text-white rounded-full text-2xl font-bold mb-6">
-                2
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">
-                Create Deals
-              </h3>
-              <p className="text-slate-600 dark:text-slate-400">
-                Set your discount rates, time windows, and special offers for customers.
-              </p>
-            </div>
+                <ul className="space-y-4 mb-8">
+                  {pricing.monthly.features.map((feature, index) => (
+                    <li key={index} className="flex items-center">
+                      <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                      <span className="text-gray-700">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
 
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 text-white rounded-full text-2xl font-bold mb-6">
-                3
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">
-                Start Earning
-              </h3>
-              <p className="text-slate-600 dark:text-slate-400">
-                Watch customers discover your deals and fill your quiet hours with revenue.
-              </p>
-            </div>
+                <Link href="/merchant/signup">
+                  <Button className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+                    Start Free Trial
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </Link>
+
+                <p className="text-center text-sm text-gray-500 mt-4">
+                  14-day free trial • No setup fees • Cancel anytime
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Sign Up Form Section */}
-      <div id="signup-form" className="py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4">
-              Ready to Get Started?
+      {/* Testimonials Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              What Our Partners Say
             </h2>
-            <p className="text-lg text-slate-600 dark:text-slate-400">
-              Join thousands of restaurants already growing with Happy Hour
+            <p className="text-xl text-gray-600">
+              Join thousands of successful restaurants already using our platform
             </p>
           </div>
 
-          {!isFormSubmitted ? (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-8 border border-slate-200 dark:border-slate-700">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                      Restaurant Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="restaurantName"
-                      required
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
-                      placeholder="Your restaurant name"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                      Contact Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="contactName"
-                      required
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
-                      placeholder="Your full name"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                      Email Address *
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      required
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
-                      placeholder="your@email.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                      Phone Number *
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      required
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
-                      placeholder="(555) 123-4567"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                    Restaurant Address *
-                  </label>
-                  <input
-                    type="text"
-                    name="address"
-                    required
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
-                    placeholder="123 Main St, City, State 12345"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                    Cuisine Type *
-                  </label>
-                  <select
-                    name="cuisine"
-                    required
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
-                  >
-                    <option value="">Select cuisine type</option>
-                    <option value="american">American</option>
-                    <option value="italian">Italian</option>
-                    <option value="mexican">Mexican</option>
-                    <option value="chinese">Chinese</option>
-                    <option value="japanese">Japanese</option>
-                    <option value="indian">Indian</option>
-                    <option value="thai">Thai</option>
-                    <option value="mediterranean">Mediterranean</option>
-                    <option value="french">French</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                    Tell us about your restaurant
-                  </label>
-                  <textarea
-                    name="description"
-                    rows={4}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
-                    placeholder="What makes your restaurant special? What kind of deals would you like to offer?"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-4 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-red-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-                >
-                  Submit Application
-                  <ArrowRight className="w-5 h-5 inline ml-2" />
-                </button>
-              </form>
-            </div>
-          ) : (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-8 border border-slate-200 dark:border-slate-700 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full text-green-600 mb-6">
-                <CheckCircle className="w-8 h-8" />
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-                Application Submitted!
-              </h3>
-              <p className="text-slate-600 dark:text-slate-400 mb-6">
-                Thank you for your interest in partnering with Happy Hour. We'll review your application and get back to you within 24 hours.
-              </p>
-              <button
-                onClick={() => setIsFormSubmitted(false)}
-                className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-colors"
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                Submit Another Application
-              </button>
-            </div>
-          )}
+                <Card className="h-full hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
+                  <CardContent className="p-8">
+                    <div className="flex items-center mb-4">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                      ))}
+                    </div>
+                    <p className="text-gray-700 mb-6 italic">"{testimonial.text}"</p>
+                    <div>
+                      <div className="font-semibold text-gray-900">{testimonial.name}</div>
+                      <div className="text-orange-500 font-medium">{testimonial.restaurant}</div>
+                      <div className="text-gray-500 text-sm">{testimonial.location}</div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <h2 className="text-4xl font-bold text-gray-900 mb-6">
+                Ready to Get Started?
+              </h2>
+              <p className="text-xl text-gray-600 mb-8">
+                Join our partner program and start attracting more customers today. 
+                Our team is here to help you succeed.
+              </p>
+              
+              <div className="space-y-4">
+                <div className="flex items-center">
+                  <Phone className="w-6 h-6 text-orange-500 mr-3" />
+                  <span className="text-gray-700">1-800-ORDER-HH</span>
+                </div>
+                <div className="flex items-center">
+                  <Mail className="w-6 h-6 text-orange-500 mr-3" />
+                  <span className="text-gray-700">partners@orderhappyhour.com</span>
+                </div>
+                <div className="flex items-center">
+                  <MapPin className="w-6 h-6 text-orange-500 mr-3" />
+                  <span className="text-gray-700">Available nationwide</span>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <Card className="shadow-2xl border-0">
+                <CardContent className="p-8">
+                  {submitted ? (
+                    <div className="text-center">
+                      <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                      <h3 className="text-2xl font-bold text-gray-900 mb-2">Thank You!</h3>
+                      <p className="text-gray-600 mb-6">
+                        We'll be in touch within 24 hours to discuss your partnership.
+                      </p>
+                      <Link href="/merchant/signup">
+                        <Button className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white">
+                          Continue to Signup
+                        </Button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                        Get in Touch
+                      </h3>
+                      
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <Input
+                          name="name"
+                          placeholder="Your Name"
+                          value={formData.name}
+                          onChange={handleInputChange}
+                          required
+                        />
+                        <Input
+                          name="email"
+                          type="email"
+                          placeholder="Email Address"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
+                      
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <Input
+                          name="phone"
+                          type="tel"
+                          placeholder="Phone Number"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                        />
+                        <Input
+                          name="restaurant"
+                          placeholder="Restaurant Name"
+                          value={formData.restaurant}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+                      
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <Input
+                          name="city"
+                          placeholder="City"
+                          value={formData.city}
+                          onChange={handleInputChange}
+                        />
+                        <Input
+                          name="state"
+                          placeholder="State"
+                          value={formData.state}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+                      
+                      <textarea
+                        name="message"
+                        placeholder="Tell us about your restaurant..."
+                        value={formData.message}
+                        onChange={handleInputChange}
+                        rows={4}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      />
+                      
+                      <Button
+                        type="submit"
+                        disabled={submitting}
+                        className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                      >
+                        {submitting ? 'Sending...' : 'Send Message'}
+                      </Button>
+                    </form>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </div>
+      </section>
 
       {/* CTA Section */}
-      <div className="py-20 bg-gradient-to-r from-orange-500 to-red-500 text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Questions? We're Here to Help
+      <section className="py-20 bg-gradient-to-r from-orange-500 to-pink-500 text-white">
+        <div className="max-w-4xl mx-auto text-center px-4">
+          <h2 className="text-4xl font-bold mb-6">
+            Ready to Transform Your Restaurant?
           </h2>
-          <p className="text-xl text-white/90 mb-8">
-            Our partner success team is ready to help you get started and maximize your results.
+          <p className="text-xl text-orange-100 mb-8">
+            Join thousands of restaurants already growing with OrderHappyHour
           </p>
-          <div className="flex justify-center">
-            <button className="bg-white text-indigo-600 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-gray-100 transition-all duration-200 shadow-lg hover:shadow-xl">
-              Contact Support
-            </button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/merchant/signup">
+              <Button size="lg" className="bg-white text-orange-600 hover:bg-gray-100 px-8 py-4 text-lg font-semibold rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300">
+                Start Free Trial
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </Link>
+            <Link href="#contact">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-orange-600 px-8 py-4 text-lg font-semibold rounded-xl">
+                Contact Sales
+              </Button>
+            </Link>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

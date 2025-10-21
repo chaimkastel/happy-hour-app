@@ -115,73 +115,11 @@ export default function MobilePage() {
         setDeals(transformedDeals);
       } else {
         console.error('API response not ok:', response.status);
-        // Fallback to mock data if API fails
-        const mockDeals = [
-          {
-            id: 'mock-1',
-            title: 'Happy Hour Special',
-            description: '50% off all drinks and appetizers',
-            percentOff: 50,
-            venue: {
-              name: 'Sample Restaurant',
-              address: '123 Main St, City, State'
-            },
-            cuisine: 'American',
-            distance: '0.5 mi',
-            rating: 4.5,
-            isOpen: true
-          },
-          {
-            id: 'mock-2',
-            title: 'Lunch Deal',
-            description: '30% off lunch entrees',
-            percentOff: 30,
-            venue: {
-              name: 'Another Place',
-              address: '456 Oak Ave, City, State'
-            },
-            cuisine: 'Italian',
-            distance: '0.8 mi',
-            rating: 4.2,
-            isOpen: true
-          }
-        ];
-        setDeals(mockDeals);
+        setDeals([]);
       }
     } catch (error) {
       console.error('Error fetching deals:', error);
-      // Fallback to mock data if API fails
-      const mockDeals = [
-        {
-          id: 'mock-1',
-          title: 'Happy Hour Special',
-          description: '50% off all drinks and appetizers',
-          percentOff: 50,
-          venue: {
-            name: 'Sample Restaurant',
-            address: '123 Main St, City, State'
-          },
-          cuisine: 'American',
-          distance: '0.5 mi',
-          rating: 4.5,
-          isOpen: true
-        },
-        {
-          id: 'mock-2',
-          title: 'Lunch Deal',
-          description: '30% off lunch entrees',
-          percentOff: 30,
-          venue: {
-            name: 'Another Place',
-            address: '456 Oak Ave, City, State'
-          },
-          cuisine: 'Italian',
-          distance: '0.8 mi',
-          rating: 4.2,
-          isOpen: true
-        }
-      ];
-      setDeals(mockDeals);
+      setDeals([]);
     } finally {
       console.log('Setting loading to false');
       setLoading(false);
@@ -193,7 +131,7 @@ export default function MobilePage() {
   };
 
   const handleNavigation = (path: string) => {
-    router.push(path);
+    router.push(path as any);
     setShowMobileMenu(false);
   };
 
@@ -429,7 +367,7 @@ export default function MobilePage() {
                   <div 
                     className="w-full h-full bg-cover bg-center"
                     style={{
-                      backgroundImage: `url(https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop&crop=center&auto=format&q=80)`
+                      backgroundImage: `url(https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=300&fit=crop&crop=center&auto=format&q=80)`
                     }}
                   ></div>
                   <div className="absolute inset-0 bg-gradient-to-br from-black/20 to-black/40"></div>

@@ -1,7 +1,12 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const runtime = 'nodejs';
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { TrendingUp, Users, Building2, CreditCard, BarChart3, Activity, Eye, Calendar, DollarSign, Star, ArrowUp, ArrowDown, Target, Ticket } from 'lucide-react';
 
 interface AnalyticsData {
   overview: {
@@ -146,7 +151,7 @@ export default function AdminAnalytics() {
                 <p className="text-xs text-gray-500">Active</p>
               </div>
               <div className="w-8 h-8 md:w-12 md:h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <span className="text-lg md:text-2xl">🏪</span>
+                <Building2 className="w-6 h-6 md:w-8 md:h-8" />
               </div>
             </div>
           </div>
@@ -159,7 +164,7 @@ export default function AdminAnalytics() {
                 <p className="text-xs text-gray-500">Live</p>
               </div>
               <div className="w-8 h-8 md:w-12 md:h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <span className="text-lg md:text-2xl">🎯</span>
+                <Target className="w-6 h-6 md:w-8 md:h-8" />
               </div>
             </div>
           </div>
@@ -172,7 +177,7 @@ export default function AdminAnalytics() {
                 <p className="text-xs text-green-600">+{analytics.overview.recentRedemptions} today</p>
               </div>
               <div className="w-8 h-8 md:w-12 md:h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <span className="text-lg md:text-2xl">🎫</span>
+                <Ticket className="w-6 h-6 md:w-8 md:h-8" />
               </div>
             </div>
           </div>
@@ -205,7 +210,7 @@ export default function AdminAnalytics() {
 
           {/* Recent Redemptions */}
           <div className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl p-4 md:p-6">
-            <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-3 md:mb-4">🎫 Recent Redemptions</h2>
+            <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-3 md:mb-4">Recent Redemptions</h2>
             <div className="space-y-2 md:space-y-3 max-h-80 md:max-h-96 overflow-y-auto">
               {analytics.redemptionAnalytics.recentRedemptions.map((redemption) => (
                 <div key={redemption.id} className="p-2 md:p-3 bg-white/10 rounded-lg">
@@ -244,8 +249,8 @@ export default function AdminAnalytics() {
                   </div>
                   <p className="text-xs md:text-sm text-gray-600 mb-1 md:mb-2 truncate">{deal.venue}</p>
                   <div className="flex items-center space-x-2 md:space-x-4 text-xs md:text-sm">
-                    <span className="text-red-600">🎫 {deal.redemptions}</span>
-                    <span className="text-yellow-600">⭐ {deal.favorites}</span>
+                    <span className="text-red-600">Redemptions: {deal.redemptions}</span>
+                    <span className="text-yellow-600">Favorites: {deal.favorites}</span>
                   </div>
                 </div>
               ))}
@@ -254,7 +259,7 @@ export default function AdminAnalytics() {
 
           {/* Merchant Analytics */}
           <div className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl p-4 md:p-6">
-            <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-3 md:mb-4">🏪 Merchant Performance</h2>
+            <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-3 md:mb-4">Merchant Performance</h2>
             <div className="space-y-2 md:space-y-3">
               {analytics.merchantAnalytics.map((merchant) => (
                 <div key={merchant.id} className="p-2 md:p-3 bg-white/10 rounded-lg">
@@ -268,9 +273,9 @@ export default function AdminAnalytics() {
                   </div>
                   <p className="text-xs md:text-sm text-gray-600 mb-1 md:mb-2 truncate">{merchant.location || 'Location not set'}</p>
                   <div className="flex items-center space-x-2 md:space-x-4 text-xs md:text-sm">
-                    <span className="text-blue-600">🏢 {merchant.venueCount}</span>
-                    <span className="text-orange-600">🎯 {merchant.totalDeals}</span>
-                    <span className="text-green-600">🎫 {merchant.totalRedemptions}</span>
+                    <span className="text-blue-600">Venues: {merchant.venueCount}</span>
+                    <span className="text-orange-600">Deals: {merchant.totalDeals}</span>
+                    <span className="text-green-600">Redemptions: {merchant.totalRedemptions}</span>
                   </div>
                 </div>
               ))}

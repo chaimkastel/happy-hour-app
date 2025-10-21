@@ -56,6 +56,12 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#4f46e5',
+};
+
 export default function MobileLayout({
   children,
 }: {
@@ -67,7 +73,6 @@ export default function MobileLayout({
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#4f46e5" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

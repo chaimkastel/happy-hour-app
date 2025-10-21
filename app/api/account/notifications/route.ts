@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -12,29 +14,8 @@ export async function GET(request: NextRequest) {
 
     // For now, return mock notifications
     // In a real app, you'd have a notifications table
-    const notifications = [
-      {
-        id: '1',
-        title: 'Welcome to Happy Hour!',
-        message: 'Thanks for joining us. Start exploring deals near you!',
-        isRead: true,
-        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        id: '2',
-        title: 'New Deal Available',
-        message: 'Check out the 50% off deal at Brooklyn Bistro!',
-        isRead: false,
-        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        id: '3',
-        title: 'Deal Expiring Soon',
-        message: 'Your deal at Pizza Palace expires in 2 hours!',
-        isRead: false,
-        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-    ];
+    // Return empty notifications for now - will be populated when real notifications are created
+    const notifications: any[] = [];
 
     return NextResponse.json({ notifications });
   } catch (error) {

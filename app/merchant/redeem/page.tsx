@@ -28,16 +28,16 @@ export default function MerchantRedeemPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  // Mock QR code data for demonstration
+  // TODO: Remove mock data and implement real QR scanning
   const mockQRData = {
-    dealId: 'cmet8jupr000bye91qv8nyweh',
-    dealTitle: 'Happy Hour Special',
-    customerName: 'John Doe',
-    customerEmail: 'john.doe@example.com',
-    venueName: 'Crown Heights Trattoria',
-    percentOff: 50,
-    minSpend: 25,
-    inPersonOnly: true,
+    dealId: '',
+    dealTitle: '',
+    customerName: '',
+    customerEmail: '',
+    venueName: '',
+    percentOff: 0,
+    minSpend: 0,
+    inPersonOnly: false,
     status: 'PENDING' as const
   };
 
@@ -188,17 +188,7 @@ export default function MerchantRedeemPage() {
                   </button>
                 </div>
 
-                {/* Demo QR Code for testing */}
-                <div className="text-center mt-6 p-4 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-2">Demo: Click to simulate QR scan</p>
-                  <button
-                    onClick={() => handleQRCodeScan('demo-qr-code')}
-                    className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    <QrCode className="w-4 h-4 mr-2" />
-                    Test QR Code
-                  </button>
-                </div>
+                {/* TODO: Remove demo QR code section in production */}
               </div>
             )}
           </div>

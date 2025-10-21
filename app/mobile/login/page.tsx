@@ -23,12 +23,8 @@ export default function MobileLoginPage() {
       // Simulate login API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // For demo purposes, accept any email/password
-      if (email && password) {
-        window.location.href = '/mobile/explore';
-      } else {
-        setError('Please enter both email and password');
-      }
+      // TODO: Implement proper authentication
+      setError('Authentication not implemented yet');
     } catch (err) {
       setError('Login failed. Please try again.');
     } finally {

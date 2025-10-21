@@ -1,81 +1,118 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { z } from 'zod';
+import { rateLimit } from '@/lib/rate-limit';
+
+// Rate limit: 10 subscriptions per 15 minutes per IP
+const newsletterRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  maxRequests: 10,
+});
+
+const newsletterSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  source: z.string().optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
+    // Apply rate limiting
+    const rateLimitResult = await newsletterRateLimit(request);
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many subscription attempts. Please try again later.' },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil((rateLimitResult.resetTime! - Date.now()) / 1000).toString(),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
-    const { email, name } = body;
+    const { email, firstName, lastName, source } = newsletterSchema.parse(body);
 
-    // Validate email
-    if (!email) {
-      return NextResponse.json(
-        { error: 'Email is required' },
-        { status: 400 }
-      );
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: 'Please enter a valid email address' },
-        { status: 400 }
-      );
-    }
-
-    // Check if email already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() }
+    // Check if email is already subscribed
+    const existingSubscription = await prisma.newsletter.findUnique({
+      where: { email: email.toLowerCase() },
     });
 
-    if (existingUser) {
-      // Update existing user to opt into newsletter
-      await prisma.user.update({
-        where: { id: existingUser.id },
-        data: { newsletterOptIn: true }
-      });
-
-      return NextResponse.json({
-        message: 'Successfully subscribed to newsletter',
-        alreadySubscribed: true
-      });
+    if (existingSubscription) {
+      return NextResponse.json({ error: 'Email already subscribed' }, { status: 400 });
     }
 
-    // Create new newsletter subscriber
-    const subscriber = await prisma.user.create({
+    // Create new subscription
+    const subscription = await prisma.newsletter.create({
       data: {
         email: email.toLowerCase(),
-        firstName: name || null,
-        newsletterOptIn: true,
-        role: 'USER',
-        createdAt: new Date(),
-        updatedAt: new Date()
       },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        newsletterOptIn: true
-      }
     });
 
-    // Note: Welcome email is implemented but uses console logging
-    // In production, integrate with an email service like SendGrid or Resend
-    // await sendWelcomeEmail(subscriber.email, subscriber.firstName);
+    // Log the subscription
+    await prisma.auditLog.create({
+      data: {
+        action: 'NEWSLETTER_SUBSCRIBE',
+        entity: 'newsletter',
+        entityId: subscription.id,
+        metadata: {
+          email: subscription.email,
+        },
+      },
+    });
 
-    return NextResponse.json({
-      message: 'Successfully subscribed to newsletter',
-      subscriber: {
-        id: subscriber.id,
-        email: subscriber.email,
-        firstName: subscriber.firstName
-      }
-    }, { status: 201 });
-
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Successfully subscribed to newsletter' 
+    });
   } catch (error) {
     console.error('Newsletter subscription error:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: error.issues[0].message },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
-      { error: 'Failed to subscribe to newsletter. Please try again.' },
+      { error: 'Failed to subscribe to newsletter' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { email } = z.object({ email: z.string().email() }).parse(body);
+
+    const subscription = await prisma.newsletter.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+
+    if (!subscription) {
+      return NextResponse.json({ error: 'Subscription not found' }, { status: 404 });
+    }
+
+    await prisma.newsletter.delete({
+      where: { id: subscription.id },
+    });
+
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Successfully unsubscribed from newsletter' 
+    });
+  } catch (error) {
+    console.error('Newsletter unsubscription error:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: error.issues[0].message },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json(
+      { error: 'Failed to unsubscribe from newsletter' },
       { status: 500 }
     );
   }

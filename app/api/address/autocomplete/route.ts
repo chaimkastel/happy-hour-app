@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, rateLimitConfigs } from '@/lib/rate-limit';
 import { validateRequest, schemas, validateSearchQuery } from '@/lib/validation';
+import { isFeatureEnabled, getOptionalEnv } from '@/lib/env';
 
 // Force dynamic rendering for autocomplete API
 export const dynamic = 'force-dynamic';
@@ -8,17 +9,17 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     // Apply rate limiting
-    const rateLimitResult = rateLimit(request, rateLimitConfigs.autocomplete);
+    const rateLimitFn = rateLimit(rateLimitConfigs.search);
+    const rateLimitResult = await rateLimitFn(request);
     if (!rateLimitResult.success) {
       return NextResponse.json(
         { error: 'Too many requests. Please try again later.' },
         { 
           status: 429,
           headers: {
-            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
             'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-            'X-RateLimit-Reset': rateLimitResult.resetTime.toString(),
-            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
+            'X-RateLimit-Reset': rateLimitResult.resetTime?.toString() || '0',
+            'Retry-After': Math.ceil(((rateLimitResult.resetTime || Date.now()) - Date.now()) / 1000).toString()
           }
         }
       );
@@ -58,9 +59,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const apiKey = process.env.GOOGLE_PLACES_API_KEY;
-    if (!apiKey) {
-      console.log('Google Places API key not configured, using Nominatim fallback');
+    // Check if Google Places API is available
+    if (!isFeatureEnabled('places')) {
+      console.log('Google Places API not configured, using Nominatim fallback');
       // Use Nominatim OpenStreetMap API as fallback
       try {
         // Try multiple searches to get better neighborhood results
@@ -179,6 +180,7 @@ export async function GET(request: NextRequest) {
     const rateLimitKey = `autocomplete:${request.ip || 'unknown'}`;
     // In production, implement proper rate limiting with Redis or similar
 
+    const apiKey = getOptionalEnv('GOOGLE_PLACES_API_KEY');
     const response = await fetch(
       `https://maps.googleapis.com/maps/api/place/autocomplete/json?` +
       `input=${encodeURIComponent(query)}&` +

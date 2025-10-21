@@ -1,118 +1,144 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '../../../../lib/db';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { z } from 'zod';
+
+export const dynamic = 'force-dynamic';
+
+const updateMerchantSchema = z.object({
+  kycStatus: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(),
+});
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status');
-    const kycStatus = searchParams.get('kycStatus');
+    const session = await getServerSession(authOptions);
     
-    let whereClause: any = {};
-    if (kycStatus) {
-      whereClause.kycStatus = kycStatus;
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    const merchants = await prisma.merchant.findMany({
-      where: whereClause,
-      include: {
-        user: true,
-        venues: {
-          include: {
-            deals: true
+    // Check if user is admin
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    if (user?.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Forbidden' },
+        { status: 403 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const status = searchParams.get('status');
+
+    const where = status ? { kycStatus: status === 'approved' ? 'APPROVED' : 'PENDING' } : {};
+
+    const [merchants, total] = await Promise.all([
+      db.merchant.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              email: true,
+              createdAt: true
+            }
+          },
+          venues: {
+            select: {
+              id: true,
+              name: true,
+              address: true
+            }
+          },
+          _count: {
+            select: {
+              venues: true
+            }
           }
         },
-        subscription: true
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
-
-    // Transform the data for admin display
-    const transformedMerchants = merchants.map(merchant => ({
-      id: merchant.id,
-      email: merchant.user.email,
-      businessName: merchant.businessName,
-      contactName: merchant.user.email.split('@')[0], // Fallback since we don't have contactName in User model
-      phone: merchant.user.phone,
-      address: merchant.venues[0]?.address || 'Not provided',
-      subscription: merchant.subscription?.plan || 'FREE',
-      isActive: merchant.kycStatus === 'APPROVED',
-      createdAt: merchant.createdAt,
-      updatedAt: merchant.updatedAt,
-      kycStatus: merchant.kycStatus,
-      dealsCount: merchant.venues.reduce((total, venue) => total + venue.deals.length, 0),
-      venuesCount: merchant.venues.length,
-      totalRevenue: 0, // You might want to calculate this from actual transactions
-      venues: merchant.venues.map(venue => ({
-        id: venue.id,
-        name: venue.name,
-        address: venue.address,
-        businessType: venue.businessType,
-        rating: venue.rating,
-        isVerified: venue.isVerified,
-        dealsCount: venue.deals.length
-      }))
-    }));
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit
+      }),
+      db.merchant.count({ where })
+    ]);
 
     return NextResponse.json({
-      merchants: transformedMerchants,
-      total: transformedMerchants.length
+      merchants,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
     });
   } catch (error) {
-    console.error('Error fetching admin merchants:', error);
+    console.error('Error fetching merchants:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch merchants' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
 
-export async function PUT(request: NextRequest) {
+export async function PATCH(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { merchantId, kycStatus, adminNotes } = body;
-
-    if (!merchantId || !kycStatus) {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.id) {
       return NextResponse.json(
-        { error: 'Merchant ID and KYC status are required' },
-        { status: 400 }
+        { error: 'Unauthorized' },
+        { status: 401 }
       );
     }
 
-    // Update the merchant KYC status
-    const updatedMerchant = await prisma.merchant.update({
+    // Check if user is admin
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    if (user?.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Forbidden' },
+        { status: 403 }
+      );
+    }
+
+    const body = await request.json();
+    const { merchantId, ...updateData } = body;
+    
+    const validatedData = updateMerchantSchema.parse(updateData);
+
+    const merchant = await db.merchant.update({
       where: { id: merchantId },
-      data: {
-        kycStatus: kycStatus,
-        updatedAt: new Date()
-      },
+      data: validatedData,
       include: {
-        user: true,
-        venues: true
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true
+          }
+        }
       }
     });
 
-    // Log the admin action
-    console.log(`Admin action: Merchant ${merchantId} KYC status changed to ${kycStatus}`, {
-      adminNotes,
-      timestamp: new Date().toISOString()
-    });
-
-    return NextResponse.json({
-      success: true,
-      message: `Merchant ${kycStatus.toLowerCase()} successfully`,
-      merchant: {
-        id: updatedMerchant.id,
-        businessName: updatedMerchant.businessName,
-        kycStatus: updatedMerchant.kycStatus,
-        email: updatedMerchant.user.email
-      }
-    });
+    return NextResponse.json({ merchant });
   } catch (error) {
     console.error('Error updating merchant:', error);
     return NextResponse.json(
-      { error: 'Failed to update merchant' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
