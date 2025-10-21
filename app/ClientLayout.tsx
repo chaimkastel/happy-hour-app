@@ -62,10 +62,6 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const toggleLogin = () => {
-    setIsLoggedIn(!isLoggedIn);
-  };
-
   const dispatchLocation = (lat: number, lng: number, label?: string) => {
     try {
       if (label) localStorage.setItem('hh:lastLocationLabel', label);
