@@ -15,8 +15,8 @@ interface Deal {
   percentOff?: number;
   originalPrice?: number;
   discountedPrice?: number;
-  startsAt: string;
-  endsAt: string;
+  startAt: string;
+  endAt: string;
   venue: {
     name: string;
     address: string;
@@ -78,7 +78,7 @@ export default function ExplorePage() {
         // Apply sorting
         if (sortBy === 'newest') {
           filteredDeals.sort((a: Deal, b: Deal) => 
-            new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()
+            new Date(b.startAt).getTime() - new Date(a.startAt).getTime()
           );
         } else if (sortBy === 'discount') {
           filteredDeals.sort((a: Deal, b: Deal) => 
@@ -86,7 +86,7 @@ export default function ExplorePage() {
           );
         } else if (sortBy === 'ending-soon') {
           filteredDeals.sort((a: Deal, b: Deal) => 
-            new Date(a.endsAt).getTime() - new Date(b.endsAt).getTime()
+            new Date(a.endAt).getTime() - new Date(b.endAt).getTime()
           );
         }
         
@@ -133,11 +133,11 @@ export default function ExplorePage() {
     if (deals.length > 0) {
       const sorted = [...deals];
       if (sortBy === 'newest') {
-        sorted.sort((a, b) => new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime());
+        sorted.sort((a, b) => new Date(b.startAt).getTime() - new Date(a.startAt).getTime());
       } else if (sortBy === 'discount') {
         sorted.sort((a, b) => (b.percentOff || 0) - (a.percentOff || 0));
       } else if (sortBy === 'ending-soon') {
-        sorted.sort((a, b) => new Date(a.endsAt).getTime() - new Date(b.endsAt).getTime());
+        sorted.sort((a, b) => new Date(a.endAt).getTime() - new Date(b.endAt).getTime());
       }
       setDeals(sorted);
     }
@@ -200,10 +200,10 @@ export default function ExplorePage() {
     });
   };
 
-  const isDealActive = (startsAt: string, endsAt: string) => {
+  const isDealActive = (startAt: string, endAt: string) => {
     const now = new Date();
-    const start = new Date(startsAt);
-    const end = new Date(endsAt);
+    const start = new Date(startAt);
+    const end = new Date(endAt);
     return now >= start && now <= end;
   };
 
@@ -361,7 +361,7 @@ export default function ExplorePage() {
                       }`} 
                     />
                   </button>
-                  {isDealActive(deal.startsAt, deal.endsAt) && (
+                  {isDealActive(deal.startAt, deal.endAt) && (
                     <div className="absolute top-3 left-3 px-2 py-1 bg-green-500 text-white text-xs font-medium rounded-full">
                       Live Now
                     </div>
@@ -412,7 +412,7 @@ export default function ExplorePage() {
                   <div className="flex items-center text-sm text-gray-500 mb-4">
                     <Clock className="w-4 h-4 mr-1" />
                     <span>
-                      {formatTime(deal.startsAt)} - {formatTime(deal.endsAt)}
+                      {formatTime(deal.startAt)} - {formatTime(deal.endAt)}
                     </span>
                   </div>
 

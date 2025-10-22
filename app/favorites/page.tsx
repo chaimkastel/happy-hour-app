@@ -15,8 +15,8 @@ interface FavoriteDeal {
     percentOff?: number;
     originalPrice?: number;
     discountedPrice?: number;
-    startsAt: string;
-    endsAt: string;
+    startAt: string;
+    endAt: string;
     venue: {
       name: string;
       address: string;
@@ -94,10 +94,10 @@ export default function FavoritesPage() {
     });
   };
 
-  const isDealActive = (startsAt: string, endsAt: string) => {
+  const isDealActive = (startAt: string, endAt: string) => {
     const now = new Date();
-    const start = new Date(startsAt);
-    const end = new Date(endsAt);
+    const start = new Date(startAt);
+    const end = new Date(endAt);
     return now >= start && now <= end;
   };
 
@@ -203,13 +203,13 @@ export default function FavoritesPage() {
                   <div className="flex items-center text-sm text-gray-500 mb-4">
                     <Clock className="w-4 h-4 mr-1" />
                     <span>
-                      {formatDate(favorite.deal.startsAt)} - {formatTime(favorite.deal.startsAt)} to {formatTime(favorite.deal.endsAt)}
+                      {formatDate(favorite.deal.startAt)} - {formatTime(favorite.deal.startAt)} to {formatTime(favorite.deal.endAt)}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                      {isDealActive(favorite.deal.startsAt, favorite.deal.endsAt) ? (
+                      {isDealActive(favorite.deal.startAt, favorite.deal.endAt) ? (
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                           Active Now
                         </span>

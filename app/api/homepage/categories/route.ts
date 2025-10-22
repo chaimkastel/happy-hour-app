@@ -29,22 +29,32 @@ export async function GET() {
 }
 
 async function getCategoryCount(name: string, icon: string, image: string) {
-  const count = await prisma.deal.count({
-    where: {
-      active: true,
-      startAt: { lte: new Date() },
-      endAt: { gte: new Date() },
-      OR: [
-        { title: { contains: name, mode: 'insensitive' } },
-        { description: { contains: name, mode: 'insensitive' } },
-      ]
-    }
-  });
+  try {
+    const count = await prisma.deal.count({
+      where: {
+        active: true,
+        startAt: { lte: new Date() },
+        endAt: { gte: new Date() },
+        OR: [
+          { title: { contains: name, mode: 'insensitive' } },
+          { description: { contains: name, mode: 'insensitive' } },
+        ]
+      }
+    });
 
-  return {
-    name,
-    icon,
-    count,
-    image
-  };
+    return {
+      name,
+      icon,
+      count,
+      image
+    };
+  } catch (error) {
+    console.error(`Error counting category ${name}:`, error);
+    return {
+      name,
+      icon,
+      count: 0,
+      image
+    };
+  }
 }
