@@ -58,8 +58,8 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: any = {
       active: true,
-      startsAt: { lte: new Date() },
-      endsAt: { gte: new Date() },
+      startAt: { lte: new Date() },
+      endAt: { gte: new Date() },
     };
 
     // Add search conditions
