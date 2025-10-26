@@ -23,7 +23,7 @@ interface Deal {
   price?: number;
   startsAt: string;
   endsAt: string;
-  active: boolean;
+  status: string;
   maxRedemptions: number;
   redeemedCount: number;
   venue: {

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Clock, ArrowRight, Star, Edit3, Fire } from 'lucide-react';
+import { MapPin, Clock, ArrowRight, Star, Edit3, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import Image from 'next/image';
@@ -24,7 +24,7 @@ interface Deal {
   endingSoon: boolean;
 }
 
-export default function HomePageNew() {
+export default function HomePage() {
   const [location, setLocation] = useState('Downtown LA');
   const [timeRange, setTimeRange] = useState('Now - 8pm');
   const [happeningNow, setHappeningNow] = useState<Deal[]>([]);
@@ -94,7 +94,7 @@ export default function HomePageNew() {
           />
           {deal.endingSoon && (
             <div className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-              <Fire className="w-3 h-3" />
+               <Flame className="w-3 h-3" />
               Ending Soon
             </div>
           )}
@@ -192,7 +192,7 @@ export default function HomePageNew() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <SectionHeader title="Happening Now" icon={Fire} subtitle="Ending soon" />
+           <SectionHeader title="Happening Now" icon={Flame} subtitle="Ending soon" />
           
           {loading ? (
             <div className="flex gap-4 overflow-x-auto pb-4">
@@ -270,4 +270,3 @@ export default function HomePageNew() {
     </div>
   );
 }
-
