@@ -2,673 +2,272 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, MapPin, Star, Clock, ArrowRight, Play, Heart, Share2, Filter, Building2 } from 'lucide-react';
+import { MapPin, Clock, ArrowRight, Star, Edit3, Fire } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Skeleton } from '@/components/ui/Skeleton';
-import OnboardingGuide from '@/components/onboarding/OnboardingGuide';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import BottomNav from '@/components/navigation/BottomNav';
 
-interface HomepageStats {
-  totalUsers: number;
-  totalMerchants: number;
-  totalVenues: number;
-  totalDeals: number;
-  totalVouchers: number;
-  totalRedemptions: number;
-  activeDeals: number;
-  estimatedSavings: number;
-}
-
-interface FeaturedDeal {
+interface Deal {
   id: string;
   title: string;
   description: string;
+  percentOff: number;
   restaurant: string;
-    address: string;
-  city: string;
-  state: string;
+  address: string;
   rating: number;
-  originalPrice: number | null;
-  discountPrice: number | null;
-  percentOff: number | null;
-  timeLeft: string;
+  timeWindow: string;
   image: string;
-  tags: string[];
-  isNew: boolean;
-  isTrending: boolean;
-  vouchersIssued: number;
-  favorites: number;
+  distance: string;
+  endingSoon: boolean;
 }
 
-interface Category {
-  name: string;
-  icon: string;
-  count: number;
-  image: string;
-}
-
-const testimonials = [
-  {
-    name: 'Sarah Chen',
-    role: 'Food Blogger',
-    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=60&h=60&fit=crop&crop=face',
-    text: 'I\'ve saved over $200 this month using Happy Hour. The deals are incredible!',
-    rating: 5,
-  },
-  {
-    name: 'Marcus Johnson',
-    role: 'Local Foodie',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face',
-    text: 'Finally found a way to enjoy fine dining without breaking the bank.',
-    rating: 5,
-  },
-];
-
-export default function HomePage() {
-  const [searchQuery, setSearchQuery] = useState('');
+export default function HomePageNew() {
   const [location, setLocation] = useState('Downtown LA');
-  const [stats, setStats] = useState<HomepageStats | null>(null);
-  const [featuredDeals, setFeaturedDeals] = useState<FeaturedDeal[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [timeRange, setTimeRange] = useState('Now - 8pm');
+  const [happeningNow, setHappeningNow] = useState<Deal[]>([]);
+  const [tonightDeals, setTonightDeals] = useState<Deal[]>([]);
+  const [recommendations, setRecommendations] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [statsRes, dealsRes, categoriesRes] = await Promise.all([
-          fetch('/api/homepage/stats'),
-          fetch('/api/homepage/featured-deals'),
-          fetch('/api/homepage/categories'),
-        ]);
+    // Fetch personalized deals
+    fetchDeals();
+  }, []);
 
-        const statsData = await statsRes.json();
-        const dealsData = await dealsRes.json();
-        const categoriesData = await categoriesRes.json();
+  const fetchDeals = async () => {
+    try {
+      // Fetch deals based on time and location
+      const [nowRes, tonightRes, recRes] = await Promise.all([
+        fetch('/api/deals/search?q=&limit=10'),
+        fetch('/api/deals/search?q=&limit=6'),
+        fetch('/api/deals/search?q=pizza&limit=4'),
+      ]);
 
-        setStats(statsData);
-        setFeaturedDeals(dealsData.deals || []);
-        setCategories(categoriesData.categories || []);
+      const nowData = await nowRes.json();
+      const tonightData = await tonightRes.json();
+      const recData = await recRes.json();
+
+      setHappeningNow(transformDeals(nowData.deals || []));
+      setTonightDeals(transformDeals(tonightData.deals || []));
+      setRecommendations(transformDeals(recData.deals || []));
     } catch (error) {
-        console.error('Error fetching homepage data:', error);
+      console.error('Error fetching deals:', error);
     } finally {
       setLoading(false);
     }
   };
 
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    // Show onboarding for new users
-    const hasCompleted = localStorage.getItem('onboarding_completed');
-    if (!hasCompleted) {
-      // Delay showing onboarding to let the page load
-      const timer = setTimeout(() => {
-        setShowOnboarding(true);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/explore?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
+  const transformDeals = (deals: any[]): Deal[] => {
+    return deals.map(deal => ({
+      id: deal.id,
+      title: deal.title,
+      description: deal.description,
+      percentOff: deal.percentOff || 0,
+      restaurant: deal.venue?.name || 'Restaurant',
+      address: deal.venue?.address || 'Address',
+      rating: deal.venue?.rating || 4.5,
+      timeWindow: `${new Date(deal.startAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} - ${new Date(deal.endAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`,
+      image: Array.isArray(deal.venue?.photos) ? JSON.parse(deal.venue.photos)[0] : 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop',
+      distance: '0.3mi',
+      endingSoon: false,
+    }));
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50">
-      {/* Hero Section */}
-      <motion.section
-        className="relative min-h-screen flex items-center justify-center overflow-hidden"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-      >
-        <div className="absolute inset-0 z-0">
+  const DealCard = ({ deal, large = false }: { deal: Deal; large?: boolean }) => (
+    <motion.div
+      className={`flex-shrink-0 ${large ? 'w-72' : 'w-64'}`}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+    >
+      <Card className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+            onClick={() => router.push(`/deal/${deal.id}/view`)}>
+        <div className="relative h-48">
           <Image
-            src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1920&h=1080&fit=crop&crop=center"
-            alt="Restaurant scene"
+            src={deal.image}
+            alt={deal.title}
             fill
             className="object-cover"
-            priority
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/60" />
-          </div>
-
-        {/* Floating elements */}
-        <div className="absolute top-20 left-10 w-20 h-20 bg-orange-500/20 rounded-full blur-xl animate-pulse" />
-        <div className="absolute bottom-20 right-10 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl animate-pulse delay-1000" />
-        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-purple-500/20 rounded-full blur-lg animate-pulse delay-500" />
-
-        <div className="relative z-10 max-w-6xl mx-auto px-4 py-20 text-center">
-          <motion.div
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="mb-8"
-          >
-            <h1 className="text-6xl md:text-8xl font-bold text-white mb-6 leading-tight">
-              Discover
-              <span className="block bg-gradient-to-r from-orange-400 via-pink-400 to-red-400 bg-clip-text text-transparent">
-                Amazing Deals
-              </span>
-            </h1>
-            <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Save up to 70% on premium restaurants. Experience fine dining at incredible prices during off-peak hours.
-            </p>
-          </motion.div>
-
-          {/* Premium Search Bar */}
-          <motion.div
-            className="max-w-2xl mx-auto mb-8"
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            <form onSubmit={handleSearch} className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-pink-500/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300" />
-              <div className="relative bg-white/95 backdrop-blur-xl rounded-2xl p-2 shadow-2xl border border-white/20">
-                <div className="flex items-center">
-                  <Search className="w-6 h-6 text-gray-400 ml-4" />
-                  <div className="w-full">
-                    <Input
-                type="text"
-                placeholder="Search restaurants, cuisines, or deals..."
-                value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="border-0 bg-transparent text-lg placeholder-gray-500 focus:ring-0 flex-1"
-              />
+          {deal.endingSoon && (
+            <div className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+              <Fire className="w-3 h-3" />
+              Ending Soon
             </div>
-                  <Button 
-                    type="submit"
-                    className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                  >
-                    Search
-                  </Button>
+          )}
+          <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-orange-600 font-bold text-lg px-3 py-1 rounded-lg">
+            {deal.percentOff}% OFF
           </div>
-            </div>
-            </form>
-          </motion.div>
-
-          {/* Location */}
-          <motion.div
-            className="flex items-center justify-center text-white/80 mb-12"
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-          >
-            <MapPin className="w-5 h-5 mr-2" />
-            <span className="text-lg font-medium">{location}</span>
-          </motion.div>
-
-          {/* Stats */}
-          <motion.div
-            className="grid grid-cols-3 gap-8 max-w-2xl mx-auto"
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-          >
-        <div className="text-center">
-              <div className="text-3xl font-bold text-white mb-1">
-                {loading ? '...' : stats && stats.totalUsers > 0 ? `${stats.totalUsers}+` : 'Join Us!'}
         </div>
-              <div className="text-white/70">
-                {loading ? 'Loading...' : stats && stats.totalUsers > 0 ? 'Happy Users' : 'Be the first'}
-              </div>
-      </div>
-        <div className="text-center">
-              <div className="text-3xl font-bold text-white mb-1">
-                {loading ? '...' : stats && stats.estimatedSavings > 0 ? `$${Math.floor(stats.estimatedSavings / 1000)}K+` : 'Start Saving'}
-        </div>
-              <div className="text-white/70">
-                {loading ? 'Loading...' : stats && stats.estimatedSavings > 0 ? 'Saved' : 'Your savings await'}
-              </div>
-      </div>
-          <div className="text-center">
-              <div className="text-3xl font-bold text-white mb-1">
-                {loading ? '...' : stats && stats.totalVenues > 0 ? `${stats.totalVenues}+` : 'Coming Soon'}
-              </div>
-              <div className="text-white/70">
-                {loading ? 'Loading...' : stats && stats.totalVenues > 0 ? 'Restaurants' : 'More venues joining'}
-              </div>
-              </div>
-          </motion.div>
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-lg text-gray-900 truncate">{deal.restaurant}</h3>
+              <p className="text-sm text-gray-600 truncate">{deal.title}</p>
             </div>
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-          <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-white/70 rounded-full mt-2" />
-              </div>
+            <div className="flex items-center gap-1 ml-2">
+              <Star className="w-4 h-4 text-yellow-500 fill-current" />
+              <span className="text-sm font-medium">{deal.rating}</span>
             </div>
-      </motion.section>
-
-      {/* Categories Section */}
-      <motion.section
-        className="py-20 px-4"
-        initial={{ y: 50, opacity: 0 }}
-        whileInView={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        viewport={{ once: true }}
-      >
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Explore by Category</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Discover amazing deals across all your favorite cuisines and dining experiences
-              </p>
+          </div>
+          
+          <div className="flex items-center gap-3 text-xs text-gray-500 mb-3">
+            <span className="flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              {deal.distance}
+            </span>
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {deal.timeWindow}
+            </span>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {loading ? (
-              // Loading skeleton
-              Array.from({ length: 6 }).map((_, index) => (
-                <Skeleton key={index} className="h-32 rounded-xl" />
-              ))
-            ) : categories.length > 0 ? (
-              categories.map((category, index) => (
-                <motion.div
-                  key={category.name}
-                  className="group cursor-pointer"
-                  initial={{ y: 20, opacity: 0 }}
-                  whileInView={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => router.push(`/explore?category=${encodeURIComponent(category.name)}`)}
-                >
-                  <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-white/80 backdrop-blur-sm">
-                    <div className="relative h-32">
-                      <Image
-                        src={category.image}
-                        alt={category.name}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-300"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                      <div className="absolute bottom-2 left-2 right-2">
-                        <div className="text-2xl mb-1">{category.icon}</div>
-                        <div className="text-white font-semibold text-sm">{category.name}</div>
-                        <div className="text-white/80 text-xs">
-                          {category.count > 0 ? `${category.count} deals` : 'Coming soon'}
-                        </div>
-              </div>
-              </div>
-                  </Card>
-                </motion.div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12">
-                <div className="text-gray-500 text-lg mb-4">Categories coming soon!</div>
-                <p className="text-gray-400 mb-6">We're working on bringing you amazing deals across all your favorite cuisines.</p>
-                <Link href="/explore">
-                  <Button className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white px-6 py-2 rounded-lg font-semibold">
-                    Browse All Deals
-                  </Button>
-                </Link>
-              </div>
-            )}
-            </div>
-              </div>
-      </motion.section>
+          <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold">
+            View & Redeem
+            <ArrowRight className="w-4 h-4 ml-1" />
+          </Button>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
 
-      {/* Featured Deals Section */}
-      <motion.section
-        className="py-20 px-4 bg-gradient-to-br from-gray-50 to-white"
-        initial={{ y: 50, opacity: 0 }}
-        whileInView={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        viewport={{ once: true }}
-      >
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-16">
-            <div>
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Featured Deals</h2>
-              <p className="text-xl text-gray-600">Handpicked premium restaurants with incredible savings</p>
-            </div>
-            <Link href="/explore">
-              <Button className="hidden md:flex items-center space-x-2 border-2 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white transition-all duration-300">
-                <span>View All</span>
-                <ArrowRight className="w-5 h-5" />
+  const EmptyState = ({ message, suggestion }: { message: string; suggestion: string }) => (
+    <div className="text-center py-12 px-4">
+      <p className="text-gray-500 text-lg mb-2">{message}</p>
+      <p className="text-gray-400 text-sm">{suggestion}</p>
+    </div>
+  );
+
+  const SectionHeader = ({ title, icon: Icon, subtitle }: { title: string; icon: any; subtitle?: string }) => (
+    <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center gap-2">
+        {Icon && <Icon className="w-6 h-6 text-orange-600" />}
+        <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+      </div>
+      {subtitle && (
+        <span className="text-sm text-gray-500">{subtitle}</span>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50 pb-20">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="px-4 py-4 max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-2xl font-bold text-gray-900">Happy Hour</h1>
+            <Link href="/account">
+              <Button variant="ghost" size="sm">
+                Account
               </Button>
             </Link>
-      </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {loading ? (
-              // Loading skeleton
-              Array.from({ length: 3 }).map((_, index) => (
-                <Skeleton key={index} className="h-96 rounded-xl" />
-              ))
-            ) : featuredDeals.length > 0 ? (
-              featuredDeals.map((deal, index) => (
-                <motion.div
-                key={deal.id} 
-                  className="group cursor-pointer"
-                  initial={{ y: 20, opacity: 0 }}
-                  whileInView={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  whileHover={{ y: -5 }}
-                  onClick={() => router.push(`/deal/${deal.id}`)}
-                >
-                  <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 bg-white">
-                    <div className="relative h-48">
-                      <Image
-                        src={deal.image}
-                        alt={deal.title}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      
-                      {/* Badges */}
-                      <div className="absolute top-4 left-4 flex space-x-2">
-                        {deal.isNew && (
-                          <span className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                            NEW
-                    </span>
-                        )}
-                        {deal.isTrending && (
-                          <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                            TRENDING
-                          </span>
-                        )}
-                  </div>
-
-                      {/* Action buttons */}
-                      <div className="absolute top-4 right-4 flex space-x-2">
-                        <Button size="sm" variant="ghost" className="w-10 h-10 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white">
-                    <Heart className="w-5 h-5" />
-                        </Button>
-                        <Button size="sm" variant="ghost" className="w-10 h-10 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white">
-                          <Share2 className="w-5 h-5" />
-                        </Button>
-                      </div>
-
-                      {/* Time left */}
-                  <div className="absolute bottom-4 left-4 right-4">
-                        <div className="flex items-center space-x-2 text-white">
-                          <Clock className="w-4 h-4" />
-                          <span className="text-sm font-medium">{deal.timeLeft} left</span>
-                      </div>
-                  </div>
-                </div>
-
-            <div className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-orange-500 transition-colors">
-                            {deal.title}
-                          </h3>
-                          <p className="text-gray-600 font-medium mb-2">{deal.restaurant}</p>
-                          <div className="flex items-center space-x-4 text-sm text-gray-500">
-                            <span className="flex items-center">
-                              <MapPin className="w-4 h-4 mr-1" />
-                              {deal.city}, {deal.state}
-                            </span>
-                            <span className="flex items-center">
-                              <Star className="w-4 h-4 mr-1 fill-current text-yellow-400" />
-                              {deal.rating} ({deal.favorites} favorites)
-                      </span>
-                    </div>
-                    </div>
-                        <div className="text-right">
-                          {deal.discountPrice && deal.originalPrice && (
-                            <>
-                              <div className="text-2xl font-bold text-orange-500 mb-1">${deal.discountPrice}</div>
-                              <div className="text-sm text-gray-400 line-through">${deal.originalPrice}</div>
-                            </>
-                          )}
-                          {deal.percentOff && (
-                            <div className="text-xs text-green-600 font-semibold bg-green-100 px-2 py-1 rounded-full mt-1">
-                              {deal.percentOff}% OFF
-                  </div>
-                          )}
-                </div>
-              </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex space-x-2">
-                          {deal.tags.map((tag) => (
-                            <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-                              {tag}
-                            </span>
-            ))}
           </div>
-                        <Button className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white px-6 py-2 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
-                          Claim Deal
-                        </Button>
+          
+          {/* Location & Time Header */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-gray-600">
+              <MapPin className="w-4 h-4" />
+              <span className="font-medium">Deals near {location}</span>
+              <button onClick={() => {/* Open location picker */}}>
+                <Edit3 className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+              </button>
+            </div>
+            <div className="h-4 w-px bg-gray-300" />
+            <div className="flex items-center gap-2 text-gray-600">
+              <Clock className="w-4 h-4" />
+              <span>{timeRange}</span>
+            </div>
           </div>
         </div>
-                  </Card>
-                </motion.div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12">
-                <div className="text-gray-500 text-lg">No featured deals available at the moment.</div>
-                <Link href="/explore">
-                  <Button className="mt-4 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white px-6 py-2 rounded-lg font-semibold">
-                    Browse All Deals
-                  </Button>
-                </Link>
       </div>
-            )}
-            </div>
-          </div>
-      </motion.section>
 
-      {/* Testimonials Section */}
-      <motion.section
-        className="py-20 px-4 bg-gradient-to-r from-orange-500 to-pink-500"
-        initial={{ y: 50, opacity: 0 }}
-        whileInView={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        viewport={{ once: true }}
-      >
-        <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-16">What Our Users Say</h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={testimonial.name}
-                className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-white/20"
-                initial={{ y: 20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <div className="flex items-center mb-6">
-                  <Image
-                    src={testimonial.avatar}
-                    alt={testimonial.name}
-                    width={60}
-                    height={60}
-                    className="rounded-full mr-4"
-                  />
-                  <div className="text-left">
-                    <div className="text-white font-semibold text-lg">{testimonial.name}</div>
-                    <div className="text-white/70">{testimonial.role}</div>
-                    <div className="flex space-x-1 mt-1">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-current text-yellow-400" />
-                      ))}
-            </div>
-          </div>
-                </div>
-                <p className="text-white/90 text-lg leading-relaxed italic">
-                  "{testimonial.text}"
-                </p>
-              </motion.div>
+      <div className="px-4 py-6 max-w-7xl mx-auto">
+        {/* Happening Now */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <SectionHeader title="Happening Now" icon={Fire} subtitle="Ending soon" />
+          
+          {loading ? (
+            <div className="flex gap-4 overflow-x-auto pb-4">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="w-64 h-80 bg-gray-200 rounded-xl animate-pulse" />
               ))}
             </div>
+          ) : happeningNow.length > 0 ? (
+            <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4">
+              {happeningNow.map(deal => (
+                <DealCard key={deal.id} deal={deal} />
+              ))}
             </div>
-      </motion.section>
+          ) : (
+            <EmptyState 
+              message="No deals happening now"
+              suggestion="Check out our evening deals below ⬇️"
+            />
+          )}
+        </motion.div>
 
-      {/* Merchant Section */}
-      <motion.section
-        className="py-20 px-4 bg-gradient-to-br from-blue-50 to-indigo-100"
-        initial={{ y: 50, opacity: 0 }}
-        whileInView={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        viewport={{ once: true }}
-      >
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left Side - Content */}
-            <div>
-              <motion.div
-                initial={{ x: -30, opacity: 0 }}
-                whileInView={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.6 }}
-                viewport={{ once: true }}
-              >
-                <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold mb-6">
-                  <Building2 className="w-4 h-4 mr-2" />
-                  For Restaurants
+        {/* Tonight Deals */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-8"
+        >
+          <SectionHeader title="Tonight 5–8pm" icon={Clock} />
+          
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-64 bg-gray-200 rounded-xl animate-pulse" />
+              ))}
             </div>
-                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                  Fill Empty Tables,
-                  <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    Boost Revenue
-                  </span>
-            </h2>
-                <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                  Join thousands of restaurants using Happy Hour to fill empty tables during off-peak hours and increase revenue by up to 40%.
-                </p>
-              </motion.div>
-
-              <motion.div
-                className="space-y-6 mb-8"
-                initial={{ x: -30, opacity: 0 }}
-                whileInView={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                viewport={{ once: true }}
-              >
-                {[
-                  { icon: '📈', text: 'Increase revenue by 30-40% during off-peak hours' },
-                  { icon: '👥', text: 'Reach thousands of new customers in your area' },
-                  { icon: '💰', text: 'Set your own discount rates and control margins' },
-                  { icon: '🔒', text: 'Secure payments with instant payouts' },
-                ].map((item, index) => (
-                  <div key={index} className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-xl shadow-sm">
-                      {item.icon}
-                </div>
-                    <span className="text-gray-700 font-medium">{item.text}</span>
-                </div>
-                ))}
-              </motion.div>
-
-              <motion.div
-                className="flex flex-col sm:flex-row gap-4"
-                initial={{ x: -30, opacity: 0 }}
-                whileInView={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                viewport={{ once: true }}
-              >
-                <Link href="/partner">
-                  <Button className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-                    <Building2 className="w-5 h-5 mr-2" />
-                    Join as Merchant
-                  </Button>
-                </Link>
-                <Button
-                  variant="outline"
-                  className="border-2 border-blue-500 text-blue-500 hover:bg-blue-50 px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-300"
-                >
-                  Learn More
-                </Button>
-              </motion.div>
+          ) : tonightDeals.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {tonightDeals.map(deal => (
+                <DealCard key={deal.id} deal={deal} large />
+              ))}
             </div>
+          ) : (
+            <EmptyState 
+              message="No evening deals today"
+              suggestion="Check back tomorrow for new deals!"
+            />
+          )}
+        </motion.div>
+
+        {/* Because You Liked */}
+        {recommendations.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-8"
+          >
+            <SectionHeader 
+              title="Because You Liked Pizza" 
+              icon={Star} 
+              subtitle="Personalized for you"
+            />
             
-            {/* Right Side - Visual */}
-            <motion.div
-              className="relative"
-              initial={{ x: 30, opacity: 0 }}
-              whileInView={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              viewport={{ once: true }}
-            >
-              <div className="relative">
-                <Image
-                  src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop&crop=center"
-                  alt="Restaurant kitchen"
-                  width={600}
-                  height={400}
-                  className="rounded-2xl shadow-2xl"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-blue-500/20 to-transparent rounded-2xl" />
-
-                {/* Floating Stats Cards */}
-                <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-lg">
-                  <div className="text-2xl font-bold text-green-600">
-                    {loading ? '...' : stats && stats.totalRedemptions > 0 ? `+${Math.round((stats.totalRedemptions / Math.max(stats.totalDeals, 1)) * 100)}%` : 'Join Now'}
-              </div>
-                  <div className="text-sm text-gray-600">
-                    {loading ? 'Loading...' : stats && stats.totalRedemptions > 0 ? 'Redemption Rate' : 'Be the first'}
-                  </div>
+            <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4">
+              {recommendations.map(deal => (
+                <DealCard key={deal.id} deal={deal} />
+              ))}
+            </div>
+          </motion.div>
+        )}
       </div>
 
-                <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-lg">
-                  <div className="text-2xl font-bold text-blue-600">
-                    {loading ? '...' : stats && stats.totalMerchants > 0 ? `${stats.totalMerchants}+` : 'Join Us'}
-        </div>
-                  <div className="text-sm text-gray-600">
-                    {loading ? 'Loading...' : stats && stats.totalMerchants > 0 ? 'Active Merchants' : 'Restaurants welcome'}
-                  </div>
-            </div>
-          </div>
-            </motion.div>
-                </div>
-                </div>
-      </motion.section>
-
-      {/* CTA Section */}
-      <motion.section
-        className="py-20 px-4 bg-gradient-to-br from-gray-900 via-gray-800 to-black"
-        initial={{ y: 50, opacity: 0 }}
-        whileInView={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        viewport={{ once: true }}
-      >
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-6xl font-bold text-white mb-8">Ready to Start Saving?</h2>
-          <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
-            Join thousands of smart diners who save money every day while enjoying the finest restaurants in your city.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <Link href="/signup">
-              <Button className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white px-12 py-4 text-lg font-semibold rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300">
-                Get Started Free
-                <ArrowRight className="w-6 h-6 ml-2" />
-              </Button>
-            </Link>
-            <Button
-              variant="outline"
-              className="border-2 border-white text-white hover:bg-white hover:text-gray-900 px-12 py-4 text-lg font-semibold rounded-2xl transition-all duration-300"
-            >
-              <Play className="w-6 h-6 mr-2" />
-              Get Started
-            </Button>
-            </div>
-                </div>
-      </motion.section>
-
-      {/* Onboarding Guide */}
-      <OnboardingGuide
-        isVisible={showOnboarding}
-        onDismiss={() => setShowOnboarding(false)}
-      />
+      <BottomNav />
     </div>
   );
 }
+
