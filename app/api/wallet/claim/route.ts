@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     // Check if deal is live
     const now = new Date();
-    const isLive = deal.active && 
+    const isLive = deal.status === 'ACTIVE' && 
                     new Date(deal.startAt) <= now &&
                     new Date(deal.endAt) > now;
 

@@ -55,10 +55,8 @@ export async function GET(
     });
 
     return NextResponse.json({ 
-      deal: {
-        ...deal,
-        redemptionCount
-      }
+      ...deal,
+      redemptionCount
     });
   } catch (error) {
     console.error('Error fetching deal:', error);

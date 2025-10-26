@@ -417,7 +417,7 @@ export default function ExplorePage() {
                   </div>
 
                   <Link
-                    href={`/deal/${deal.id}`}
+                    href={`/deal/${deal.id}/view`}
                     className="block w-full text-center px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors"
                   >
                     View Deal

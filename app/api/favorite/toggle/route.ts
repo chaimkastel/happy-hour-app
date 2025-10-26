@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       });
 
       return NextResponse.json({ 
-        isFavorited: false,
+        isFavorite: false,
         message: 'Removed from favorites' 
       });
     } else {
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       });
 
       return NextResponse.json({ 
-        isFavorited: true,
+        isFavorite: true,
         message: 'Added to favorites' 
       });
     }
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({ 
-      isFavorited: !!favorite
+      isFavorite: !!favorite
     });
   } catch (error) {
     console.error('Error checking favorite status:', error);

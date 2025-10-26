@@ -97,9 +97,33 @@ export default function AccountPage() {
     }
   }, [session]);
 
-  const handleSave = () => {
-    // In a real app, this would save to the database
-    console.log('Saving profile:', editData);
+  const handleSave = async () => {
+    try {
+      const [firstName, ...lastNameParts] = editData.name.split(' ');
+      const lastName = lastNameParts.join(' ');
+      
+      const response = await fetch('/api/account/update', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          phone: editData.phone,
+          email: editData.email,
+        }),
+      });
+
+      if (response.ok) {
+        // Reload session to get updated data
+        window.location.reload();
+      } else {
+        const error = await response.json();
+        alert('Failed to save: ' + (error.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      alert('Failed to save profile. Please try again.');
+    }
     setIsEditing(false);
   };
 

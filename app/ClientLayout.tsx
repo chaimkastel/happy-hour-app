@@ -267,10 +267,11 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
               
               {status === 'authenticated' && session ? (
                 <>
-                  <Link href="/account" className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative">
+                  {/* Notifications disabled until feature is implemented */}
+                  {/* <Link href="/account" className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative">
                     <Bell className="w-5 h-5 text-gray-600" />
                     <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                  </Link>
+                  </Link> */}
                   
                   <div className="relative">
                     <button
