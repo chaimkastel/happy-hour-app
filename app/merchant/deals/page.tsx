@@ -110,8 +110,8 @@ export default function MerchantDealsPage() {
     return type === 'HAPPY_HOUR' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800';
   };
 
-  const getStatusColor = (active: boolean) => {
-    return active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
+  const getStatusColor = (status: string) => {
+    return status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
   };
 
   return (
@@ -169,8 +169,8 @@ export default function MerchantDealsPage() {
                       <Badge className={getDealTypeColor(deal.type)}>
                         {deal.type.replace('_', ' ')}
                       </Badge>
-                      <Badge className={getStatusColor(deal.active)}>
-                        {deal.active ? 'Active' : 'Inactive'}
+                      <Badge className={getStatusColor(deal.status)}>
+                        {deal.status === 'ACTIVE' ? 'Active' : 'Inactive'}
                       </Badge>
                     </div>
                   </div>

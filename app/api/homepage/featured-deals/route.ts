@@ -8,7 +8,7 @@ export async function GET() {
     // Get real featured deals from database
     const deals = await prisma.deal.findMany({
       where: { 
-        active: true,
+        status: 'ACTIVE',
         startAt: { lte: new Date() },
         endAt: { gte: new Date() }
       },

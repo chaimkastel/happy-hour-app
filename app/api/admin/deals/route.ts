@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
     const where: any = {};
     if (status) {
-      where.active = status === 'active';
+      where.status = status === 'active' ? 'ACTIVE' : 'INACTIVE';
     }
     if (type) {
       where.type = type;

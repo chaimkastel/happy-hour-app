@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if deal is still active
-    if (!voucher.deal.active) {
+    if (voucher.deal.status !== 'ACTIVE') {
       return NextResponse.json({ error: 'Deal is no longer active' }, { status: 400 });
     }
 

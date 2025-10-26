@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     // Calculate stats
     const allDeals = merchant.venues.flatMap(venue => venue.deals);
     const totalDeals = allDeals.length;
-    const activeDeals = allDeals.filter(deal => deal.active).length;
+    const activeDeals = allDeals.filter(deal => deal.status === 'ACTIVE').length;
     
     const totalRedemptions = await db.redemption.count({
       where: {

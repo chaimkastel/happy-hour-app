@@ -32,7 +32,7 @@ async function getCategoryCount(name: string, icon: string, image: string) {
   try {
     const count = await prisma.deal.count({
       where: {
-        active: true,
+        status: 'ACTIVE',
         startAt: { lte: new Date() },
         endAt: { gte: new Date() },
         OR: [

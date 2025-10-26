@@ -172,7 +172,7 @@ export default function MerchantDashboard() {
   const totalVenues = merchant.venues.length;
   const totalDeals = merchant.venues.reduce((sum, venue) => sum + venue.deals.length, 0);
   const activeDeals = merchant.venues.reduce((sum, venue) => 
-    sum + venue.deals.filter(deal => deal.active).length, 0
+    sum + venue.deals.filter(deal => deal.status === 'ACTIVE').length, 0
   );
   const totalRedemptions = merchant.venues.reduce((sum, venue) => 
     sum + venue.deals.reduce((dealSum, deal) => dealSum + deal.redeemedCount, 0), 0

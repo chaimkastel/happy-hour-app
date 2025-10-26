@@ -58,7 +58,7 @@ export async function GET(
       },
       include: {
         deals: {
-          where: { active: true },
+          where: { status: 'ACTIVE' },
           orderBy: { createdAt: 'desc' }
         }
       }
@@ -132,7 +132,7 @@ export async function PATCH(
       data: validatedData,
       include: {
         deals: {
-          where: { active: true },
+          where: { status: 'ACTIVE' },
           orderBy: { createdAt: 'desc' }
         }
       }
