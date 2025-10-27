@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, MapPin, Star, Clock, ArrowRight, Play, Heart, Share2, Filter, Building2, Edit3, Fire } from 'lucide-react';
+import { Search, MapPin, Star, Clock, ArrowRight, Play, Heart, Share2, Filter, Building2, Edit3, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -288,7 +288,7 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <Fire className="w-8 h-8 text-orange-600" />
+                <Flame className="w-8 h-8 text-orange-600" />
                 <div>
                   <h2 className="text-3xl font-bold text-gray-900">Happening Now</h2>
                   <p className="text-gray-600 text-sm">Deals ending soon near you</p>
@@ -329,7 +329,7 @@ export default function HomePage() {
                         )}
                         {deal.isTrending && (
                           <div className="absolute top-3 right-3 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                            <Fire className="w-3 h-3" />
+                            <Flame className="w-3 h-3" />
                             TRENDING
                           </div>
                         )}

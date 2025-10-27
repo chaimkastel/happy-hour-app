@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, AlertCircle, UserCheck, Shield, Store } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -126,41 +126,19 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 space-y-4">
-          <div className="flex items-center justify-center gap-4">
-            <a href="/signup" className="text-sm text-orange-500 hover:text-orange-600 font-medium">
-              Sign up as Customer
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{' '}
+            <a href="/signup" className="text-orange-500 hover:text-orange-600 font-medium">
+              Sign up here
             </a>
-            <span className="text-gray-300">|</span>
-            <a href="/merchant/signup" className="text-sm text-blue-500 hover:text-blue-600 font-medium">
-              Merchant Portal
+          </p>
+          <p className="text-sm text-gray-600 mt-2">
+            Restaurant owner?{' '}
+            <a href="/merchant/signup" className="text-blue-500 hover:text-blue-600 font-medium">
+              Join as a merchant
             </a>
-            <span className="text-gray-300">|</span>
-            <a href="/admin" className="text-sm text-purple-500 hover:text-purple-600 font-medium">
-              Admin
-            </a>
-          </div>
-          
-          <div className="border-t pt-4">
-            <p className="text-xs text-gray-500 text-center mb-2">Test Accounts:</p>
-            <div className="grid grid-cols-1 gap-2 text-xs">
-              <div className="flex items-center gap-2 bg-gray-50 p-2 rounded">
-                <UserCheck className="w-3 h-3 text-gray-600" />
-                <span className="text-gray-600">Customer:</span>
-                <span className="font-mono">user@test.com / Test@1234</span>
-              </div>
-              <div className="flex items-center gap-2 bg-gray-50 p-2 rounded">
-                <Store className="w-3 h-3 text-blue-600" />
-                <span className="text-gray-600">Merchant:</span>
-                <span className="font-mono">merchant@test.com / Test@1234</span>
-              </div>
-              <div className="flex items-center gap-2 bg-gray-50 p-2 rounded">
-                <Shield className="w-3 h-3 text-purple-600" />
-                <span className="text-gray-600">Admin:</span>
-                <span className="font-mono">admin@happyhour.com / Admin@123</span>
-              </div>
-            </div>
-          </div>
+          </p>
         </div>
       </div>
     </div>
