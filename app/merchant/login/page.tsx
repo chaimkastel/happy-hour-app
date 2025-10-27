@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 import { 
   ArrowLeft, 
   Building2, 
@@ -75,13 +75,16 @@ export default function MerchantLoginPage() {
 
       if (result?.error) {
         setError('Invalid email or password. Please try again.');
-      } else {
+      } else if (result?.ok) {
+        // Get session to check user role
+        const session = await getSession();
+        const user = session?.user as any;
+        
         // Check if user is a merchant
-        const response = await fetch('/api/merchant/check');
-        if (response.ok) {
+        if (user?.role === 'MERCHANT' || user?.role === 'ADMIN') {
           setSuccess('Login successful! Redirecting to dashboard...');
           setTimeout(() => {
-            router.push('/merchant' as any);
+            router.push('/merchant/dashboard');
           }, 1000);
         } else {
           setError('This account is not registered as a merchant. Please sign up first.');

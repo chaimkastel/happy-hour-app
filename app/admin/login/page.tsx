@@ -6,7 +6,7 @@ export const runtime = 'nodejs';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 import { Shield, Lock, ArrowRight } from 'lucide-react';
 
 export default function AdminLoginPage() {
@@ -30,7 +30,15 @@ export default function AdminLoginPage() {
       });
 
       if (result?.ok) {
-        router.push('/admin');
+        // Get session to verify admin role
+        const session = await getSession();
+        const user = session?.user as any;
+        
+        if (user?.role === 'ADMIN') {
+          router.push('/admin');
+        } else {
+          setError('Access denied. Admin credentials required.');
+        }
       } else {
         setError('Invalid credentials. Please check your email and password.');
       }
