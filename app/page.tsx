@@ -77,6 +77,8 @@ export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [happeningNow, setHappeningNow] = useState<FeaturedDeal[]>([]);
+  const [personalizedDeals, setPersonalizedDeals] = useState<FeaturedDeal[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -105,7 +107,7 @@ export default function HomePage() {
     fetchData();
   }, []);
 
-  useEffect(() => {
+    useEffect(() => {
     // Show onboarding for new users
     const hasCompleted = localStorage.getItem('onboarding_completed');
     if (!hasCompleted) {
@@ -116,6 +118,28 @@ export default function HomePage() {
       return () => clearTimeout(timer);
     }
   }, []);
+
+  // Fetch personalized deals
+  useEffect(() => {
+    const fetchPersonalizedData = async () => {
+      try {
+        // Fetch happening now deals (ending soon)
+        const happeningRes = await fetch('/api/deals/search?limit=6');
+        const happeningData = await happeningRes.json();
+        setHappeningNow(happeningData.deals?.slice(0, 6) || []);
+        
+        // For now, use featured deals as personalized
+        // In production, this would use ML recommendations
+        setPersonalizedDeals(featuredDeals.slice(0, 4));
+      } catch (error) {
+        console.error('Error fetching personalized data:', error);
+      }
+    };
+
+    if (featuredDeals.length > 0) {
+      fetchPersonalizedData();
+    }
+  }, [featuredDeals]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -251,6 +275,133 @@ export default function HomePage() {
               </div>
             </div>
       </motion.section>
+
+      {/* Happening Now Section */}
+      {(happeningNow.length > 0 || personalizedDeals.length > 0) && (
+        <motion.section
+          className="py-12 px-4 bg-gradient-to-b from-white via-orange-50/30 to-white"
+          initial={{ y: 20, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+        >
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <Fire className="w-8 h-8 text-orange-600" />
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900">Happening Now</h2>
+                  <p className="text-gray-600 text-sm">Deals ending soon near you</p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                onClick={() => router.push('/explore')}
+                className="text-orange-600 hover:text-orange-700"
+              >
+                View All <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+
+            {happeningNow.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {happeningNow.slice(0, 6).map((deal, index) => (
+                  <motion.div
+                    key={deal.id}
+                    initial={{ y: 20, opacity: 0 }}
+                    whileInView={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                  >
+                    <Card className="overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer bg-white"
+                          onClick={() => router.push(`/deal/${deal.id}/view`)}>
+                      <div className="relative h-48">
+                        <Image
+                          src={deal.image}
+                          alt={deal.title}
+                          fill
+                          className="object-cover"
+                        />
+                        {deal.isNew && (
+                          <div className="absolute top-3 left-3 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                            NEW
+                          </div>
+                        )}
+                        {deal.isTrending && (
+                          <div className="absolute top-3 right-3 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                            <Fire className="w-3 h-3" />
+                            TRENDING
+                          </div>
+                        )}
+                      </div>
+                      <CardContent className="p-4">
+                        <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-1">{deal.restaurant}</h3>
+                        <p className="text-gray-600 text-sm mb-3 line-clamp-2">{deal.title}</p>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-sm">
+                            <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                            <span className="text-gray-700 font-medium">{deal.rating}</span>
+                            <span className="text-gray-400">•</span>
+                            <span className="text-gray-500">{deal.timeLeft}</span>
+                          </div>
+                          <Button
+                            size="sm"
+                            className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/deal/${deal.id}/view`);
+                            }}
+                          >
+                            View Deal
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            ) : personalizedDeals.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {personalizedDeals.map((deal, index) => (
+                  <motion.div
+                    key={deal.id}
+                    initial={{ y: 20, opacity: 0 }}
+                    whileInView={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                  >
+                    <Card className="overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer"
+                          onClick={() => router.push(`/deal/${deal.id}/view`)}>
+                      <div className="relative h-48">
+                        <Image
+                          src={deal.image}
+                          alt={deal.title}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <CardContent className="p-4">
+                        <h3 className="font-bold text-lg mb-2">{deal.restaurant}</h3>
+                        <p className="text-gray-600 text-sm mb-3 line-clamp-2">{deal.title}</p>
+                        <Button
+                          size="sm"
+                          className="bg-gradient-to-r from-orange-500 to-pink-500 text-white w-full"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/deal/${deal.id}/view`);
+                          }}
+                        >
+                          View Deal
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </motion.section>
+      )}
 
       {/* Categories Section */}
       <motion.section
