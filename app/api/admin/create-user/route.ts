@@ -5,13 +5,29 @@ import bcrypt from 'bcryptjs';
 export const dynamic = 'force-dynamic';
 
 // This endpoint is for one-time use to create admin user in production
-// It should be disabled after use for security
+// DISABLE THIS ENDPOINT AFTER CREATING THE ADMIN USER
 
 export async function POST(request: NextRequest) {
   try {
-    // Check for a secure token to prevent unauthorized access
+    // Check if endpoint is enabled (requires explicit enable)
+    const isEnabled = process.env.ENABLE_ADMIN_CREATE === 'true';
+    if (!isEnabled) {
+      return NextResponse.json(
+        { error: 'This endpoint is disabled. Set ENABLE_ADMIN_CREATE=true to enable.' },
+        { status: 403 }
+      );
+    }
+
+    // Verify secure token
     const authHeader = request.headers.get('authorization');
-    const secretToken = process.env.ADMIN_CREATE_SECRET || 'CREATE_ADMIN_SECURE_TOKEN_CHANGE_THIS';
+    const secretToken = process.env.ADMIN_CREATE_SECRET;
+    
+    if (!secretToken) {
+      return NextResponse.json(
+        { error: 'Admin creation is not configured' },
+        { status: 500 }
+      );
+    }
     
     if (authHeader !== `Bearer ${secretToken}`) {
       return NextResponse.json(
