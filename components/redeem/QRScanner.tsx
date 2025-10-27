@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { QRCode, X, Check, Clock } from 'lucide-react';
+import { QrCode, X, Check, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 interface QRScannerProps {
@@ -95,7 +95,7 @@ export default function QRScanner({ dealId, onSuccess, onClose }: QRScannerProps
                 {qrCode}
               </div>
               <div className="flex items-center justify-center">
-                <QRCode className="w-48 h-48 text-gray-900" />
+                <QrCode className="w-48 h-48 text-gray-900" />
               </div>
             </div>
 

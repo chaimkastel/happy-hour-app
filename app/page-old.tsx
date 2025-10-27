@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, MapPin, Star, Clock, ArrowRight, Play, Heart, Share2, Filter, Building2, Edit3, Fire } from 'lucide-react';
+import { Search, MapPin, Star, Clock, ArrowRight, Play, Heart, Share2, Filter, Building2, Edit3, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent } from '@/components/ui/Card';

@@ -24,7 +24,7 @@ export default function BottomNav() {
           return (
             <Link
               key={href}
-              href={href}
+              href={href as any}
               className={`flex flex-col items-center justify-center w-16 h-14 rounded-lg transition-all ${
                 isActive
                   ? 'text-orange-600 bg-orange-50'
