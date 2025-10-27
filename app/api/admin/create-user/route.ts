@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 
 export const dynamic = 'force-dynamic';
@@ -9,6 +8,9 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
+    // Dynamically import to avoid build-time issues
+    const { prisma } = await import('@/lib/db');
+    
     // Check if endpoint is enabled (requires explicit enable)
     const isEnabled = process.env.ENABLE_ADMIN_CREATE === 'true';
     if (!isEnabled) {
