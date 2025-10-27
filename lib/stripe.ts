@@ -28,10 +28,14 @@ export const stripe: Stripe = new Proxy({} as Stripe, {
   }
 });
 
-export const STRIPE_CONFIG = {
-  monthlyPriceId: process.env.STRIPE_PRICE_MONTHLY!,
-  webhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
-} as const;
+export function getStripeConfig() {
+  return {
+    monthlyPriceId: process.env.STRIPE_PRICE_MONTHLY,
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+  };
+}
+
+export const STRIPE_CONFIG = getStripeConfig();
 
 export async function createStripeCustomer(email: string, name?: string) {
   return await stripe.customers.create({
@@ -73,18 +77,26 @@ export async function getSubscription(subscriptionId: string) {
 }
 
 export async function constructWebhookEvent(payload: string | Buffer, signature: string) {
-  return stripe.webhooks.constructEvent(payload, signature, STRIPE_CONFIG.webhookSecret);
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    throw new Error('STRIPE_WEBHOOK_SECRET is not configured');
+  }
+  return stripe.webhooks.constructEvent(payload, signature, webhookSecret);
 }
 
 // Stripe plans configuration
-export const STRIPE_PLANS = {
-  monthly: {
-    priceId: process.env.STRIPE_PRICE_MONTHLY!,
-    name: 'Merchant Pro Monthly',
-    amount: 9900, // $99.00 in cents
-    interval: 'month',
-  },
-} as const;
+export function getStripePlans() {
+  return {
+    monthly: {
+      priceId: process.env.STRIPE_PRICE_MONTHLY || '',
+      name: 'Merchant Pro Monthly',
+      amount: 9900, // $99.00 in cents
+      interval: 'month' as const,
+    },
+  };
+}
+
+export const STRIPE_PLANS = getStripePlans();
 
 // Additional Stripe utilities
 export async function createCustomerPortalSession(customerId: string, returnUrl: string) {
