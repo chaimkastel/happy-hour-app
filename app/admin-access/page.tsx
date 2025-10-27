@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 import { 
   Shield, 
   Lock, 
@@ -74,15 +74,15 @@ export default function AdminAccessPage() {
 
       if (result?.error) {
         setError('Invalid admin credentials. Please try again.');
-      } else {
-        // Check if user has admin role
-        const response = await fetch('/api/auth/session');
-        const session = await response.json();
+      } else if (result?.ok) {
+        // Get session to check user role
+        const session = await getSession();
+        const user = session?.user as any;
         
-        if (session?.user?.role === 'ADMIN') {
+        if (user?.role === 'ADMIN') {
           setSuccess('Admin access granted! Redirecting to dashboard...');
           setTimeout(() => {
-            router.push('/admin' as any);
+            router.push('/admin');
           }, 1000);
         } else {
           setError('This account does not have admin privileges.');
