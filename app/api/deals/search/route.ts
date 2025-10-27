@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
 
     // Build where clause
     const where: any = {
-      active: true,
+      status: 'ACTIVE',
       startAt: { lte: new Date() },
       endAt: { gte: new Date() },
     };

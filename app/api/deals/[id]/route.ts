@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { z } from 'zod';
 
 const paramsSchema = z.object({
@@ -13,7 +13,7 @@ export async function GET(
   try {
     const { id } = paramsSchema.parse(params);
 
-    const deal = await db.deal.findUnique({
+    const deal = await prisma.deal.findUnique({
       where: { id },
       include: {
         venue: {
@@ -47,13 +47,14 @@ export async function GET(
     }
 
     // Calculate redemption count
-    const redemptionCount = await db.redemption.count({
+    const redemptionCount = await prisma.voucher.count({
       where: {
         dealId: deal.id,
         status: 'REDEEMED'
       }
     });
 
+    // Return the deal directly (not wrapped)
     return NextResponse.json({ 
       ...deal,
       redemptionCount
