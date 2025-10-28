@@ -20,26 +20,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import BottomNav from '@/components/navigation/BottomNav';
-
-interface Deal {
-  id: string;
-  title: string;
-  description: string;
-  percentOff: number;
-  startAt: string;
-  endAt: string;
-  image?: string;
-  venue: {
-    id: string;
-    name: string;
-    address: string;
-    city: string;
-    state: string;
-    rating: number;
-    latitude: number;
-    longitude: number;
-  };
-}
+import { getDealByRouteParam, isDealActive, Deal } from '@/lib/deals';
 
 function DealDetailContent() {
   const params = useParams();
@@ -62,20 +43,8 @@ function DealDetailContent() {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`/api/deals/mock`);
-      
-      if (!response.ok) {
-        if (response.status === 404) {
-          setError('Deal not found');
-        } else {
-          setError('Failed to load deal');
-        }
-        return;
-      }
-
-      const data = await response.json();
-      const deals = data.deals || [];
-      const foundDeal = deals.find((d: Deal) => d.id === dealId);
+      // Use the robust routing utility
+      const foundDeal = await getDealByRouteParam(dealId);
       
       if (foundDeal) {
         setDeal(foundDeal);
@@ -246,7 +215,7 @@ function DealDetailContent() {
           <div className="bg-white rounded-xl p-4 border border-slate-200">
             <Star className="w-5 h-5 text-yellow-400 fill-current mb-2" />
             <div className="text-xs text-slate-500">Rating</div>
-            <div className="font-semibold text-slate-900">{deal.venue.rating.toFixed(1)}</div>
+            <div className="font-semibold text-slate-900">{(deal.venue.rating || 0).toFixed(1)}</div>
           </div>
         </div>
 
