@@ -29,9 +29,9 @@ export default function MerchantDashboardPage() {
         setMerchantStatus(data.status);
 
         if (data.status === 'PENDING') {
-          router.push('/merchant/pending');
+          router.push('/merchant/pending' as any);
         } else if (data.status === 'REJECTED') {
-          router.push('/merchant/help');
+          router.push('/merchant/pending?rejected=true' as any);
         }
       }
     } catch (error) {

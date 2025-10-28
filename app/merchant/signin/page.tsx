@@ -35,13 +35,13 @@ export default function MerchantSigninPage() {
         const data = await response.json();
         
         if (data.status === 'PENDING') {
-          router.push('/merchant/pending');
+          router.push('/merchant/pending' as any);
         } else if (data.status === 'REJECTED') {
-          router.push('/merchant/help');
+          router.push('/merchant/pending?rejected=true' as any);
         } else if (data.status === 'APPROVED') {
-          router.push('/merchant/dashboard');
+          router.push('/merchant/dashboard' as any);
         } else {
-          router.push('/merchant/dashboard');
+          router.push('/merchant/dashboard' as any);
         }
       } else {
         router.push('/merchant/dashboard');
