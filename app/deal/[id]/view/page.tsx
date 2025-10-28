@@ -9,13 +9,12 @@ import {
   Star, 
   Clock, 
   Phone, 
-  Calendar, 
   Users, 
-  AlertCircle, 
   CheckCircle,
   ExternalLink,
   Share2,
   Heart,
+  Info,
   QrCode
 } from 'lucide-react';
 import Image from 'next/image';
@@ -29,30 +28,17 @@ interface Deal {
   percentOff: number;
   startAt: string;
   endAt: string;
-  maxRedemptions: number;
-  redeemedCount: number;
-  minSpend?: number;
-  inPersonOnly: boolean;
-  tags: string[];
-  status: string;
-  isLive: boolean;
+  image?: string;
   venue: {
     id: string;
     name: string;
     address: string;
-    businessType: string[];
-    priceTier: string;
+    city: string;
+    state: string;
     rating: number;
     latitude: number;
     longitude: number;
-    photos: string[];
-    hours: string;
-    phone?: string;
-    businessName: string;
   };
-  terms: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 function DealDetailContent() {
@@ -63,7 +49,6 @@ function DealDetailContent() {
   const [deal, setDeal] = useState<Deal | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isClaiming, setIsClaiming] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
 
   useEffect(() => {
@@ -77,7 +62,7 @@ function DealDetailContent() {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`/api/deals/${dealId}`);
+      const response = await fetch(`/api/deals/mock`);
       
       if (!response.ok) {
         if (response.status === 404) {
@@ -89,7 +74,14 @@ function DealDetailContent() {
       }
 
       const data = await response.json();
-      setDeal(data);
+      const deals = data.deals || [];
+      const foundDeal = deals.find((d: Deal) => d.id === dealId);
+      
+      if (foundDeal) {
+        setDeal(foundDeal);
+      } else {
+        setError('Deal not found');
+      }
     } catch (err) {
       console.error('Error fetching deal:', err);
       setError('Failed to load deal. Please try again.');
@@ -98,372 +90,222 @@ function DealDetailContent() {
     }
   };
 
-  const handleClaimDeal = async () => {
-    if (!deal) return;
-    
-    try {
-      setIsClaiming(true);
-      
-      const response = await fetch(`/api/wallet/claim`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ dealId: deal.id }),
-      });
-      
-      if (response.ok) {
-        // Redirect to wallet or show success message
-        router.push('/wallet?claimed=true');
-      } else {
-        const errorData = await response.json();
-        alert(errorData.error || 'Failed to claim deal');
-      }
-    } catch (err) {
-      console.error('Error claiming deal:', err);
-      alert('Failed to claim deal. Please try again.');
-    } finally {
-      setIsClaiming(false);
-    }
-  };
-
   const handleToggleFavorite = async () => {
-    if (!deal) return;
-    
-    try {
-      const response = await fetch('/api/favorite/toggle', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ dealId: deal.id }),
-      });
-      
-      if (response.ok) {
-        setIsFavorited(!isFavorited);
-      }
-    } catch (err) {
-      console.error('Error toggling favorite:', err);
-    }
+    setIsFavorited(!isFavorited);
   };
 
-  const formatTimeRemaining = (endAt: string) => {
-    const now = new Date();
-    const end = new Date(endAt);
-    const diff = end.getTime() - now.getTime();
-    
-    if (diff <= 0) return 'Expired';
-    
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
-    if (days > 0) {
-      return `${days} day${days > 1 ? 's' : ''} left`;
-    } else if (hours > 0) {
-      return `${hours}h ${minutes}m left`;
-    } else {
-      return `${minutes}m left`;
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const getGoogleMapsUrl = (venue: Deal['venue']) => {
-    const address = encodeURIComponent(venue.address);
-    return `https://www.google.com/maps/search/?api=1&query=${address}`;
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading deal details...</p>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50/30 via-white to-pink-50/20 pb-20">
+        <div className="h-80 bg-gray-200 animate-pulse" />
+        <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+          <div className="h-8 bg-gray-200 rounded animate-pulse w-3/4" />
+          <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2" />
+          <div className="h-64 bg-gray-200 rounded-xl animate-pulse" />
         </div>
+        <BottomNav />
       </div>
     );
   }
 
   if (error || !deal) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Deal Not Found</h2>
-          <p className="text-gray-600 mb-4">{error || 'This deal may have expired or been removed.'}</p>
-          <div className="space-x-4">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50/30 via-white to-pink-50/20 flex items-center justify-center pb-20">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center px-4"
+        >
+          <div className="text-6xl mb-4">🔍</div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Deal Not Found</h2>
+          <p className="text-slate-600 mb-6">{error || 'This deal may have expired or been removed.'}</p>
+          <div className="flex gap-4 justify-center">
             <button
               onClick={() => router.back()}
-              className="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+              className="px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-semibold hover:bg-slate-50 transition-all"
             >
               Go Back
             </button>
             <Link
               href="/explore"
-              className="bg-amber-600 text-white px-6 py-2 rounded-lg hover:bg-amber-700 transition-colors inline-block"
+              className="px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-xl font-semibold hover:shadow-md transition-all"
             >
               Browse Deals
             </Link>
           </div>
-        </div>
+        </motion.div>
+        <BottomNav />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <button
+    <div className="min-h-screen bg-gradient-to-br from-orange-50/30 via-white to-pink-50/20 pb-20">
+      {/* Hero Image */}
+      <div className="relative h-80 w-full overflow-hidden">
+        {deal.image ? (
+          <Image
+            src={deal.image}
+            alt={deal.title}
+            fill
+            className="object-cover"
+            priority
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-200 to-pink-300 flex items-center justify-center">
+            <div className="text-9xl opacity-30">🍽️</div>
+          </div>
+        )}
+        
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent" />
+        
+        {/* Header */}
+        <div className="absolute top-0 left-0 right-0 z-10">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-between p-4"
+          >
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => router.back()}
-              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+              className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg"
             >
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              Back
-            </button>
+              <ArrowLeft className="w-5 h-5 text-slate-900" />
+            </motion.button>
             
             <div className="flex items-center gap-2">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={handleToggleFavorite}
-                className={`p-2 rounded-lg transition-colors ${
-                  isFavorited 
-                    ? 'bg-red-100 text-red-600' 
-                    : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
-                }`}
+                className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg"
               >
-                <Heart className={`w-5 h-5 ${isFavorited ? 'fill-current' : ''}`} />
-              </button>
-              <button className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
-                <Share2 className="w-5 h-5" />
-              </button>
+                <Heart className={`w-5 h-5 ${isFavorited ? 'fill-red-500 text-red-500' : 'text-slate-900'}`} />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg"
+              >
+                <Share2 className="w-5 h-5 text-slate-900" />
+              </motion.button>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Discount Badge on Image */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="absolute top-20 left-4 bg-orange-600 text-white px-4 py-2 rounded-xl font-bold text-lg shadow-xl"
+        >
+          {deal.percentOff}% OFF
+        </motion.div>
+      </div>
+
+      {/* Content */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="max-w-4xl mx-auto px-4 py-6 space-y-6"
+      >
+        {/* Title & Venue */}
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">{deal.title}</h1>
+          <div className="flex items-center gap-2 text-slate-600">
+            <MapPin className="w-4 h-4" />
+            <span className="font-medium">{deal.venue.name}</span>
+            <span className="text-slate-400">•</span>
+            <span className="text-sm">{deal.venue.city}, {deal.venue.state}</span>
+          </div>
+        </div>
+
+        {/* Description */}
+        <p className="text-slate-700 leading-relaxed">{deal.description}</p>
+
+        {/* Key Info Cards */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white rounded-xl p-4 border border-slate-200">
+            <Clock className="w-5 h-5 text-orange-600 mb-2" />
+            <div className="text-xs text-slate-500">Duration</div>
+            <div className="font-semibold text-slate-900">
+              {formatTime(deal.startAt)} - {formatTime(deal.endAt)}
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl p-4 border border-slate-200">
+            <Star className="w-5 h-5 text-yellow-400 fill-current mb-2" />
+            <div className="text-xs text-slate-500">Rating</div>
+            <div className="font-semibold text-slate-900">{deal.venue.rating.toFixed(1)}</div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="space-y-3">
+          <Link
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(deal.venue.address)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between bg-white rounded-xl p-4 border border-slate-200 hover:border-orange-500 transition-all group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-orange-50 rounded-lg">
+                <MapPin className="w-5 h-5 text-orange-600" />
+              </div>
+              <div>
+                <div className="font-semibold text-slate-900">Get Directions</div>
+                <div className="text-sm text-slate-500">{deal.venue.address}</div>
+              </div>
+            </div>
+            <ExternalLink className="w-5 h-5 text-slate-400 group-hover:text-orange-600 transition-colors" />
+          </Link>
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full bg-gradient-to-r from-orange-500 via-pink-500 to-orange-500 text-white rounded-xl p-4 font-bold text-lg shadow-lg hover:shadow-xl transition-all"
+          >
+            <div className="flex items-center justify-center gap-3">
+              <QrCode className="w-6 h-6" />
+              <span>Claim & Redeem Deal</span>
+            </div>
+          </motion.button>
+        </div>
+
+        {/* Info Section */}
+        <div className="bg-white rounded-2xl p-6 border border-slate-100">
+          <div className="flex items-center gap-2 mb-4">
+            <Info className="w-5 h-5 text-orange-600" />
+            <h3 className="font-semibold text-slate-900">How It Works</h3>
+          </div>
+          <div className="space-y-3 text-sm text-slate-600">
+            <div className="flex items-start gap-3">
+              <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+              <p>Click "Claim & Redeem Deal" to save to your wallet</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+              <p>Visit the restaurant during the valid time window</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+              <p>Show your QR code at checkout to get the discount</p>
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Deal Images */}
-            {deal.venue.photos.length > 0 && (
-              <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden">
-                <img
-                  src={deal.venue.photos[0]}
-                  alt={deal.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-
-            {/* Deal Info */}
-            <div className="space-y-6">
-              <div>
-                <div className="flex items-start justify-between mb-4">
-                  <h1 className="text-3xl font-bold text-gray-900">{deal.title}</h1>
-                  <div className="flex items-center gap-2">
-                    <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
-                      {deal.percentOff}% OFF
-                    </span>
-                    {deal.isLive ? (
-                      <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold flex items-center">
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        Live
-                      </span>
-                    ) : (
-                      <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-semibold">
-                        Expired
-                      </span>
-                    )}
-                  </div>
-                </div>
-                
-                <p className="text-lg text-gray-700 leading-relaxed">
-                  {deal.description}
-                </p>
-              </div>
-
-              {/* Deal Details */}
-              <div className="bg-gray-50 rounded-lg p-6 space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Deal Details</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center text-gray-600">
-                    <Calendar className="w-5 h-5 mr-3 text-gray-400" />
-                    <div>
-                      <div className="font-medium">Valid Until</div>
-                      <div className="text-sm">{formatDate(deal.endAt)}</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center text-gray-600">
-                    <Clock className="w-5 h-5 mr-3 text-gray-400" />
-                    <div>
-                      <div className="font-medium">Time Remaining</div>
-                      <div className="text-sm">{formatTimeRemaining(deal.endAt)}</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center text-gray-600">
-                    <Users className="w-5 h-5 mr-3 text-gray-400" />
-                    <div>
-                      <div className="font-medium">Redemptions</div>
-                      <div className="text-sm">
-                        {deal.redeemedCount} / {deal.maxRedemptions} claimed
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {deal.minSpend && (
-                    <div className="flex items-center text-gray-600">
-                      <div className="w-5 h-5 mr-3 text-gray-400">$</div>
-                      <div>
-                        <div className="font-medium">Minimum Spend</div>
-                        <div className="text-sm">${deal.minSpend}</div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                {deal.tags.length > 0 && (
-                  <div>
-                    <div className="font-medium text-gray-900 mb-2">Tags</div>
-                    <div className="flex flex-wrap gap-2">
-                      {deal.tags.map((tag, index) => (
-                        <span
-                          key={index}
-                          className="bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-sm"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Terms and Conditions */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Terms & Conditions</h3>
-                <p className="text-gray-700 leading-relaxed">{deal.terms}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Venue Info */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Restaurant Info</h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-medium text-gray-900">{deal.venue.name}</h4>
-                  <p className="text-sm text-gray-600">{deal.venue.businessName}</p>
-                </div>
-                
-                <div className="flex items-center text-gray-600">
-                  <MapPin className="w-5 h-5 mr-3 text-gray-400" />
-                  <div>
-                    <div className="text-sm">{deal.venue.address}</div>
-                    <a
-                      href={getGoogleMapsUrl(deal.venue)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-amber-600 hover:text-amber-700 text-sm flex items-center mt-1"
-                    >
-                      View on Google Maps
-                      <ExternalLink className="w-3 h-3 ml-1" />
-                    </a>
-                  </div>
-                </div>
-                
-                <div className="flex items-center text-gray-600">
-                  <Star className="w-5 h-5 mr-3 text-yellow-500 fill-current" />
-                  <div>
-                    <div className="font-medium">{deal.venue.rating.toFixed(1)}</div>
-                    <div className="text-sm text-gray-500">Rating</div>
-                  </div>
-                </div>
-                
-                {deal.venue.phone && (
-                  <div className="flex items-center text-gray-600">
-                    <Phone className="w-5 h-5 mr-3 text-gray-400" />
-                    <a
-                      href={`tel:${deal.venue.phone}`}
-                      className="text-sm hover:text-amber-600 transition-colors"
-                    >
-                      {deal.venue.phone}
-                    </a>
-                  </div>
-                )}
-                
-                <div>
-                  <div className="font-medium text-gray-900 mb-2">Business Hours</div>
-                  <div className="text-sm text-gray-600 whitespace-pre-line">
-                    {deal.venue.hours || 'Hours not available'}
-                  </div>
-                </div>
-                
-                <div>
-                  <div className="font-medium text-gray-900 mb-2">Cuisine Type</div>
-                  <div className="flex flex-wrap gap-1">
-                    {deal.venue.businessType.map((type, index) => (
-                      <span
-                        key={index}
-                        className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs capitalize"
-                      >
-                        {type}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Claim Deal Button */}
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Claim This Deal</h3>
-              
-              {deal.isLive ? (
-                <button
-                  onClick={handleClaimDeal}
-                  disabled={isClaiming}
-                  className="w-full bg-amber-600 text-white py-3 px-4 rounded-lg hover:bg-amber-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isClaiming ? 'Claiming...' : 'Claim Deal'}
-                </button>
-              ) : (
-                <div className="text-center">
-                  <div className="text-gray-500 mb-2">This deal has expired</div>
-                  <Link
-                    href="/explore"
-                    className="text-amber-600 hover:text-amber-700 font-medium"
-                  >
-                    Browse Available Deals
-                  </Link>
-                </div>
-              )}
-              
-              <p className="text-xs text-gray-500 mt-3 text-center">
-                Deal will be added to your wallet for easy redemption
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <BottomNav />
     </div>
   );
 }
@@ -471,8 +313,19 @@ function DealDetailContent() {
 export default function DealViewPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50/30 via-white to-pink-50/20 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center"
+        >
+          <motion.div 
+            className="w-12 h-12 border-4 border-orange-600 border-t-transparent rounded-full mx-auto mb-4"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+          <p className="text-slate-600">Loading deal...</p>
+        </motion.div>
       </div>
     }>
       <DealDetailContent />

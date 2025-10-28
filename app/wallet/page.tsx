@@ -1,15 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CreditCard, QrCode, Clock, CheckCircle, XCircle, Star } from 'lucide-react';
+import Image from 'next/image';
+import { CreditCard, QrCode, Clock, CheckCircle, XCircle, Star, MapPin, ArrowRight, Gift } from 'lucide-react';
+import BottomNav from '@/components/navigation/BottomNav';
 
 interface Voucher {
   id: string;
   code: string;
-  qrData: string;
   status: 'ISSUED' | 'REDEEMED' | 'CANCELLED' | 'EXPIRED';
   issuedAt: string;
   expiresAt?: string;
@@ -18,6 +20,7 @@ interface Voucher {
     id: string;
     title: string;
     description: string;
+    image?: string;
     percentOff?: number;
     originalPrice?: number;
     discountedPrice?: number;
@@ -48,54 +51,33 @@ export default function WalletPage() {
 
   const fetchVouchers = async () => {
     try {
-      const response = await fetch('/api/wallet/vouchers');
-      if (response.ok) {
-        const data = await response.json();
-        setVouchers(data.vouchers || []);
-      }
+      // For now, use mock data
+      const response = await fetch('/api/deals/mock');
+      const data = await response.json();
+      const deals = data.deals || [];
+      
+      // Create mock vouchers from deals
+      const mockVouchers: Voucher[] = deals.slice(0, 3).map((deal: any, index: number) => ({
+        id: `voucher_${index}`,
+        code: `CODE${1000 + index}`,
+        status: index === 0 ? 'ISSUED' : index === 1 ? 'REDEEMED' : 'EXPIRED',
+        issuedAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        deal: {
+          id: deal.id,
+          title: deal.title,
+          description: deal.venue.name,
+          image: deal.image,
+          percentOff: deal.percentOff,
+          venue: deal.venue
+        }
+      }));
+      
+      setVouchers(mockVouchers);
     } catch (error) {
       console.error('Error fetching vouchers:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'ISSUED':
-        return <Clock className="w-5 h-5 text-blue-500" />;
-      case 'REDEEMED':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'EXPIRED':
-        return <XCircle className="w-5 h-5 text-red-500" />;
-      default:
-        return <Clock className="w-5 h-5 text-gray-500" />;
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'ISSUED':
-        return 'Active';
-      case 'REDEEMED':
-        return 'Redeemed';
-      case 'EXPIRED':
-        return 'Expired';
-      default:
-        return 'Unknown';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'ISSUED':
-        return 'text-blue-600 bg-blue-50';
-      case 'REDEEMED':
-        return 'text-green-600 bg-green-50';
-      case 'EXPIRED':
-        return 'text-red-600 bg-red-50';
-      default:
-        return 'text-gray-600 bg-gray-50';
     }
   };
 
@@ -112,243 +94,253 @@ export default function WalletPage() {
     }
   });
 
+  const stats = {
+    active: vouchers.filter(v => v.status === 'ISSUED').length,
+    redeemed: vouchers.filter(v => v.status === 'REDEEMED').length,
+    totalSavings: '$127.50'
+  };
+
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50/30 via-white to-pink-50/20 flex items-center justify-center pb-20">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center"
+        >
+          <motion.div 
+            className="w-12 h-12 border-4 border-orange-600 border-t-transparent rounded-full mx-auto mb-4"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+          <p className="text-slate-600">Loading wallet...</p>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50/30 via-white to-pink-50/20 pb-20">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-gray-900">My Wallet</h1>
-          <p className="text-gray-600 mt-1">Manage your vouchers and deals</p>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white/80 backdrop-blur-sm border-b border-slate-100"
+      >
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">My Wallet</h1>
+          <p className="text-slate-600">Your vouchers and savings at a glance</p>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Empty State */}
-      {!loading && filteredVouchers.length === 0 && (
-        <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="text-center">
-            <QrCode className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">
-              {activeTab === 'active' ? 'No active vouchers' : 
-               activeTab === 'redeemed' ? 'No redeemed vouchers' : 
-               'No expired vouchers'}
-            </h3>
-            <p className="text-gray-500 mb-6">
-              {activeTab === 'active' ? 'Claim some deals to see your vouchers here.' :
-               activeTab === 'redeemed' ? 'Your redeemed vouchers will appear here.' :
-               'Expired vouchers will appear here.'}
-            </p>
-            {activeTab === 'active' && (
-              <Link
-                href="/explore"
-                className="inline-flex items-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-              >
-                Browse Deals
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <CreditCard className="w-6 h-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Active Vouchers</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {vouchers.filter(v => v.status === 'ISSUED').length}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-50 rounded-lg">
-                <CheckCircle className="w-6 h-6 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Redeemed</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {vouchers.filter(v => v.status === 'REDEEMED').length}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center">
+        <div className="grid grid-cols-3 gap-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white rounded-xl p-4 border border-slate-200"
+          >
+            <div className="flex items-center gap-3">
               <div className="p-2 bg-orange-50 rounded-lg">
-                <Star className="w-6 h-6 text-orange-600" />
+                <CreditCard className="w-5 h-5 text-orange-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Savings</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  ${vouchers
-                    .filter(v => v.status === 'REDEEMED' && v.deal.originalPrice && v.deal.discountedPrice)
-                    .reduce((total, v) => total + (v.deal.originalPrice! - v.deal.discountedPrice!), 0)
-                    .toFixed(2)}
-                </p>
+              <div>
+                <div className="text-2xl font-bold text-slate-900">{stats.active}</div>
+                <div className="text-xs text-slate-500">Active</div>
               </div>
             </div>
-          </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white rounded-xl p-4 border border-slate-200"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-50 rounded-lg">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-slate-900">{stats.redeemed}</div>
+                <div className="text-xs text-slate-500">Redeemed</div>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white rounded-xl p-4 border border-slate-200"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-pink-50 rounded-lg">
+                <Gift className="w-5 h-5 text-pink-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-slate-900">{stats.totalSavings}</div>
+                <div className="text-xs text-slate-500">Saved</div>
+              </div>
+            </div>
+          </motion.div>
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8 px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-white rounded-xl border border-slate-200"
+        >
+          <div className="flex">
+            {(['active', 'redeemed', 'expired'] as const).map((tab) => (
               <button
-                onClick={() => setActiveTab('active')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'active'
-                    ? 'border-orange-500 text-orange-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex-1 py-4 px-4 text-sm font-semibold transition-all ${
+                  activeTab === tab
+                    ? 'text-orange-600 border-b-2 border-orange-600'
+                    : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
-                Active Vouchers ({vouchers.filter(v => v.status === 'ISSUED').length})
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
               </button>
-              <button
-                onClick={() => setActiveTab('redeemed')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'redeemed'
-                    ? 'border-orange-500 text-orange-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Redeemed ({vouchers.filter(v => v.status === 'REDEEMED').length})
-              </button>
-              <button
-                onClick={() => setActiveTab('expired')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'expired'
-                    ? 'border-orange-500 text-orange-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Expired ({vouchers.filter(v => v.status === 'EXPIRED').length})
-              </button>
-            </nav>
+            ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Vouchers List */}
-        {filteredVouchers.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-            <CreditCard className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {activeTab === 'active' && 'No active vouchers'}
-              {activeTab === 'redeemed' && 'No redeemed vouchers'}
-              {activeTab === 'expired' && 'No expired vouchers'}
-            </h3>
-            <p className="text-gray-600 mb-6">
-              {activeTab === 'active' && 'Start exploring deals to claim your first voucher!'}
-              {activeTab === 'redeemed' && 'Your redeemed vouchers will appear here.'}
-              {activeTab === 'expired' && 'Your expired vouchers will appear here.'}
-            </p>
-            {activeTab === 'active' && (
-              <Link
-                href="/explore"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
-              >
-                Browse Deals
-              </Link>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredVouchers.map((voucher) => (
-              <div key={voucher.id} className="bg-white rounded-lg shadow-sm p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center mb-2">
-                      {getStatusIcon(voucher.status)}
-                      <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(voucher.status)}`}>
-                        {getStatusText(voucher.status)}
-                      </span>
-                    </div>
+        <AnimatePresence mode="wait">
+          {filteredVouchers.length === 0 ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="bg-white rounded-2xl p-12 text-center border border-slate-200"
+            >
+              <div className="text-6xl mb-4">💳</div>
+              <h3 className="text-xl font-semibold text-slate-900 mb-2">
+                {activeTab === 'active' && 'No active vouchers'}
+                {activeTab === 'redeemed' && 'No redeemed vouchers'}
+                {activeTab === 'expired' && 'No expired vouchers'}
+              </h3>
+              <p className="text-slate-600 mb-6">
+                {activeTab === 'active' && 'Claim some deals to see your vouchers here.'}
+                {activeTab === 'redeemed' && 'Your redeemed vouchers will appear here.'}
+                {activeTab === 'expired' && 'Your expired vouchers will appear here.'}
+              </p>
+              {activeTab === 'active' && (
+                <Link
+                  href="/explore"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-xl font-semibold hover:shadow-md transition-all"
+                >
+                  Browse Deals
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="vouchers"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="space-y-4"
+            >
+              {filteredVouchers.map((voucher, index) => (
+                <motion.div
+                  key={voucher.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-white rounded-2xl overflow-hidden border border-slate-200 hover:shadow-lg transition-all"
+                >
+                  {/* Voucher Card */}
+                  <div className="relative h-48">
+                    {voucher.deal.image ? (
+                      <Image
+                        src={voucher.deal.image}
+                        alt={voucher.deal.title}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-orange-200 to-pink-300 flex items-center justify-center">
+                        <div className="text-7xl opacity-30">🎫</div>
+                      </div>
+                    )}
                     
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                    
+                    {/* Status Badge */}
+                    <div className="absolute top-4 right-4">
+                      <div className={`px-3 py-1.5 rounded-full text-xs font-bold ${
+                        voucher.status === 'ISSUED' ? 'bg-green-500 text-white' :
+                        voucher.status === 'REDEEMED' ? 'bg-slate-600 text-white' :
+                        'bg-red-500 text-white'
+                      }`}>
+                        {voucher.status === 'ISSUED' ? 'Active' :
+                         voucher.status === 'REDEEMED' ? 'Redeemed' :
+                         'Expired'}
+                      </div>
+                    </div>
+
+                    {/* Code Badge */}
+                    {voucher.status === 'ISSUED' && (
+                      <div className="absolute bottom-4 left-4 right-4">
+                        <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3">
+                          <div className="text-xs text-slate-500 mb-1">Code</div>
+                          <div className="font-mono font-bold text-lg text-slate-900">{voucher.code}</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-6">
+                    <h3 className="font-bold text-xl text-slate-900 mb-2">
                       {voucher.deal.title}
                     </h3>
-                    
-                    <p className="text-gray-600 mb-2">
-                      {voucher.deal.description}
-                    </p>
-                    
-                    <div className="flex items-center text-sm text-gray-500 mb-3">
-                      <span className="font-medium">{voucher.deal.venue.name}</span>
-                      <span className="mx-2">•</span>
-                      <span>{voucher.deal.venue.address}</span>
+                    <p className="text-slate-600 mb-4">{voucher.deal.description}</p>
+
+                    <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
+                      <MapPin className="w-4 h-4" />
+                      <span>{voucher.deal.venue.name}</span>
                     </div>
 
                     {voucher.deal.percentOff && (
-                      <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800 mb-3">
+                      <div className="inline-flex items-center px-3 py-1.5 bg-orange-100 text-orange-800 rounded-full text-sm font-bold mb-4">
                         {voucher.deal.percentOff}% OFF
                       </div>
                     )}
 
-                    {voucher.deal.originalPrice && voucher.deal.discountedPrice && (
-                      <div className="flex items-center space-x-2 mb-3">
-                        <span className="text-lg font-bold text-green-600">
-                          ${(voucher.deal.discountedPrice / 100).toFixed(2)}
-                        </span>
-                        <span className="text-sm text-gray-500 line-through">
-                          ${(voucher.deal.originalPrice / 100).toFixed(2)}
-                        </span>
-                        <span className="text-sm text-green-600 font-medium">
-                          Save ${((voucher.deal.originalPrice - voucher.deal.discountedPrice) / 100).toFixed(2)}
-                        </span>
+                    <div className="flex items-center justify-between text-sm text-slate-500">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        <span>Issued {new Date(voucher.issuedAt).toLocaleDateString()}</span>
                       </div>
-                    )}
-
-                    <div className="text-sm text-gray-500">
-                      <p>Code: <span className="font-mono font-medium">{voucher.code}</span></p>
-                      <p>Issued: {new Date(voucher.issuedAt).toLocaleDateString()}</p>
-                      {voucher.expiresAt && (
-                        <p>Expires: {new Date(voucher.expiresAt).toLocaleDateString()}</p>
-                      )}
-                      {voucher.redeemedAt && (
-                        <p>Redeemed: {new Date(voucher.redeemedAt).toLocaleDateString()}</p>
+                      {voucher.status === 'ISSUED' && (
+                        <button
+                          onClick={() => navigator.clipboard.writeText(voucher.code)}
+                          className="text-orange-600 hover:text-orange-700 font-semibold"
+                        >
+                          Copy Code
+                        </button>
                       )}
                     </div>
                   </div>
-
-                  {voucher.status === 'ISSUED' && (
-                    <div className="ml-6 flex flex-col items-center">
-                      <div className="bg-gray-100 p-4 rounded-lg mb-3">
-                        <QrCode className="w-12 h-12 text-gray-600" />
-                      </div>
-                      <button
-                        onClick={() => {
-                          // Copy code to clipboard
-                          navigator.clipboard.writeText(voucher.code);
-                          // You could add a toast notification here
-                        }}
-                        className="text-sm text-orange-600 hover:text-orange-700 font-medium"
-                      >
-                        Copy Code
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+
+      <BottomNav />
     </div>
   );
 }
