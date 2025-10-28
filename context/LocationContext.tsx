@@ -30,8 +30,8 @@ export const LocationProvider = ({ children }: { children: React.ReactNode }) =>
   // Load from storage on mount
   useEffect(() => {
     const savedLocation = storage.get<Location>('location');
-    const savedTimeWindow = storage.get<string>('timeWindow', 'Now–7pm');
-    const savedNeighborhoods = storage.get<Location[]>('savedNeighborhoods', []);
+    const savedTimeWindow = storage.get<string>('timeWindow', 'Now–7pm') || 'Now–7pm';
+    const savedNeighborhoods = storage.get<Location[]>('savedNeighborhoods', []) || [];
 
     if (savedLocation) setLocationState(savedLocation);
     setTimeWindowState(savedTimeWindow);

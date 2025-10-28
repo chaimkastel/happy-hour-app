@@ -29,7 +29,7 @@ export const SectionHeader = ({ emoji, title, subtitle, href, showNew }: Section
       </div>
       {href && (
         <Link 
-          href={href}
+          href={href as any}
           className="flex items-center gap-1 text-orange-600 hover:text-orange-700 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 rounded"
           aria-label={`View all ${title}`}
         >
