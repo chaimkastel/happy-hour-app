@@ -236,7 +236,7 @@ export default function AdminAccessPage() {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="admin@happyhour.com"
+                      placeholder="admin@orderhappyhour.com"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       className="pl-12 h-12 border-2 border-gray-200 focus:border-red-500 rounded-xl"
