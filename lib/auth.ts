@@ -17,32 +17,37 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+          });
 
-        if (!user || !user.password) {
+          if (!user || !user.password) {
+            return null;
+          }
+
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
+
+          if (!isPasswordValid) {
+            return null;
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            firstName: (user as any).firstName || '',
+            lastName: (user as any).lastName || '',
+            phone: user.phone || '',
+            createdAt: user.createdAt.toISOString(),
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
           return null;
         }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          role: user.role,
-          firstName: (user as any).firstName || '',
-          lastName: (user as any).lastName || '',
-          phone: user.phone || '',
-          createdAt: user.createdAt.toISOString(),
-        };
       },
     }),
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
@@ -56,6 +61,8 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
   },
   callbacks: {
     async signIn({ user, account, profile }) {

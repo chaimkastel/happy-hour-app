@@ -34,21 +34,34 @@ export default function LoginPage() {
         email: formData.email,
         password: formData.password,
         redirect: false,
+        callbackUrl: '/',
       });
 
       if (result?.error) {
         setError('Invalid credentials. Please check your email and password.');
       } else if (result?.ok) {
+        // Wait a moment for session to establish
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         // Get the session to check user role
         const session = await getSession();
-        const user = session?.user as any;
         
-        // Role-based redirect
-        if (user?.role === 'ADMIN') {
-          router.push('/admin');
-        } else if (user?.role === 'MERCHANT') {
-          router.push('/merchant/dashboard');
+        if (session?.user) {
+          const user = session.user as any;
+          
+          // Role-based redirect
+          if (user?.role === 'ADMIN') {
+            router.push('/admin');
+            router.refresh();
+          } else if (user?.role === 'MERCHANT') {
+            router.push('/merchant/dashboard');
+            router.refresh();
+          } else {
+            router.push('/');
+            router.refresh();
+          }
         } else {
+          // If session not immediately available, just redirect
           router.push('/');
         }
       }
