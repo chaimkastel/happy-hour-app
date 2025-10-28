@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import type { HowStep } from '@/lib/howitworks/steps';
@@ -12,7 +12,6 @@ interface PhoneMockupProps {
 }
 
 export function PhoneMockup({ steps, activeStepId, hoveredStepId }: PhoneMockupProps) {
-  const [videoRefs] = useState<Record<string, HTMLVideoElement | null>>>({});
 
   // Prefer hovered step, fallback to active step
   const displayStep = hoveredStepId 
@@ -60,9 +59,6 @@ export function PhoneMockup({ steps, activeStepId, hoveredStepId }: PhoneMockupP
                   />
                 ) : (
                   <video
-                    ref={(el) => {
-                      videoRefs[displayStep.id] = el;
-                    }}
                     src={phoneMedia.src}
                     autoPlay={phoneMedia.videoProps?.autoplay ?? true}
                     loop={phoneMedia.videoProps?.loop ?? true}
