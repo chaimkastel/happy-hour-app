@@ -39,7 +39,9 @@ export default function ExplorePage() {
   const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '');
   const [category, setCategory] = useState(searchParams.get('category') || 'All');
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'best-value');
-  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>(
+    () => (typeof window !== 'undefined' && localStorage.getItem('exploreViewMode')) as 'grid' | 'list' | 'map' || 'grid'
+  );
   const [priceFilter, setPriceFilter] = useState(searchParams.get('price') || '');
   const [showFilterModal, setShowFilterModal] = useState(false);
 
@@ -60,6 +62,26 @@ export default function ExplorePage() {
   useEffect(() => {
     loadDeals();
   }, [searchParams]);
+
+  // Save view mode to localStorage
+  const handleViewModeChange = (mode: 'grid' | 'list' | 'map') => {
+    setViewMode(mode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('exploreViewMode', mode);
+    }
+  };
+
+  // Update URL when filters change
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchTerm) params.set('q', searchTerm);
+    if (category && category !== 'All') params.set('category', category);
+    if (sortBy && sortBy !== 'best-value') params.set('sort', sortBy);
+    if (priceFilter) params.set('price', priceFilter);
+    
+    const newUrl = params.toString() ? `/explore?${params.toString()}` : '/explore';
+    router.push(newUrl, { scroll: false });
+  }, [searchTerm, category, sortBy, priceFilter, router]);
 
   const loadDeals = async () => {
     try {
@@ -287,7 +309,7 @@ export default function ExplorePage() {
             {/* View Toggle */}
             <div className="ml-auto flex items-center gap-2 bg-white border border-slate-200 rounded-lg p-1">
               <button
-                onClick={() => setViewMode('grid')}
+                onClick={() => handleViewModeChange('grid')}
                 className={`p-2 rounded-md transition-all ${
                   viewMode === 'grid' 
                     ? 'bg-orange-50 text-orange-600' 
@@ -297,7 +319,7 @@ export default function ExplorePage() {
                 <Grid className="w-4 h-4" />
               </button>
               <button
-                onClick={() => setViewMode('list')}
+                onClick={() => handleViewModeChange('list')}
                 className={`p-2 rounded-md transition-all ${
                   viewMode === 'list' 
                     ? 'bg-orange-50 text-orange-600' 
@@ -307,7 +329,7 @@ export default function ExplorePage() {
                 <ListIcon className="w-4 h-4" />
               </button>
               <button
-                onClick={() => setViewMode('map')}
+                onClick={() => handleViewModeChange('map')}
                 className={`p-2 rounded-md transition-all ${
                   viewMode === 'map' 
                     ? 'bg-orange-50 text-orange-600' 
