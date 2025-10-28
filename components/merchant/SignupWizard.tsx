@@ -301,7 +301,7 @@ function BusinessStep({ data, updateData }: { data: any; updateData: (data: any)
                 onClick={() => {
                   const tags = data.cuisineTags || [];
                   const newTags = tags.includes(cuisine)
-                    ? tags.filter(t => t !== cuisine)
+                    ? tags.filter((t: string) => t !== cuisine)
                     : [...tags, cuisine];
                   updateData({ cuisineTags: newTags });
                 }}
