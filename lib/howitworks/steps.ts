@@ -31,9 +31,14 @@ export const steps: HowStep[] = [
     subtitle: "Discover local savings",
     description: "Explore happy-hour deals from your favorite restaurants. See what's available right now, tonight, or later this week.",
     phoneMedia: {
-      type: "image",
-      src: "/howitworks/s1.png",
-      alt: "Browse deals screen showing a list of restaurant deals"
+      type: "video",
+      src: "/howitworks/v1.mp4",
+      alt: "Browse deals screen showing a list of restaurant deals",
+      videoProps: {
+        autoplay: false,
+        loop: true,
+        muted: true
+      }
     },
     badge: "Step 1"
   },
@@ -43,9 +48,14 @@ export const steps: HowStep[] = [
     subtitle: "Tap to secure your deal",
     description: "Tap 'Claim & Redeem' to save the deal to your wallet. You'll get a unique QR code instantly.",
     phoneMedia: {
-      type: "image",
-      src: "/howitworks/s2.png",
-      alt: "Claim deal screen with QR code display"
+      type: "video",
+      src: "/howitworks/v2.mp4",
+      alt: "Claim deal screen with QR code display",
+      videoProps: {
+        autoplay: false,
+        loop: true,
+        muted: true
+      }
     },
     badge: "Step 2"
   },
@@ -55,9 +65,14 @@ export const steps: HowStep[] = [
     subtitle: "Present your code",
     description: "Show your QR code to the restaurant at checkout. Get your discount applied automatically.",
     phoneMedia: {
-      type: "image",
-      src: "/howitworks/s3.png",
-      alt: "QR code redemption screen at restaurant"
+      type: "video",
+      src: "/howitworks/v3.mp4",
+      alt: "QR code redemption screen at restaurant",
+      videoProps: {
+        autoplay: false,
+        loop: true,
+        muted: true
+      }
     },
     badge: "Step 3"
   },
@@ -67,9 +82,14 @@ export const steps: HowStep[] = [
     subtitle: "Build your foodie journey",
     description: "Discover new spots, try new cuisines, and save money while doing it. Happy hour happens every day.",
     phoneMedia: {
-      type: "image",
-      src: "/howitworks/s4.png",
-      alt: "Wallet view showing saved deals and history"
+      type: "video",
+      src: "/howitworks/v4.mp4",
+      alt: "Wallet view showing saved deals and history",
+      videoProps: {
+        autoplay: false,
+        loop: true,
+        muted: true
+      }
     }
   }
 ];

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import type { HowStep } from '@/lib/howitworks/steps';
@@ -8,14 +8,20 @@ import type { HowStep } from '@/lib/howitworks/steps';
 interface PhoneMockupProps {
   steps: HowStep[];
   activeStepId: string;
+  hoveredStepId?: string | null;
 }
 
-export function PhoneMockup({ steps, activeStepId }: PhoneMockupProps) {
-  const activeStep = steps.find(step => step.id === activeStepId);
-  
-  if (!activeStep) return null;
+export function PhoneMockup({ steps, activeStepId, hoveredStepId }: PhoneMockupProps) {
+  const [videoRefs] = useState<Record<string, HTMLVideoElement | null>>>({});
 
-  const { phoneMedia } = activeStep;
+  // Prefer hovered step, fallback to active step
+  const displayStep = hoveredStepId 
+    ? steps.find(step => step.id === hoveredStepId) 
+    : steps.find(step => step.id === activeStepId);
+  
+  if (!displayStep) return null;
+
+  const { phoneMedia } = displayStep;
 
   return (
     <div className="sticky top-24 h-[640px] flex items-center justify-center">
@@ -35,7 +41,7 @@ export function PhoneMockup({ steps, activeStepId }: PhoneMockupProps) {
           <div className="absolute inset-[2px] rounded-[2.5rem] bg-black overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div
-                key={activeStepId}
+                key={displayStep.id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -54,12 +60,22 @@ export function PhoneMockup({ steps, activeStepId }: PhoneMockupProps) {
                   />
                 ) : (
                   <video
+                    ref={(el) => {
+                      videoRefs[displayStep.id] = el;
+                    }}
                     src={phoneMedia.src}
                     autoPlay={phoneMedia.videoProps?.autoplay ?? true}
                     loop={phoneMedia.videoProps?.loop ?? true}
                     muted={phoneMedia.videoProps?.muted ?? true}
                     playsInline
                     className="w-full h-full object-cover"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.play().catch(() => {});
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.pause();
+                      e.currentTarget.currentTime = 0;
+                    }}
                   />
                 )}
                 

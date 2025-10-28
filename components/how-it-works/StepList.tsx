@@ -9,9 +9,10 @@ interface StepListProps {
   steps: HowStep[];
   activeStepId: string;
   onStepActivate: (stepId: string) => void;
+  onStepHover?: (stepId: string | null) => void;
 }
 
-export function StepList({ steps, activeStepId, onStepActivate }: StepListProps) {
+export function StepList({ steps, activeStepId, onStepActivate, onStepHover }: StepListProps) {
   return (
     <div className="space-y-6">
       {steps.map((step, index) => {
@@ -24,6 +25,7 @@ export function StepList({ steps, activeStepId, onStepActivate }: StepListProps)
             index={index}
             isActive={isActive}
             onActivate={() => onStepActivate(step.id)}
+            onHover={onStepHover}
           />
         );
       })}
@@ -35,12 +37,14 @@ function StepCard({
   step, 
   index, 
   isActive, 
-  onActivate 
+  onActivate,
+  onHover
 }: { 
   step: HowStep; 
   index: number;
   isActive: boolean;
   onActivate: () => void;
+  onHover?: (stepId: string | null) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { amount: 0.6 });
@@ -72,6 +76,8 @@ function StepCard({
         }
       `}
       onClick={onActivate}
+      onMouseEnter={() => onHover?.(step.id)}
+      onMouseLeave={() => onHover?.(null)}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {

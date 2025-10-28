@@ -19,6 +19,7 @@ export function HowItWorks({
   className = ''
 }: HowItWorksProps) {
   const [activeStepId, setActiveStepId] = useState(initialStepId);
+  const [hoveredStepId, setHoveredStepId] = useState<string | null>(null);
 
   return (
     <section 
@@ -50,11 +51,16 @@ export function HowItWorks({
               steps={steps}
               activeStepId={activeStepId}
               onStepActivate={setActiveStepId}
+              onStepHover={setHoveredStepId}
             />
           </div>
 
           {/* Right: Sticky Phone */}
-          <PhoneMockup steps={steps} activeStepId={activeStepId} />
+          <PhoneMockup 
+            steps={steps} 
+            activeStepId={activeStepId}
+            hoveredStepId={hoveredStepId}
+          />
         </div>
 
         {/* Mobile: Stacked Layout */}
