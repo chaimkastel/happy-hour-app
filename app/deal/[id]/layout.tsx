@@ -11,8 +11,18 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   try {
     const deal = await prisma.deal.findUnique({
       where: { id: params.id },
-      include: {
-        venue: true,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        percentOff: true,
+        tags: true,
+        venue: {
+          select: {
+            name: true,
+            address: true,
+          },
+        },
       },
     });
 
