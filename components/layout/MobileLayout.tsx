@@ -116,7 +116,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
       {/* Top Navigation Bar */}
       <motion.header
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+          'transition-all duration-300',
           isScrolled
             ? 'bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg'
             : 'bg-white/90 backdrop-blur-sm border-b border-gray-200/30'
@@ -181,7 +181,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
       </motion.header>
 
       {/* Main Content */}
-      <main className="pt-16 pb-20">
+      <main className="pb-20">
         {children}
       </main>
 

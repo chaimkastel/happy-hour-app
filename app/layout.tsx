@@ -4,6 +4,7 @@ import './globals.css';
 import MobileLayout from '@/components/layout/MobileLayout';
 import Footer from '@/components/layout/Footer';
 import { Providers } from '@/components/providers';
+import { LocationProvider } from '@/context/LocationContext';
 import { SkipToMain } from '@/components/accessibility/SkipToMain';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -88,12 +89,14 @@ export default function RootLayout({
       <body className={`${inter.className} h-full antialiased`}>
         <SkipToMain />
         <Providers>
-          <MobileLayout>
-            <main id="main-content" tabIndex={-1}>
-              {children}
-            </main>
-          </MobileLayout>
-          <Footer />
+          <LocationProvider>
+            <MobileLayout>
+              <main id="main-content" tabIndex={-1}>
+                {children}
+              </main>
+            </MobileLayout>
+            <Footer />
+          </LocationProvider>
         </Providers>
       </body>
     </html>

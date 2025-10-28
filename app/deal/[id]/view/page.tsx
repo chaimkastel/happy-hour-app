@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, 
   MapPin, 
@@ -14,9 +15,12 @@ import {
   CheckCircle,
   ExternalLink,
   Share2,
-  Heart
+  Heart,
+  QrCode
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
+import BottomNav from '@/components/navigation/BottomNav';
 
 interface Deal {
   id: string;

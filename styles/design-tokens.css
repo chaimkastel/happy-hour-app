@@ -1,0 +1,160 @@
+/* Design Tokens for Happy Hour App */
+
+/* Colors */
+:root {
+  --brand: #f97316;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --surface: #ffffff;
+  --surface-2: #fafafb;
+}
+
+/* Typography Scale */
+.font-display {
+  font-size: 1.875rem; /* text-3xl */
+  line-height: 1.2;
+  font-weight: 800; /* extrabold */
+  letter-spacing: -0.025em; /* tracking-tight */
+}
+
+@media (min-width: 768px) {
+  .font-display {
+    font-size: 2.25rem; /* text-4xl */
+  }
+}
+
+.font-title {
+  font-size: 1.25rem; /* text-xl */
+  line-height: 1.4;
+  font-weight: 600; /* semibold */
+}
+
+@media (min-width: 768px) {
+  .font-title {
+    font-size: 1.5rem; /* text-2xl */
+  }
+}
+
+.font-body {
+  font-size: 0.9375rem; /* text-[15px] */
+  line-height: 1.5; /* 24px */
+}
+
+.font-meta {
+  font-size: 0.875rem; /* text-sm */
+  color: var(--muted);
+}
+
+/* Surfaces */
+.bg-surface {
+  background-color: var(--surface);
+}
+
+.bg-surface-2 {
+  background-color: var(--surface-2);
+}
+
+/* Shadows */
+.shadow-sm {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-card {
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+}
+
+/* Spacing Rhythm */
+.gap-block-16 { gap: 1rem; }
+.gap-block-8 { gap: 0.5rem; }
+.gap-block-24 { gap: 1.5rem; }
+.gap-block-32 { gap: 2rem; }
+
+/* Shimmer Animation */
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Gradient Shimmer for Saved Banner */
+@keyframes gradient-shimmer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.98; }
+}
+
+.shimmer-gradient {
+  animation: gradient-shimmer 12s ease-in-out infinite;
+}
+
+/* Display Typography */
+.font-display {
+  font-size: var(--font-display);
+  font-weight: var(--font-display-weight);
+  letter-spacing: var(--font-display-tracking);
+  line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+  .font-display {
+    font-size: var(--font-display-md);
+  }
+}
+
+/* Title Typography */
+.font-title {
+  font-size: var(--font-title);
+  font-weight: var(--font-title-weight);
+}
+
+@media (min-width: 768px) {
+  .font-title {
+    font-size: var(--font-title-md);
+  }
+}
+
+/* Subtle Typography */
+.font-subtle {
+  font-size: var(--font-subtle-size);
+  color: var(--font-subtle-color);
+}
+
+/* Elevation Utilities */
+.elev-1 {
+  box-shadow: var(--elev-1);
+}
+
+.elev-2 {
+  box-shadow: var(--elev-2);
+}
+
+/* Card Radius */
+.radius-card {
+  border-radius: var(--radius-card);
+}
+
+/* Shimmer Effect for Skeletons */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 50%,
+    #f0f0f0 75%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
