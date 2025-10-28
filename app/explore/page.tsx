@@ -80,7 +80,7 @@ export default function ExplorePage() {
     if (priceFilter) params.set('price', priceFilter);
     
     const newUrl = params.toString() ? `/explore?${params.toString()}` : '/explore';
-    router.push(newUrl, { scroll: false });
+    router.push(newUrl as any, { scroll: false });
   }, [searchTerm, category, sortBy, priceFilter, router]);
 
   const loadDeals = async () => {
