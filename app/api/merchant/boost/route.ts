@@ -7,17 +7,21 @@ export async function POST(req: NextRequest) {
     const user = await requireApprovedMerchant();
     
     const body = await req.json();
-    const { title, description, percentOff, maxRedemptions, startTime, endTime, imageUrl, type } = body;
+    const { title, description, percentOff, duration, maxRedemptions } = body;
 
     // Validate input
-    if (!title || !percentOff || !startTime || !endTime) {
+    if (!title || !percentOff || !duration) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
-    // TODO: Create deal in database
+    // Calculate end time based on duration
+    const now = new Date();
+    const endTime = new Date(now.getTime() + parseInt(duration) * 60 * 1000);
+
+    // TODO: Create instant boost deal in database
     // For now, just return success
     return NextResponse.json({
       success: true,
@@ -27,32 +31,16 @@ export async function POST(req: NextRequest) {
         description,
         percentOff,
         maxRedemptions,
-        startTime,
-        endTime,
-        imageUrl,
-        type: type || 'SCHEDULED'
+        startTime: now.toISOString(),
+        endTime: endTime.toISOString(),
+        type: 'INSTANT_BOOST'
       }
     });
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || 'Failed to create deal' },
+      { error: error.message || 'Failed to create instant boost deal' },
       { status: 401 }
     );
   }
 }
 
-export async function GET(req: NextRequest) {
-  try {
-    const user = await requireApprovedMerchant();
-    
-    // TODO: Fetch merchant's deals from database
-    return NextResponse.json({
-      deals: []
-    });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || 'Failed to fetch deals' },
-      { status: 401 }
-    );
-  }
-}

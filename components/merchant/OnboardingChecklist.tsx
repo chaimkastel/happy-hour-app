@@ -1,109 +1,145 @@
 'use client';
 
-import React from 'react';
-import { CheckCircle, Circle, AlertCircle, ExternalLink } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import Link from 'next/link';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { CheckCircle, Circle, Clock, Image as ImageIcon, Gift, Calendar, MapPin } from 'lucide-react';
 
-interface OnboardingStep {
+interface ChecklistItem {
   id: string;
   title: string;
   description: string;
+  icon: React.ElementType;
   completed: boolean;
-  required: boolean;
-  actionUrl?: string;
-  actionLabel?: string;
+  href?: string;
 }
 
 interface OnboardingChecklistProps {
-  steps: OnboardingStep[];
-  onComplete?: () => void;
+  merchantId: string;
+  initialCompleted: string[];
 }
 
-export function OnboardingChecklist({ steps, onComplete }: OnboardingChecklistProps) {
-  const completedSteps = steps.filter(step => step.completed).length;
-  const requiredSteps = steps.filter(step => step.required).length;
-  const completedRequired = steps.filter(step => step.required && step.completed).length;
-  const progress = (completedSteps / steps.length) * 100;
-  const canPublish = completedRequired === requiredSteps;
+export function OnboardingChecklist({ merchantId, initialCompleted }: OnboardingChecklistProps) {
+  const [completed, setCompleted] = useState<string[]>(initialCompleted);
+
+  const checklistItems: ChecklistItem[] = [
+    {
+      id: 'verify-hours',
+      title: 'Verify your hours',
+      description: 'Make sure your restaurant hours are accurate',
+      icon: Clock,
+      completed: completed.includes('verify-hours'),
+      href: '/merchant/profile#hours'
+    },
+    {
+      id: 'set-tax-tip',
+      title: 'Set tax & tip prefs',
+      description: 'Configure your payment preferences',
+      icon: Calendar,
+      completed: completed.includes('set-tax-tip'),
+      href: '/merchant/billing'
+    },
+    {
+      id: 'add-scheduled-deal',
+      title: 'Add your first Scheduled Happy Hour',
+      description: 'Create a recurring happy hour deal',
+      icon: Gift,
+      completed: completed.includes('add-scheduled-deal'),
+      href: '/merchant/deals/new'
+    },
+    {
+      id: 'try-instant-boost',
+      title: 'Try an Instant Boost deal',
+      description: 'Create a spontaneous deal to attract diners now',
+      icon: Gift,
+      completed: completed.includes('try-instant-boost'),
+      href: '/merchant/boost'
+    },
+    {
+      id: 'upload-hero-photo',
+      title: 'Upload a hero photo',
+      description: 'Add a beautiful banner image to your profile',
+      icon: ImageIcon,
+      completed: completed.includes('upload-hero-photo'),
+      href: '/merchant/profile#branding'
+    }
+  ];
+
+  const completedCount = completed.length;
+  const totalItems = checklistItems.length;
+  const progress = (completedCount / totalItems) * 100;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>Getting Started Checklist</span>
-          <span className="text-sm font-normal text-gray-500">
-            {completedSteps}/{steps.length} completed
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-xl font-bold text-slate-900">Getting Started</h2>
+          <span className="text-sm font-semibold text-slate-600">
+            {completedCount} of {totalItems} completed
           </span>
-        </CardTitle>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-orange-500 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${progress}%` }}
+        </div>
+        <div className="w-full bg-slate-100 rounded-full h-2">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+            className="bg-gradient-to-r from-orange-500 to-pink-500 h-2 rounded-full"
           />
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {steps.map((step) => (
-            <div key={step.id} className="flex items-start space-x-3">
-              <div className="flex-shrink-0 mt-0.5">
-                {step.completed ? (
-                  <CheckCircle className="w-5 h-5 text-green-500" />
+      </div>
+
+      <div className="space-y-3">
+        {checklistItems.map((item, index) => {
+          const Icon = item.icon;
+          
+          return (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all ${
+                item.completed
+                  ? 'border-green-200 bg-green-50'
+                  : 'border-slate-200 bg-white hover:border-orange-200 hover:bg-orange-50'
+              }`}
+            >
+              <div className="mt-1">
+                {item.completed ? (
+                  <CheckCircle className="w-6 h-6 text-green-600" />
                 ) : (
-                  <Circle className="w-5 h-5 text-gray-400" />
+                  <Circle className="w-6 h-6 text-slate-400" />
                 )}
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center space-x-2">
-                  <h4 className={`text-sm font-medium ${
-                    step.completed ? 'text-gray-900' : 'text-gray-700'
-                  }`}>
-                    {step.title}
-                  </h4>
-                  {step.required && !step.completed && (
-                    <AlertCircle className="w-4 h-4 text-orange-500" />
-                  )}
+              
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-1">
+                  <Icon className="w-5 h-5 text-slate-600" />
+                  <h3 className={`font-semibold ${item.completed ? 'text-slate-500 line-through' : 'text-slate-900'}`}>
+                    {item.title}
+                  </h3>
                 </div>
-                <p className="text-sm text-gray-600 mt-1">{step.description}</p>
-                {step.actionUrl && !step.completed && (
-                  <div className="mt-2">
-                    <Link href={step.actionUrl as any}>
-                      <Button size="sm" variant="outline">
-                        {step.actionLabel || 'Complete'}
-                        <ExternalLink className="w-3 h-3 ml-1" />
-                      </Button>
-                    </Link>
-                  </div>
-                )}
+                <p className="text-sm text-slate-600">{item.description}</p>
               </div>
-            </div>
-          ))}
-        </div>
-        
-        {canPublish && (
-          <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="w-5 h-5 text-green-500" />
-              <span className="text-sm font-medium text-green-800">
-                Ready to publish! You can now create and activate deals.
-              </span>
-            </div>
-          </div>
-        )}
-        
-        {!canPublish && (
-          <div className="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-            <div className="flex items-center space-x-2">
-              <AlertCircle className="w-5 h-5 text-orange-500" />
-              <span className="text-sm font-medium text-orange-800">
-                Complete all required steps to start publishing deals.
-              </span>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {progress === 100 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl"
+        >
+          <div className="flex items-center gap-3">
+            <CheckCircle className="w-8 h-8 text-green-600" />
+            <div>
+              <h3 className="font-bold text-green-900">🎉 All set!</h3>
+              <p className="text-sm text-green-700">You're ready to start attracting diners!</p>
             </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </motion.div>
+      )}
+    </div>
   );
 }

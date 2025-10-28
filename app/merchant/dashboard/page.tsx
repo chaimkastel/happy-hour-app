@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Plus, TrendingUp, Clock, Calendar, Bell, CheckCircle, AlertCircle } from 'lucide-react';
+import { OnboardingChecklist } from '@/components/merchant/OnboardingChecklist';
 
 export default function MerchantDashboardPage() {
   const { data: session, status } = useSession();
@@ -159,7 +160,10 @@ export default function MerchantDashboardPage() {
         >
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button className="flex items-center gap-4 p-4 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-xl hover:from-orange-600 hover:to-pink-600 transition-all text-left">
+            <button 
+              onClick={() => router.push('/merchant/deals/new' as any)}
+              className="flex items-center gap-4 p-4 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-xl hover:from-orange-600 hover:to-pink-600 transition-all text-left"
+            >
               <Plus className="w-6 h-6" />
               <div>
                 <h3 className="font-bold">Create Deal</h3>
@@ -167,7 +171,10 @@ export default function MerchantDashboardPage() {
               </div>
             </button>
 
-            <button className="flex items-center gap-4 p-4 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition-all text-left border border-blue-200">
+            <button 
+              onClick={() => router.push('/merchant/boost' as any)}
+              className="flex items-center gap-4 p-4 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition-all text-left border border-blue-200"
+            >
               <Bell className="w-6 h-6" />
               <div>
                 <h3 className="font-bold">Instant Boost</h3>
@@ -176,6 +183,9 @@ export default function MerchantDashboardPage() {
             </button>
           </div>
         </motion.div>
+
+        {/* Onboarding Checklist */}
+        <OnboardingChecklist merchantId="1" initialCompleted={[]} />
 
         {/* Getting Started */}
         {stats.activeDeals === 0 && (
@@ -191,7 +201,10 @@ export default function MerchantDashboardPage() {
                 <p className="text-gray-700 mb-4">
                   You haven't created any deals yet. Create your first happy hour deal to start attracting diners during off-peak hours!
                 </p>
-                <button className="px-6 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition-all">
+                <button 
+                  onClick={() => router.push('/merchant/deals/new' as any)}
+                  className="px-6 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition-all"
+                >
                   Create Your First Deal
                 </button>
               </div>
