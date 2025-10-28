@@ -30,6 +30,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [notifications, setNotifications] = useState(3);
+  const [showNotifications, setShowNotifications] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -145,23 +146,63 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
 
           {/* Right Actions */}
           <div className="flex items-center space-x-2">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative w-10 h-10 hover:bg-orange-50"
+            <div className="relative">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <Bell className="w-5 h-5 text-gray-600" />
-                {notifications > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-semibold">
-                    {notifications}
-                  </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="relative w-10 h-10 hover:bg-orange-50"
+                >
+                  <Bell className="w-5 h-5 text-gray-600" />
+                  {notifications > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-semibold">
+                      {notifications}
+                    </span>
+                  )}
+                </Button>
+              </motion.div>
+
+              {/* Notification Dropdown */}
+              <AnimatePresence>
+                {showNotifications && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden"
+                  >
+                    <div className="p-4 border-b border-gray-200">
+                      <h3 className="font-semibold text-gray-900">Notifications</h3>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      {notifications > 0 ? (
+                        <div className="divide-y divide-gray-100">
+                          {[
+                            { text: 'New deal near you: 50% off at Brooklyn Bistro', time: '2m ago' },
+                            { text: 'Your favorite restaurant has a happy hour starting soon', time: '1h ago' },
+                            { text: 'Instant deal activated nearby', time: '3h ago' },
+                          ].map((item, i) => (
+                            <div key={i} className="p-4 hover:bg-gray-50 cursor-pointer">
+                              <p className="text-sm text-gray-900">{item.text}</p>
+                              <p className="text-xs text-gray-500 mt-1">{item.time}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="p-6 text-center text-gray-500">
+                          <Bell className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                          <p className="text-sm">No new notifications</p>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
                 )}
-              </Button>
-            </motion.div>
+              </AnimatePresence>
+            </div>
 
             <motion.div
               whileHover={{ scale: 1.05 }}
