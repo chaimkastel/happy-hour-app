@@ -21,16 +21,20 @@ import Image from 'next/image';
 import Link from 'next/link';
 import BottomNav from '@/components/navigation/BottomNav';
 import { getDealByRouteParam, isDealActive, Deal } from '@/lib/deals';
+import RedeemModal from '@/components/redeem/RedeemModal';
+import { useSession } from 'next-auth/react';
 
 function DealDetailContent() {
   const params = useParams();
   const router = useRouter();
+  const { data: session, status } = useSession();
   const dealId = params.id as string;
   
   const [deal, setDeal] = useState<Deal | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFavorited, setIsFavorited] = useState(false);
+  const [showRedeemModal, setShowRedeemModal] = useState(false);
 
   useEffect(() => {
     if (dealId) {
@@ -61,6 +65,24 @@ function DealDetailContent() {
 
   const handleToggleFavorite = async () => {
     setIsFavorited(!isFavorited);
+  };
+
+  const handleRedeem = async () => {
+    // Check if user is logged in
+    if (status !== 'authenticated' || !session) {
+      // Redirect to login
+      router.push('/login?callbackUrl=' + encodeURIComponent(window.location.pathname) as any);
+      return;
+    }
+
+    // Check if deal is active
+    if (deal && !isDealActive(deal)) {
+      alert('This deal is not currently active.');
+      return;
+    }
+
+    // Open redeem modal
+    setShowRedeemModal(true);
   };
 
   const formatTime = (dateString: string) => {
@@ -242,7 +264,9 @@ function DealDetailContent() {
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="w-full bg-gradient-to-r from-orange-500 via-pink-500 to-orange-500 text-white rounded-xl p-4 font-bold text-lg shadow-lg hover:shadow-xl transition-all"
+            onClick={handleRedeem}
+            disabled={!deal || !isDealActive(deal)}
+            className="w-full bg-gradient-to-r from-orange-500 via-pink-500 to-orange-500 text-white rounded-xl p-4 font-bold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <div className="flex items-center justify-center gap-3">
               <QrCode className="w-6 h-6" />
@@ -273,6 +297,16 @@ function DealDetailContent() {
           </div>
         </div>
       </motion.div>
+
+      {/* Redeem Modal */}
+      {deal && (
+        <RedeemModal
+          isOpen={showRedeemModal}
+          onClose={() => setShowRedeemModal(false)}
+          dealId={deal.id}
+          dealTitle={deal.title}
+        />
+      )}
 
       <BottomNav />
     </div>
