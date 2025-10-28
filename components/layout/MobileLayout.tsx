@@ -340,13 +340,13 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
                           >
                             <Link
                               href={item.href as any}
-                              className="flex items-center space-x-4 p-4 rounded-2xl hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-pink-50/50 transition-all duration-200 group cursor-pointer"
+                              className="flex items-center space-x-3 p-3 rounded-2xl hover:bg-gray-50 transition-all duration-200 group"
                               onClick={() => setIsMenuOpen(false)}
                             >
-                              <div className="w-12 h-12 bg-gradient-to-br from-orange-100 via-pink-50 to-pink-100 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-300 flex-shrink-0">
-                                <Icon className="w-6 h-6 text-orange-600" />
+                              <div className="w-14 h-14 bg-gradient-to-br from-orange-100 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <Icon className="w-7 h-7 text-orange-600" />
                               </div>
-                              <span className="text-gray-900 font-semibold text-base group-hover:text-orange-600 transition-colors">
+                              <span className="text-gray-900 font-semibold text-base">
                                 {item.label}
                               </span>
                             </Link>
