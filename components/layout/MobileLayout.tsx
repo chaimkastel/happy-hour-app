@@ -325,29 +325,30 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
 
               <div className="p-6 space-y-8 overflow-y-auto h-full pb-20">
                 {menuItems.map((section, sectionIndex) => (
-                  <div key={sectionIndex} className="space-y-4">
-                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+                  <div key={sectionIndex} className="space-y-3">
+                    <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       {section.title}
                     </h3>
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       {section.items.map((item, itemIndex) => {
                         const Icon = item.icon;
                         return (
                           <motion.div
                             key={itemIndex}
-                            whileHover={{ x: 4 }}
+                            whileHover={{ x: 2 }}
+                            whileTap={{ scale: 0.98 }}
                           >
                             <Link
                               href={item.href as any}
-                              className="flex items-center space-x-4 p-3 rounded-xl hover:bg-gray-50 transition-colors group"
+                              className="flex items-center space-x-4 p-4 rounded-2xl hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-pink-50/50 transition-all duration-200 group cursor-pointer"
                               onClick={() => setIsMenuOpen(false)}
                             >
-                            <div className="w-10 h-10 bg-gradient-to-r from-orange-100 to-pink-100 rounded-lg flex items-center justify-center group-hover:from-orange-200 group-hover:to-pink-200 transition-all duration-300">
-                              <Icon className="w-5 h-5 text-orange-600" />
-                            </div>
-                            <span className="text-gray-700 font-medium group-hover:text-orange-600 transition-colors">
-                              {item.label}
-                            </span>
+                              <div className="w-12 h-12 bg-gradient-to-br from-orange-100 via-pink-50 to-pink-100 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-300 flex-shrink-0">
+                                <Icon className="w-6 h-6 text-orange-600" />
+                              </div>
+                              <span className="text-gray-900 font-semibold text-base group-hover:text-orange-600 transition-colors">
+                                {item.label}
+                              </span>
                             </Link>
                           </motion.div>
                         );
@@ -355,19 +356,6 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
                     </div>
                   </div>
                 ))}
-
-                {/* User Profile Section */}
-                <div className="pt-6 border-t border-gray-200/50">
-                  <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-orange-50 to-pink-50 rounded-xl">
-                    <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-pink-500 rounded-full flex items-center justify-center">
-                      <User className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-900">Welcome back!</div>
-                      <div className="text-sm text-gray-500">Sign in to see your deals</div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </motion.div>
           </>
