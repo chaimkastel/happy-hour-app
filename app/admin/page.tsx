@@ -6,6 +6,7 @@ export const runtime = 'nodejs';
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { 
   Users, 
   Building2, 
@@ -235,6 +236,7 @@ export default function AdminDashboard() {
           <div className="flex border-b border-neutral-200 overflow-x-auto">
             {[
               { id: 'overview', label: 'Overview' },
+              { id: 'merchants', label: 'Merchants' },
               { id: 'restaurants', label: 'Restaurants' },
               { id: 'users', label: 'Users' },
               { id: 'approvals', label: 'Approvals' },
@@ -544,6 +546,29 @@ export default function AdminDashboard() {
                 </motion.div>
               ))
             )}
+          </motion.div>
+        )}
+
+        {/* Merchants Tab */}
+        {selectedTab === 'merchants' && (
+          <motion.div
+            key="merchants"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle>Merchant Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-neutral-600 mb-4">Manage merchant applications and approvals</p>
+                <Button onClick={() => window.location.href = '/admin/merchants'}>
+                  Open Merchant Management
+                </Button>
+              </CardContent>
+            </Card>
           </motion.div>
         )}
 
