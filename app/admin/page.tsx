@@ -21,7 +21,8 @@ import {
   Shield,
   Eye,
   RefreshCw,
-  XCircle
+  XCircle,
+  Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -69,6 +70,170 @@ interface Venue {
     deals: number;
     vouchers: number;
   };
+}
+
+function MerchantsManagementSection() {
+  const [merchants, setMerchants] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED'>('ALL');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    fetchMerchants();
+  }, [filter]);
+
+  const fetchMerchants = async () => {
+    try {
+      setLoading(true);
+      const url = `/api/admin/merchants${filter !== 'ALL' ? `?status=${filter}` : ''}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch merchants');
+      }
+
+      const data = await response.json();
+      setMerchants(data.merchants || []);
+    } catch (err: any) {
+      console.error('Error fetching merchants:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApprove = async (merchantId: string) => {
+    if (!confirm('Approve this merchant?')) return;
+
+    try {
+      const response = await fetch(`/api/admin/merchants/${merchantId}/approve`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) throw new Error('Failed to approve merchant');
+
+      await fetchMerchants();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleReject = async (merchantId: string) => {
+    const reason = prompt('Rejection reason:');
+    if (!reason) return;
+
+    try {
+      const response = await fetch(`/api/admin/merchants/${merchantId}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason }),
+      });
+
+      if (!response.ok) throw new Error('Failed to reject merchant');
+
+      await fetchMerchants();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const filteredMerchants = merchants.filter(merchant =>
+    merchant.businessName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    merchant.contactEmail?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <motion.div
+      key="merchants"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-4"
+    >
+      <Card>
+        <CardHeader>
+          <CardTitle>Merchant Management</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+            <input
+              type="text"
+              placeholder="Search merchants..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+            />
+          </div>
+
+          {/* Filters */}
+          <div className="flex gap-2 flex-wrap">
+            {['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED'].map((status) => (
+              <button
+                key={status}
+                onClick={() => setFilter(status as any)}
+                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all ${
+                  filter === status
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                }`}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
+
+          {/* Merchant List */}
+          {loading ? (
+            <div className="text-center py-8 text-neutral-600">Loading merchants...</div>
+          ) : error ? (
+            <div className="text-center py-8 text-red-600">{error}</div>
+          ) : filteredMerchants.length === 0 ? (
+            <div className="text-center py-8 text-neutral-600">No merchants found</div>
+          ) : (
+            <div className="space-y-3 max-h-[600px] overflow-y-auto">
+              {filteredMerchants.map((merchant) => (
+                <div key={merchant.id} className="border border-neutral-200 rounded-lg p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <h3 className="font-semibold text-neutral-900">{merchant.businessName}</h3>
+                      <p className="text-sm text-neutral-600">{merchant.contactEmail}</p>
+                    </div>
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      merchant.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                      merchant.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                      merchant.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {merchant.status}
+                    </span>
+                  </div>
+                  {merchant.status === 'PENDING' && (
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => handleApprove(merchant.id)}
+                        className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleReject(merchant.id)}
+                        className="flex-1 px-3 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
 }
 
 export default function AdminDashboard() {
@@ -551,25 +716,7 @@ export default function AdminDashboard() {
 
         {/* Merchants Tab */}
         {selectedTab === 'merchants' && (
-          <motion.div
-            key="merchants"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="space-y-6"
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle>Merchant Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-neutral-600 mb-4">Manage merchant applications and approvals</p>
-                <Button onClick={() => window.location.href = '/admin/merchants'}>
-                  Open Merchant Management
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <MerchantsManagementSection />
         )}
 
         {/* Other tabs would have similar structure */}
