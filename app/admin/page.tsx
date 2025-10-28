@@ -1,297 +1,133 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-export const runtime = 'nodejs';
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import { 
   Users, 
   Building2, 
-  TrendingUp, 
-  DollarSign, 
-  AlertTriangle,
+  ShoppingCart, 
+  DollarSign,
+  TrendingUp,
+  AlertCircle,
   CheckCircle,
   Clock,
-  Star,
-  BarChart3,
   Settings,
   Shield,
   Eye,
+  Edit,
+  X,
+  Search,
+  Filter,
+  Download,
   RefreshCw,
-  XCircle,
-  Search
+  LogOut,
+  BarChart3,
+  User,
+  Mail
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { cn } from '@/lib/utils';
 
 interface AdminStats {
   totalUsers: number;
   totalMerchants: number;
-  totalVenues: number;
   totalDeals: number;
-  totalVouchers: number;
   totalRevenue: number;
   activeDeals: number;
-  pendingApprovals: number;
-  systemHealth: string;
-}
-
-interface Activity {
-  id: string;
-  type: string;
-  message: string;
-  time: string;
-  status: string;
-}
-
-interface Venue {
-  id: string;
-    name: string;
-  isApproved: boolean;
-  isActive: boolean;
-  createdAt: string;
-  merchant: {
-    user: {
-      firstName: string;
-      lastName: string;
-    email: string;
-  };
-  };
-  deals: Array<{
-  id: string;
-    title: string;
-    isActive: boolean;
-  }>;
-  _count: {
-    deals: number;
-    vouchers: number;
-  };
-}
-
-function MerchantsManagementSection() {
-  const [merchants, setMerchants] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED'>('ALL');
-  const [searchTerm, setSearchTerm] = useState('');
-
-  useEffect(() => {
-    fetchMerchants();
-  }, [filter]);
-
-  const fetchMerchants = async () => {
-    try {
-      setLoading(true);
-      const url = `/api/admin/merchants${filter !== 'ALL' ? `?status=${filter}` : ''}`;
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch merchants');
-      }
-
-      const data = await response.json();
-      setMerchants(data.merchants || []);
-    } catch (err: any) {
-      console.error('Error fetching merchants:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleApprove = async (merchantId: string) => {
-    if (!confirm('Approve this merchant?')) return;
-
-    try {
-      const response = await fetch(`/api/admin/merchants/${merchantId}/approve`, {
-        method: 'POST',
-      });
-
-      if (!response.ok) throw new Error('Failed to approve merchant');
-
-      await fetchMerchants();
-    } catch (err: any) {
-      alert(err.message);
-    }
-  };
-
-  const handleReject = async (merchantId: string) => {
-    const reason = prompt('Rejection reason:');
-    if (!reason) return;
-
-    try {
-      const response = await fetch(`/api/admin/merchants/${merchantId}/reject`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason }),
-      });
-
-      if (!response.ok) throw new Error('Failed to reject merchant');
-
-      await fetchMerchants();
-    } catch (err: any) {
-      alert(err.message);
-    }
-  };
-
-  const filteredMerchants = merchants.filter(merchant =>
-    merchant.businessName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    merchant.contactEmail?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  return (
-    <motion.div
-      key="merchants"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-4"
-    >
-      <Card>
-        <CardHeader>
-          <CardTitle>Merchant Management</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-            <input
-              type="text"
-              placeholder="Search merchants..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
-            />
-          </div>
-
-          {/* Filters */}
-          <div className="flex gap-2 flex-wrap">
-            {['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED'].map((status) => (
-              <button
-                key={status}
-                onClick={() => setFilter(status as any)}
-                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all ${
-                  filter === status
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                }`}
-              >
-                {status}
-              </button>
-            ))}
-          </div>
-
-          {/* Merchant List */}
-          {loading ? (
-            <div className="text-center py-8 text-neutral-600">Loading merchants...</div>
-          ) : error ? (
-            <div className="text-center py-8 text-red-600">{error}</div>
-          ) : filteredMerchants.length === 0 ? (
-            <div className="text-center py-8 text-neutral-600">No merchants found</div>
-          ) : (
-            <div className="space-y-3 max-h-[600px] overflow-y-auto">
-              {filteredMerchants.map((merchant) => (
-                <div key={merchant.id} className="border border-neutral-200 rounded-lg p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h3 className="font-semibold text-neutral-900">{merchant.businessName}</h3>
-                      <p className="text-sm text-neutral-600">{merchant.contactEmail}</p>
-                    </div>
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      merchant.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                      merchant.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                      merchant.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {merchant.status}
-                    </span>
-                  </div>
-                  {merchant.status === 'PENDING' && (
-                    <div className="flex gap-2 mt-3">
-                      <button
-                        onClick={() => handleApprove(merchant.id)}
-                        className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => handleReject(merchant.id)}
-                        className="flex-1 px-3 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700"
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
+  pendingMerchants: number;
 }
 
 export default function AdminDashboard() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [selectedTab, setSelectedTab] = useState('overview');
   const [stats, setStats] = useState<AdminStats | null>(null);
-  const [activity, setActivity] = useState<Activity[]>([]);
-  const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
+  const [merchants, setMerchants] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [deals, setDeals] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/admin-access');
+    }
+  }, [status, router]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [selectedTab]);
 
   const fetchData = async () => {
     try {
-    setLoading(true);
-      const [statsRes, activityRes, venuesRes] = await Promise.all([
-        fetch('/api/admin/stats'),
-        fetch('/api/admin/activity'),
-        fetch('/api/admin/venues?status=all&limit=10')
-      ]);
+      setLoading(true);
+      
+      if (selectedTab === 'merchants' || selectedTab === 'overview') {
+        const res = await fetch('/api/admin/merchants');
+        if (res.ok) {
+          const data = await res.json();
+          setMerchants(data.merchants || []);
+        }
+      }
+      
+      if (selectedTab === 'users') {
+        const res = await fetch('/api/admin/users');
+        if (res.ok) {
+          const data = await res.json();
+          setUsers(data.users || []);
+        }
+      }
+      
+      if (selectedTab === 'deals') {
+        const res = await fetch('/api/admin/deals');
+        if (res.ok) {
+          const data = await res.json();
+          setDeals(data.deals || []);
+        }
+      }
 
+      const statsRes = await fetch('/api/admin/stats');
       if (statsRes.ok) {
         const statsData = await statsRes.json();
         setStats(statsData);
       }
-
-      if (activityRes.ok) {
-        const activityData = await activityRes.json();
-        setActivity(activityData);
-      }
-
-      if (venuesRes.ok) {
-        const venuesData = await venuesRes.json();
-        setVenues(venuesData.venues);
-        }
-      } catch (error) {
+    } catch (error) {
       console.error('Error fetching admin data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVenueAction = async (venueId: string, action: string) => {
-    try {
-      const response = await fetch('/api/admin/venues', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ venueId, action }),
-      });
+  const handleApproveMerchant = async (merchantId: string) => {
+    if (!confirm('Approve this merchant?')) return;
 
-      if (response.ok) {
-        await fetchData(); // Refresh data
+    try {
+      const res = await fetch(`/api/admin/merchants/${merchantId}/approve`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        await fetchData();
       }
     } catch (error) {
-      console.error('Error updating venue:', error);
+      alert('Failed to approve merchant');
+    }
+  };
+
+  const handleRejectMerchant = async (merchantId: string, reason: string) => {
+    if (!reason) return;
+
+    try {
+      const res = await fetch(`/api/admin/merchants/${merchantId}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason }),
+      });
+      if (res.ok) {
+        await fetchData();
+      }
+    } catch (error) {
+      alert('Failed to reject merchant');
     }
   };
 
@@ -302,448 +138,326 @@ export default function AdminDashboard() {
     }).format(amount);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'text-warning-600 bg-warning-100';
-      case 'approved':
-        return 'text-success-600 bg-success-100';
-      case 'completed':
-        return 'text-neutral-600 bg-neutral-100';
-      default:
-        return 'text-neutral-600 bg-neutral-100';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <Clock className="w-4 h-4" />;
-      case 'approved':
-        return <CheckCircle className="w-4 h-4" />;
-      case 'completed':
-        return <CheckCircle className="w-4 h-4" />;
-      default:
-        return <Clock className="w-4 h-4" />;
-    }
-  };
-
+  if (status === 'loading') {
     return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6">
-        <div className="flex items-center justify-between mb-6">
-            <div>
-            <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-            <p className="text-purple-100">Manage your Happy Hour platform</p>
-            </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/10"
-            >
-              <Settings className="w-6 h-6" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/10"
-            >
-              <Shield className="w-6 h-6" />
-            </Button>
-                      </div>
-                    </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <motion.div
+          className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        />
+      </div>
+    );
+  }
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="bg-white/10 backdrop-blur-md border-white/20 text-white">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold mb-1">
-                {loading ? '...' : stats?.totalUsers.toLocaleString() || 0}
-                        </div>
-              <div className="text-purple-100 text-sm">Total Users</div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-white/10 backdrop-blur-md border-white/20 text-white">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold mb-1">
-                {loading ? '...' : stats?.totalVenues || 0}
-                              </div>
-              <div className="text-purple-100 text-sm">Restaurants</div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-white/10 backdrop-blur-md border-white/20 text-white">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold mb-1">
-                {loading ? '...' : formatCurrency(stats?.totalRevenue || 0)}
-                            </div>
-              <div className="text-purple-100 text-sm">Total Revenue</div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-white/10 backdrop-blur-md border-white/20 text-white">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold mb-1">
-                {loading ? '...' : stats?.activeDeals || 0}
-                          </div>
-              <div className="text-purple-100 text-sm">Active Deals</div>
-            </CardContent>
-          </Card>
-                    </div>
-              </div>
-              
-      {/* Tabs */}
-      <div className="px-4 -mt-4">
-        <Card>
-          <div className="flex border-b border-neutral-200 overflow-x-auto">
-            {[
-              { id: 'overview', label: 'Overview' },
-              { id: 'merchants', label: 'Merchants' },
-              { id: 'restaurants', label: 'Restaurants' },
-              { id: 'users', label: 'Users' },
-              { id: 'approvals', label: 'Approvals' },
-              { id: 'analytics', label: 'Analytics' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setSelectedTab(tab.id)}
-                className={cn(
-                  'flex-1 py-3 px-4 text-sm font-medium transition-colors whitespace-nowrap',
-                  selectedTab === tab.id
-                    ? 'text-purple-500 border-b-2 border-purple-500'
-                    : 'text-neutral-500 hover:text-neutral-700'
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'merchants', label: 'Merchants', icon: Building2 },
+    { id: 'users', label: 'Users', icon: Users },
+    { id: 'deals', label: 'Deals', icon: ShoppingCart },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-purple-600 to-purple-700 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+              <p className="text-purple-100 mt-1">Manage OrderHappyHour platform</p>
             </div>
-        </Card>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={fetchData}
+                disabled={loading}
+                className="text-white hover:bg-white/10"
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => signOut({ callbackUrl: '/' })}
+                className="text-white hover:bg-white/10"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+            {[
+              { label: 'Total Users', value: stats?.totalUsers || 0, icon: Users, color: 'blue' },
+              { label: 'Merchants', value: stats?.totalMerchants || 0, icon: Building2, color: 'green' },
+              { label: 'Active Deals', value: stats?.activeDeals || 0, icon: ShoppingCart, color: 'orange' },
+              { label: 'Total Revenue', value: formatCurrency(stats?.totalRevenue || 0), icon: DollarSign, color: 'purple' },
+            ].map((stat) => {
+              const Icon = stat.icon;
+              return (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-purple-100 text-sm">{stat.label}</p>
+                      <p className="text-white text-2xl font-bold mt-1">{stat.value}</p>
+                    </div>
+                    <Icon className="w-8 h-8 text-white opacity-80" />
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="p-4 space-y-6">
-        {/* Overview Tab */}
-        {selectedTab === 'overview' && (
-          <motion.div
-            key="overview"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="space-y-6"
-          >
-            {/* System Health */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Shield className="w-5 h-5 mr-2 text-green-500" />
-          System Health
-          </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={fetchData}
-                    disabled={loading}
-                  >
-                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div>
-                    <div className="text-2xl font-bold text-green-500 mb-1">
-                      {loading ? '...' : (stats?.systemHealth || 'excellent').charAt(0).toUpperCase() + (stats?.systemHealth || 'excellent').slice(1)}
-                      </div>
-                    <div className="text-sm text-neutral-600">
-                      All systems operational
-                    </div>
-                  </div>
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                    <CheckCircle className="w-8 h-8 text-green-500" />
-                      </div>
-                    </div>
-              </CardContent>
-            </Card>
-
-                {/* Recent Activity */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="space-y-0">
-                  {loading ? (
-                    <div className="p-4 text-center text-neutral-500">
-                      Loading activity...
-                  </div>
-                  ) : activity.length === 0 ? (
-                    <div className="p-4 text-center text-neutral-500">
-                      No recent activity
-                        </div>
-                  ) : (
-                    activity.map((activity, index) => (
-                      <motion.div
-                        key={activity.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.1 }}
-                        className="flex items-center justify-between p-4 border-b border-neutral-100 last:border-b-0"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className={cn(
-                            'w-10 h-10 rounded-full flex items-center justify-center',
-                            getStatusColor(activity.status)
-                          )}>
-                            {getStatusIcon(activity.status)}
-                  </div>
-                              <div>
-                            <div className="font-medium text-neutral-900">
-                              {activity.message}
-                                </div>
-                            <div className="text-sm text-neutral-500">
-                              {activity.time}
-                              </div>
-                                </div>
-                              </div>
-                        <div className={cn(
-                          'text-xs px-2 py-1 rounded-full',
-                          getStatusColor(activity.status)
-                        )}>
-                          {activity.status}
-                              </div>
-                      </motion.div>
-                    ))
+      {/* Tabs */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="flex border-b border-gray-200 overflow-x-auto">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setSelectedTab(tab.id)}
+                  className={cn(
+                    'flex items-center gap-2 px-6 py-4 border-b-2 transition-colors whitespace-nowrap',
+                    selectedTab === tab.id
+                      ? 'border-purple-600 text-purple-600 font-semibold bg-purple-50'
+                      : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   )}
-                  </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {/* Restaurants Tab */}
-        {selectedTab === 'restaurants' && (
-          <motion.div
-            key="restaurants"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="space-y-4"
-          >
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Restaurants</h2>
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" onClick={fetchData} disabled={loading}>
-                  <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                    Refresh
-                </Button>
-                </div>
-                      </div>
-                      
-            {loading ? (
-              <div className="text-center py-8 text-neutral-500">
-                Loading restaurants...
-                        </div>
-            ) : venues.length === 0 ? (
-              <div className="text-center py-8 text-neutral-500">
-                No restaurants found
-                        </div>
-            ) : (
-              venues.map((venue, index) => (
-                <motion.div
-                  key={venue.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
                 >
-                  <Card>
-                    <CardContent className="p-4">
+                  <Icon className="w-5 h-5" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Content */}
+          <div className="p-6">
+            {selectedTab === 'overview' && (
+              <OverviewTab stats={stats} merchants={merchants} loading={loading} />
+            )}
+            {selectedTab === 'merchants' && (
+              <MerchantsTab merchants={merchants} onApprove={handleApproveMerchant} onReject={handleRejectMerchant} loading={loading} />
+            )}
+            {selectedTab === 'users' && (
+              <UsersTab users={users} loading={loading} />
+            )}
+            {selectedTab === 'deals' && (
+              <DealsTab deals={deals} loading={loading} />
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OverviewTab({ stats, merchants, loading }: { stats: any, merchants: any[], loading: boolean }) {
+  const pendingMerchants = merchants.filter(m => m.status === 'PENDING').slice(0, 5);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Pending Approvals */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Pending Approvals</h3>
+            <AlertCircle className="w-6 h-6 text-yellow-600" />
+          </div>
+          <div className="text-3xl font-bold text-yellow-900 mb-2">{stats?.pendingMerchants || 0}</div>
+          <p className="text-sm text-yellow-700">Merchants awaiting approval</p>
+        </div>
+
+        {/* Active Deals */}
+        <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Active Deals</h3>
+            <TrendingUp className="w-6 h-6 text-green-600" />
+          </div>
+          <div className="text-3xl font-bold text-green-900 mb-2">{stats?.activeDeals || 0}</div>
+          <p className="text-sm text-green-700">Currently available deals</p>
+        </div>
+      </div>
+
+      {/* Recent Pending Merchants */}
+      {pendingMerchants.length > 0 && (
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Pending Merchants</h3>
+          <div className="space-y-3">
+            {pendingMerchants.map((merchant) => (
+              <div key={merchant.id} className="bg-white border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-                            <Building2 className="w-6 h-6 text-primary-600" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900">{merchant.businessName}</h4>
+                    <p className="text-sm text-gray-600">{merchant.contactEmail}</p>
                   </div>
-                              <div>
-                            <h3 className="font-semibold text-neutral-900">
-                              {venue.name}
-                            </h3>
-                            <div className="flex items-center space-x-4 text-sm text-neutral-600">
-                              <span className="flex items-center">
-                                <Users className="w-4 h-4 mr-1" />
-                                {venue.merchant.user.firstName} {venue.merchant.user.lastName}
-                              </span>
-                              <span className="flex items-center">
-                                <TrendingUp className="w-4 h-4 mr-1" />
-                                {venue._count.deals} deals
-                              </span>
-                              <span className="flex items-center">
-                                <CheckCircle className="w-4 h-4 mr-1" />
-                                {venue._count.vouchers} vouchers
-                              </span>
-                              </div>
-                            <div className="flex items-center space-x-2 mt-1">
-                              <span className={`text-xs px-2 py-1 rounded-full ${
-                                venue.isApproved 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-yellow-100 text-yellow-800'
-                              }`}>
-                                {venue.isApproved ? 'Approved' : 'Pending'}
-                              </span>
-                              <span className={`text-xs px-2 py-1 rounded-full ${
-                                venue.isActive 
-                                  ? 'bg-blue-100 text-blue-800' 
-                                  : 'bg-red-100 text-red-800'
-                              }`}>
-                                {venue.isActive ? 'Active' : 'Inactive'}
+                  <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold">
+                    PENDING
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MerchantsTab({ merchants, onApprove, onReject, loading }: any) {
+  const [filter, setFilter] = useState('ALL');
+
+  const filteredMerchants = merchants.filter((m: any) => {
+    if (filter === 'ALL') return true;
+    return m.status === filter;
+  });
+
+  return (
+    <div className="space-y-4">
+      {/* Filters */}
+      <div className="flex gap-2 flex-wrap">
+        {['ALL', 'PENDING', 'APPROVED', 'REJECTED'].map((status) => (
+          <button
+            key={status}
+            onClick={() => setFilter(status)}
+            className={cn(
+              'px-4 py-2 rounded-lg text-sm font-semibold transition-colors',
+              filter === status
+                ? 'bg-purple-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            )}
+          >
+            {status}
+          </button>
+        ))}
+      </div>
+
+      {/* Merchants List */}
+      {loading ? (
+        <div className="text-center py-12 text-gray-500">Loading merchants...</div>
+      ) : filteredMerchants.length === 0 ? (
+        <div className="text-center py-12 text-gray-500">No merchants found</div>
+      ) : (
+        <div className="space-y-3">
+          {filteredMerchants.map((merchant: any) => (
+            <div key={merchant.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                    <h4 className="font-semibold text-gray-900">{merchant.businessName}</h4>
+                    <span className={cn(
+                      'px-2 py-1 rounded-full text-xs font-semibold',
+                      merchant.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                      merchant.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-red-100 text-red-800'
+                    )}>
+                      {merchant.status}
                     </span>
                   </div>
-                        </div>
-                      </div>
-                        
-                        <div className="flex items-center space-x-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleVenueAction(venue.id, venue.isApproved ? 'reject' : 'approve')}
-                          >
-                            {venue.isApproved ? 'Reject' : 'Approve'}
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleVenueAction(venue.id, venue.isActive ? 'suspend' : 'activate')}
-                          >
-                            {venue.isActive ? 'Suspend' : 'Activate'}
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))
-            )}
-          </motion.div>
-        )}
-
-        {/* Approvals Tab */}
-        {selectedTab === 'approvals' && (
-          <motion.div
-            key="approvals"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="space-y-4"
-          >
-                    <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Pending Approvals</h2>
-              <div className="text-sm text-neutral-600">
-                {loading ? '...' : stats?.pendingApprovals || 0} items pending
-                      </div>
-                    </div>
-
-            {loading ? (
-              <div className="text-center py-8 text-neutral-500">
-                Loading approvals...
-                      </div>
-            ) : venues.filter(v => !v.isApproved).length === 0 ? (
-              <div className="text-center py-8 text-neutral-500">
-                No pending approvals
-                    </div>
-            ) : (
-              venues.filter(v => !v.isApproved).map((venue, index) => (
-                <motion.div
-                  key={venue.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                >
-                  <Card>
-                    <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                          <h3 className="font-semibold text-neutral-900">
-                            {venue.name}
-            </h3>
-                          <p className="text-sm text-neutral-600">
-                            Restaurant Application
-                          </p>
-                          <p className="text-xs text-neutral-500">
-                            Merchant: {venue.merchant.user.firstName} {venue.merchant.user.lastName} ({venue.merchant.user.email})
-                          </p>
-                          <p className="text-xs text-neutral-500">
-                            Submitted: {new Date(venue.createdAt).toLocaleDateString()}
-                          </p>
-                          <div className="flex items-center space-x-2 mt-2">
-                            <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">
-                              Pending Approval
-                      </span>
-                            <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
-                              {venue._count.deals} deals
-                        </span>
-                      </div>
-                    </div>
-                        
-                        <div className="flex items-center space-x-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleVenueAction(venue.id, 'approve')}
-                          >
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            Approve
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleVenueAction(venue.id, 'reject')}
-                          >
-                            <XCircle className="w-4 h-4 mr-2" />
-                            Reject
-                          </Button>
-                    </div>
-                    </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))
-            )}
-          </motion.div>
-        )}
-
-        {/* Merchants Tab */}
-        {selectedTab === 'merchants' && (
-          <MerchantsManagementSection />
-        )}
-
-        {/* Other tabs would have similar structure */}
-        {selectedTab === 'users' && (
-          <motion.div
-            key="users"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <h2 className="text-lg font-semibold mb-4">User Management</h2>
-            <p className="text-neutral-600">Manage platform users and their accounts</p>
-          </motion.div>
-        )}
-
-        {selectedTab === 'analytics' && (
-          <motion.div
-            key="analytics"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <h2 className="text-lg font-semibold mb-4">Platform Analytics</h2>
-            <p className="text-neutral-600">View detailed analytics and insights</p>
-          </motion.div>
-        )}
+                  <p className="text-sm text-gray-600 mt-1">{merchant.contactEmail}</p>
+                  {merchant.address && (
+                    <p className="text-sm text-gray-500 mt-1">{merchant.address}</p>
+                  )}
+                </div>
+                {merchant.status === 'PENDING' && (
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => onApprove(merchant.id)}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        const reason = prompt('Rejection reason:');
+                        if (reason) onReject(merchant.id, reason);
+                      }}
+                      variant="outline"
+                      className="border-red-300 text-red-700 hover:bg-red-50"
+                    >
+                      Reject
+                    </Button>
                   </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function UsersTab({ users, loading }: any) {
+  return (
+    <div>
+      {loading ? (
+        <div className="text-center py-12 text-gray-500">Loading users...</div>
+      ) : users.length === 0 ? (
+        <div className="text-center py-12 text-gray-500">No users found</div>
+      ) : (
+        <div className="space-y-3">
+          {users.map((user: any) => (
+            <div key={user.id} className="bg-white border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-semibold text-gray-900">{user.firstName} {user.lastName}</h4>
+                  <p className="text-sm text-gray-600">{user.email}</p>
+                </div>
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+                  {user.role}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DealsTab({ deals, loading }: any) {
+  return (
+    <div>
+      {loading ? (
+        <div className="text-center py-12 text-gray-500">Loading deals...</div>
+      ) : deals.length === 0 ? (
+        <div className="text-center py-12 text-gray-500">No deals found</div>
+      ) : (
+        <div className="space-y-3">
+          {deals.map((deal: any) => (
+            <div key={deal.id} className="bg-white border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-semibold text-gray-900">{deal.title}</h4>
+                  <p className="text-sm text-gray-600">{deal.description}</p>
+                </div>
+                <span className={cn(
+                  'px-3 py-1 rounded-full text-xs font-semibold',
+                  deal.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                )}>
+                  {deal.status}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
