@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, Star, Clock, Edit3, Heart, QrCode, TrendingUp, X, ChevronDown } from 'lucide-react';
+import { Search, MapPin, Star, Clock, Edit3, Heart, TrendingUp, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { DealRow } from '@/components/deals/DealRow';
@@ -634,20 +634,6 @@ export default function HomePage() {
           </motion.div>
         )}
       </div>
-
-      {/* Floating Action Button */}
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="fixed bottom-24 right-6 w-16 h-16 bg-gradient-to-br from-orange-500 via-orange-600 to-pink-500 rounded-full shadow-xl hover:shadow-2xl flex items-center justify-center text-white transition-all z-40 group"
-        onClick={() => window.open('/redeem', '_self')}
-        aria-label="Redeem deal"
-      >
-        <QrCode className="w-6 h-6 transition-transform group-hover:scale-110" />
-        <span className="absolute -bottom-8 text-xs font-semibold text-gray-700 whitespace-nowrap">
-          Redeem
-        </span>
-      </motion.button>
 
       <BottomNav />
       
