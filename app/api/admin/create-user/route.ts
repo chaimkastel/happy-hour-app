@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
     const existingAdmin = await prisma.user.findFirst({
       where: { 
         OR: [
+          { email: 'admin@orderhappyhour.com' },
           { email: 'admin@happyhour.com' },
           { role: 'ADMIN' }
         ]
@@ -49,13 +50,15 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingAdmin) {
-      // Update existing admin password
+      // Update existing admin password and email if needed
       const hashedPassword = await bcrypt.hash('CHAIMrox11!', 12);
       
       await prisma.user.update({
         where: { id: existingAdmin.id },
         data: {
+          email: 'admin@orderhappyhour.com',
           password: hashedPassword,
+          role: 'ADMIN',
           emailVerified: true,
           emailVerifiedAt: new Date(),
         }
@@ -64,7 +67,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: 'Admin password updated successfully',
-        email: existingAdmin.email,
+        email: 'admin@orderhappyhour.com',
         password: 'CHAIMrox11!'
       });
     }
@@ -74,7 +77,7 @@ export async function POST(request: NextRequest) {
     
     const admin = await prisma.user.create({
       data: {
-        email: 'admin@happyhour.com',
+        email: 'admin@orderhappyhour.com',
         password: hashedPassword,
         firstName: 'Admin',
         lastName: 'User',
