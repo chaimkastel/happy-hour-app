@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { CreditCard, QrCode, Clock, CheckCircle, XCircle, Star, MapPin, ArrowRight, Gift } from 'lucide-react';
+import { CreditCard, QrCode, Clock, CheckCircle, XCircle, Star, MapPin, ArrowRight, Gift, Copy } from 'lucide-react';
 import BottomNav from '@/components/navigation/BottomNav';
 
 interface Voucher {
@@ -37,6 +37,7 @@ export default function WalletPage() {
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'active' | 'redeemed' | 'expired'>('active');
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -98,6 +99,16 @@ export default function WalletPage() {
     active: vouchers.filter(v => v.status === 'ISSUED').length,
     redeemed: vouchers.filter(v => v.status === 'REDEEMED').length,
     totalSavings: '$127.50'
+  };
+
+  const handleCopyCode = async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedCode(code);
+      setTimeout(() => setCopiedCode(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy code:', err);
+    }
   };
 
   if (status === 'loading' || loading) {
@@ -325,10 +336,11 @@ export default function WalletPage() {
                       </div>
                       {voucher.status === 'ISSUED' && (
                         <button
-                          onClick={() => navigator.clipboard.writeText(voucher.code)}
-                          className="text-orange-600 hover:text-orange-700 font-semibold"
+                          onClick={() => handleCopyCode(voucher.code)}
+                          className="text-orange-600 hover:text-orange-700 font-semibold flex items-center gap-2"
                         >
-                          Copy Code
+                          <Copy className="w-4 h-4" />
+                          {copiedCode === voucher.code ? 'Copied!' : 'Copy Code'}
                         </button>
                       )}
                     </div>

@@ -58,7 +58,28 @@ export default function FavoritesPage() {
   };
 
   const removeFavorite = async (dealId: string) => {
+    // Optimistic update
+    const original = favorites;
     setFavorites(prev => prev.filter(deal => deal.id !== dealId));
+
+    try {
+      // Call API to remove favorite
+      const response = await fetch(`/api/favorite/toggle`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dealId }),
+      });
+
+      if (!response.ok) {
+        // Rollback on error
+        setFavorites(original);
+        alert('Failed to remove favorite');
+      }
+    } catch (error) {
+      // Rollback on error
+      setFavorites(original);
+      console.error('Error removing favorite:', error);
+    }
   };
 
   const formatTime = (dateString: string) => {
