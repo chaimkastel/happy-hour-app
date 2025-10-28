@@ -76,7 +76,9 @@ model Merchant {
   abnOrEIN          String?
   payoutAccountId   String?
   kycStatus         String            @default("PENDING")
+  status            String            @default("PENDING") // PENDING, APPROVED, REJECTED, SUSPENDED
   approved          Boolean           @default(false)
+  rejectionReason   String?
   subscriptionStatus String           @default("TRIAL")
   stripeCustomerId  String?
   termsAcceptedAt   DateTime?
@@ -88,6 +90,7 @@ model Merchant {
   subscription      Subscription?
   venues            Venue[]
 
+  @@index([status])
   @@map("merchants")
 }
 
