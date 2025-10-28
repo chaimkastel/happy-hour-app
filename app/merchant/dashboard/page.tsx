@@ -1,429 +1,203 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
-// Prevent static generation
-export const runtime = 'nodejs';
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
-import { 
-  BarChart3, 
-  Users, 
-  MapPin, 
-  Calendar, 
-  TrendingUp, 
-  Clock,
-  DollarSign,
-  QrCode,
-  Plus,
-  Eye,
-  Edit,
-  Trash2,
-  CheckCircle,
-  XCircle,
-  AlertCircle
-} from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { OnboardingChecklist } from '@/components/merchant/OnboardingChecklist';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { Plus, TrendingUp, Clock, Calendar, Bell, CheckCircle, AlertCircle } from 'lucide-react';
 
-interface Merchant {
-  id: string;
-  companyName: string;
-  contactEmail: string;
-  approved: boolean;
-  subscriptionStatus: 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'INCOMPLETE';
-  venues: Venue[];
-}
-
-interface Venue {
-  id: string;
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  rating?: number;
-  photos: string[];
-  deals: Deal[];
-}
-
-interface Deal {
-  id: string;
-  title: string;
-  description: string;
-  type: 'HAPPY_HOUR' | 'INSTANT';
-  percentOff?: number;
-  price?: number;
-  startsAt: string;
-  endsAt: string;
-  status: string;
-  maxRedemptions: number;
-  redeemedCount: number;
-}
-
-interface Voucher {
-    id: string;
-  code: string;
-  status: 'ISSUED' | 'REDEEMED' | 'CANCELLED' | 'EXPIRED';
-  issuedAt: string;
-  redeemedAt?: string;
-  deal: Deal;
-  venue: Venue;
-}
-
-export default function MerchantDashboard() {
+export default function MerchantDashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [merchant, setMerchant] = useState<Merchant | null>(null);
-  const [recentVouchers, setRecentVouchers] = useState<Voucher[]>([]);
+  const [merchantStatus, setMerchantStatus] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Handle loading and authentication
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!session?.user) {
-    router.push('/merchant/login' as any);
-    return null;
-  }
 
   useEffect(() => {
-    const fetchData = async () => {
-    try {
-      setLoading(true);
-        
-        // Fetch merchant data
-        const merchantResponse = await fetch('/api/merchant/dashboard');
-        if (!merchantResponse.ok) {
-          throw new Error('Failed to fetch merchant data');
-        }
-        const merchantData = await merchantResponse.json();
-        setMerchant(merchantData);
+    if (status === 'unauthenticated') {
+      router.push('/merchant/signin');
+      return;
+    }
 
-        // Fetch recent vouchers
-        const vouchersResponse = await fetch('/api/merchant/vouchers/recent');
-        if (vouchersResponse.ok) {
-          const vouchersData = await vouchersResponse.json();
-          setRecentVouchers(vouchersData);
+    fetchMerchantStatus();
+  }, [status, router]);
+
+  const fetchMerchantStatus = async () => {
+    try {
+      const response = await fetch('/api/merchant/status');
+      if (response.ok) {
+        const data = await response.json();
+        setMerchantStatus(data.status);
+
+        if (data.status === 'PENDING') {
+          router.push('/merchant/pending');
+        } else if (data.status === 'REJECTED') {
+          router.push('/merchant/help');
         }
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError(err instanceof Error ? err.message : 'An error occurred');
+      }
+    } catch (error) {
+      console.error('Error fetching merchant status:', error);
     } finally {
       setLoading(false);
     }
   };
 
-    fetchData();
-  }, []);
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50/30 via-white to-pink-50/20 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center"
+        >
+          <motion.div
+            className="w-12 h-12 border-4 border-orange-600 border-t-transparent rounded-full mx-auto mb-4"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+          <p className="text-slate-600">Loading dashboard...</p>
+        </motion.div>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Error</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <Button onClick={() => window.location.reload()}>
-            Try Again
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!merchant) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">No Merchant Found</h2>
-          <p className="text-gray-600 mb-4">Please contact support to set up your merchant account.</p>
-        </div>
-      </div>
-    );
-  }
-
-  const totalVenues = merchant.venues.length;
-  const totalDeals = merchant.venues.reduce((sum, venue) => sum + venue.deals.length, 0);
-  const activeDeals = merchant.venues.reduce((sum, venue) => 
-    sum + venue.deals.filter(deal => deal.status === 'ACTIVE').length, 0
-  );
-  const totalRedemptions = merchant.venues.reduce((sum, venue) => 
-    sum + venue.deals.reduce((dealSum, deal) => dealSum + deal.redeemedCount, 0), 0
-  );
-
-  const getSubscriptionStatusColor = (status: string) => {
-    switch (status) {
-      case 'ACTIVE': return 'bg-green-100 text-green-800';
-      case 'PAST_DUE': return 'bg-yellow-100 text-yellow-800';
-      case 'CANCELED': return 'bg-red-100 text-red-800';
-      case 'INCOMPLETE': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const stats = {
+    activeDeals: 0,
+    totalViews: 0,
+    totalRedemptions: 0,
+    revenue: '$0.00',
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50/30 via-white to-pink-50/20 pb-20">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white/80 backdrop-blur-sm border-b border-slate-100"
+      >
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Welcome back, {merchant.companyName}!
-              </h1>
-              <p className="text-gray-600">Manage your venues, deals, and track performance</p>
+              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+              <p className="text-gray-600 mt-1">Welcome back! 👋</p>
             </div>
-            <div className="flex items-center space-x-4">
-              <Badge className={getSubscriptionStatusColor(merchant.subscriptionStatus)}>
-                {merchant.subscriptionStatus}
-              </Badge>
-              <Button
-                onClick={() => router.push('/merchant/venues/new' as any)}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Venue
-              </Button>
+            <div className="flex items-center gap-3">
+              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold flex items-center gap-1">
+                <CheckCircle className="w-4 h-4" />
+                Approved
+              </span>
+              <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-all">
+                Settings
+              </button>
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <div className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <MapPin className="h-6 w-6 text-blue-600" />
-              </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Venues</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalVenues}</p>
-              </div>
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <Clock className="w-5 h-5 text-orange-600" />
+              <h3 className="text-sm font-semibold text-gray-600">Active Deals</h3>
             </div>
-          </Card>
+            <p className="text-3xl font-bold text-gray-900">{stats.activeDeals}</p>
+          </motion.div>
 
-          <Card>
-            <div className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Calendar className="h-6 w-6 text-green-600" />
-              </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Active Deals</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {activeDeals > 0 ? activeDeals : 'Start Creating'}
-                  </p>
-                  {activeDeals === 0 && (
-                    <p className="text-xs text-gray-500 mt-1">Create your first deal</p>
-                  )}
-              </div>
-              </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <TrendingUp className="w-5 h-5 text-blue-600" />
+              <h3 className="text-sm font-semibold text-gray-600">Total Views</h3>
             </div>
-          </Card>
+            <p className="text-3xl font-bold text-gray-900">{stats.totalViews}</p>
+          </motion.div>
 
-          <Card>
-            <div className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <QrCode className="h-6 w-6 text-purple-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Redemptions</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {totalRedemptions > 0 ? totalRedemptions : '0'}
-                  </p>
-                  {totalRedemptions === 0 && (
-                    <p className="text-xs text-gray-500 mt-1">No redemptions yet</p>
-                  )}
-                </div>
-                  </div>
-                </div>
-          </Card>
-
-          <Card>
-            <div className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <TrendingUp className="h-6 w-6 text-orange-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Deals</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {totalDeals > 0 ? totalDeals : '0'}
-                  </p>
-                  {totalDeals === 0 && (
-                    <p className="text-xs text-gray-500 mt-1">No deals created yet</p>
-                  )}
-                </div>
-                </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <h3 className="text-sm font-semibold text-gray-600">Redemptions</h3>
             </div>
-          </Card>
+            <p className="text-3xl font-bold text-gray-900">{stats.totalRedemptions}</p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <TrendingUp className="w-5 h-5 text-purple-600" />
+              <h3 className="text-sm font-semibold text-gray-600">Revenue</h3>
+            </div>
+            <p className="text-3xl font-bold text-gray-900">{stats.revenue}</p>
+          </motion.div>
+        </div>
+
+        {/* Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm mb-8"
+        >
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button className="flex items-center gap-4 p-4 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-xl hover:from-orange-600 hover:to-pink-600 transition-all text-left">
+              <Plus className="w-6 h-6" />
+              <div>
+                <h3 className="font-bold">Create Deal</h3>
+                <p className="text-sm opacity-90">Add a new happy hour deal</p>
+              </div>
+            </button>
+
+            <button className="flex items-center gap-4 p-4 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition-all text-left border border-blue-200">
+              <Bell className="w-6 h-6" />
+              <div>
+                <h3 className="font-bold">Instant Boost</h3>
+                <p className="text-sm opacity-90">Start an instant deal now</p>
+              </div>
+            </button>
           </div>
+        </motion.div>
 
-        {/* Onboarding Checklist */}
-        <div className="mb-8">
-          <OnboardingChecklist
-            steps={[
-              {
-                id: 'profile',
-                title: 'Complete your profile',
-                description: 'Add your business information and contact details',
-                completed: !!(merchant.companyName && merchant.contactEmail),
-                required: true,
-                actionUrl: '/merchant/profile',
-                actionLabel: 'Complete Profile'
-              },
-              {
-                id: 'venue',
-                title: 'Add your first venue',
-                description: 'Create a venue location where you can offer deals',
-                completed: merchant.venues.length > 0,
-                required: true,
-                actionUrl: '/merchant/venues/new',
-                actionLabel: 'Add Venue'
-              },
-              {
-                id: 'stripe',
-                title: 'Connect Stripe payment',
-                description: 'Set up payment processing to receive payments',
-                completed: merchant.subscriptionStatus === 'ACTIVE',
-                required: true,
-                actionUrl: '/merchant/settings/billing',
-                actionLabel: 'Connect Stripe'
-              },
-              {
-                id: 'first-deal',
-                title: 'Create your first deal',
-                description: 'Add a deal to start attracting customers',
-                completed: totalDeals > 0,
-                required: false,
-                actionUrl: '/merchant/deals/new',
-                actionLabel: 'Create Deal'
-              }
-            ]}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Recent Vouchers */}
-          <Card>
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Recent Vouchers</h3>
-                <Button
-                  variant="outline"
-                  onClick={() => router.push('/merchant/vouchers' as any)}
-                >
-                  View All
-                </Button>
+        {/* Getting Started */}
+        {stats.activeDeals === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-orange-50 border-2 border-orange-200 rounded-xl p-8"
+          >
+            <div className="flex items-start gap-4">
+              <AlertCircle className="w-8 h-8 text-orange-600 flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Get Started</h3>
+                <p className="text-gray-700 mb-4">
+                  You haven't created any deals yet. Create your first happy hour deal to start attracting diners during off-peak hours!
+                </p>
+                <button className="px-6 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition-all">
+                  Create Your First Deal
+                </button>
               </div>
-              <div className="space-y-4">
-                {recentVouchers.length === 0 ? (
-                  <p className="text-gray-500 text-center py-4">No vouchers yet</p>
-                ) : (
-                  recentVouchers.map((voucher) => (
-                    <div key={voucher.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className="flex-shrink-0">
-                          {voucher.status === 'REDEEMED' ? (
-                            <CheckCircle className="h-5 w-5 text-green-500" />
-                          ) : voucher.status === 'EXPIRED' ? (
-                            <XCircle className="h-5 w-5 text-red-500" />
-                          ) : (
-                            <Clock className="h-5 w-5 text-yellow-500" />
-                          )}
-                      </div>
-                      <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            {voucher.deal.title}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {voucher.venue.name} • {voucher.code}
-                          </p>
-                    </div>
-                      </div>
-                      <Badge variant="secondary">
-                        {voucher.status}
-                      </Badge>
-                    </div>
-                  ))
-              )}
             </div>
-            </div>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card>
-            <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-              <div className="space-y-3">
-                <Button
-                  onClick={() => router.push('/merchant/venues' as any)}
-                  variant="outline"
-                  className="w-full justify-start"
-                >
-                  <MapPin className="h-4 w-4 mr-2" />
-                  Manage Venues
-                </Button>
-                <Button
-                  onClick={() => router.push('/merchant/deals' as any)}
-                  variant="outline"
-                  className="w-full justify-start"
-                >
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Manage Deals
-                </Button>
-                <Button
-                  onClick={() => router.push('/merchant/vouchers/validate' as any)}
-                  variant="outline"
-                  className="w-full justify-start"
-                >
-                  <QrCode className="h-4 w-4 mr-2" />
-                  Validate Vouchers
-                </Button>
-                <Button
-                  onClick={() => router.push('/merchant/subscription' as any)}
-                  variant="outline"
-                  className="w-full justify-start"
-                >
-                  <DollarSign className="h-4 w-4 mr-2" />
-                  Manage Subscription
-                </Button>
-                </div>
-            </div>
-          </Card>
-        </div>
+          </motion.div>
+        )}
       </div>
     </div>
   );
