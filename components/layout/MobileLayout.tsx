@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -16,7 +17,9 @@ import {
   Plus,
   Star,
   Wallet,
-  Settings
+  Settings,
+  LogOut,
+  LogIn
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
@@ -32,6 +35,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
   const [notifications, setNotifications] = useState(3);
   const [showNotifications, setShowNotifications] = useState(false);
   const pathname = usePathname();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -204,6 +208,19 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
               </AnimatePresence>
             </div>
 
+            {/* Sign In / Sign Out Button */}
+            {status === 'unauthenticated' && (
+              <Link href="/login">
+                <Button
+                  size="sm"
+                  className="h-9 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold text-sm"
+                >
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Sign In
+                </Button>
+              </Link>
+            )}
+
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -356,6 +373,50 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
                     </div>
                   </div>
                 ))}
+
+                {/* User Profile & Sign Out Section */}
+                <div className="pt-6 border-t border-gray-200 space-y-3">
+                  {session ? (
+                    <>
+                      <div className="flex items-center space-x-3 p-4 bg-gradient-to-br from-orange-50 to-pink-50 rounded-xl">
+                        <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-pink-500 rounded-full flex items-center justify-center">
+                          <User className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900">{session.user?.name || session.user?.email}</div>
+                          <div className="text-sm text-gray-600">{session.user?.email}</div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          signOut({ callbackUrl: '/' });
+                          setIsMenuOpen(false);
+                        }}
+                        className="flex items-center space-x-3 p-3 rounded-2xl hover:bg-gray-50 transition-all duration-200 w-full text-left"
+                      >
+                        <div className="w-14 h-14 bg-gradient-to-br from-red-100 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                          <LogOut className="w-7 h-7 text-red-600" />
+                        </div>
+                        <span className="text-gray-900 font-semibold text-base">
+                          Sign Out
+                        </span>
+                      </button>
+                    </>
+                  ) : (
+                    <Link
+                      href="/login"
+                      className="flex items-center space-x-3 p-3 rounded-2xl hover:bg-gradient-to-r hover:from-orange-50 hover:to-pink-50 transition-all duration-200 group bg-gradient-to-r from-orange-500 to-pink-500"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <LogIn className="w-7 h-7 text-white" />
+                      </div>
+                      <span className="text-white font-semibold text-base">
+                        Sign In
+                      </span>
+                    </Link>
+                  )}
+                </div>
               </div>
             </motion.div>
           </>
