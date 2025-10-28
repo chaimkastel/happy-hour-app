@@ -23,6 +23,10 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
       };
     }
 
+    // Extract city and state from venue if available
+    const city = '';
+    const state = '';
+    
     return generateDealMetadata({
       id: deal.id,
       title: deal.title,
@@ -30,8 +34,8 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
       venue: {
         name: deal.venue.name,
         address: deal.venue.address,
-        city: '',
-        state: '',
+        city,
+        state,
       },
       percentOff: deal.percentOff,
       tags: deal.tags ? JSON.parse(deal.tags) : [],

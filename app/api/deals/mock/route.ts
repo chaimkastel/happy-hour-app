@@ -68,7 +68,7 @@ const mockDeals = [
     discountedPrice: 800,
     startAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
     endAt: new Date(Date.now() + 1 * 60 * 60 * 1000).toISOString(),
-    image: 'https://images.unsplash.com/photo-1534939561126-855b8675edd4?w=800&h=600&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1527477396000-e91ad23b6c9e?w=800&h=600&fit=crop&q=80',
     venue: {
       name: 'The Sports Bar',
       address: '123 Main St',
@@ -87,7 +87,7 @@ const mockDeals = [
     discountedPrice: 1540,
     startAt: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString(),
     endAt: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
-    image: 'https://images.unsplash.com/photo-1526318890-1c15d6cccba4?w=800&h=600&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1511690651692-9bc6d92ef660?w=800&h=600&fit=crop&q=80',
     venue: {
       name: 'Cafe Benedict',
       address: '567 Park Ave',
