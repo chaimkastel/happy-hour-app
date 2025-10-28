@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { DealRow } from '@/components/deals/DealRow';
 import { LocationButton } from '@/components/location/LocationButton';
 import { LocationModal } from '@/components/location/LocationModal';
+import { HowItWorks } from '@/components/how-it-works/HowItWorks';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -642,6 +643,9 @@ export default function HomePage() {
         isOpen={showLocationModal} 
         onClose={() => setShowLocationModal(false)} 
       />
+      
+      {/* How It Works Section */}
+      <HowItWorks />
     </div>
   );
 }
