@@ -11,7 +11,7 @@ test.describe('Smoke Tests', () => {
     await expect(page.getByRole('heading', { name: /Happy Hour/i })).toBeVisible();
     
     // Check navigation to explore
-    const exploreLink = page.getByRole('link', { name: /explore/i });
+    const exploreLink = page.locator('[data-testid="nav-explore"]').first();
     await expect(exploreLink).toBeVisible();
     await exploreLink.click();
     
@@ -26,7 +26,7 @@ test.describe('Smoke Tests', () => {
     await expect(page).toHaveTitle(/Explore/);
     
     // Check for search functionality
-    const searchInput = page.getByPlaceholder(/search/i);
+    const searchInput = page.locator('[data-testid="search-input"]');
     await expect(searchInput).toBeVisible();
     
     // Check for filter options
@@ -115,7 +115,7 @@ test.describe('Smoke Tests', () => {
     
     // Check for manifest link
     const manifestLink = page.locator('link[rel="manifest"]');
-    await expect(manifestLink).toBeVisible();
+    await expect(manifestLink).toHaveAttribute('href', /manifest/);
     
     // Check for service worker registration
     const swRegistration = await page.evaluate(() => {

@@ -22,12 +22,27 @@ export default function InstantBoostPage() {
     setLoading(true);
 
     try {
-      // TODO: Implement API call to create instant boost deal
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      const response = await fetch('/api/merchant/boost', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          percentOff: Number(formData.percentOff),
+          duration: formData.duration,
+          maxRedemptions: formData.maxRedemptions ? Number(formData.maxRedemptions) : undefined
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to start instant boost');
+      }
+
       router.push('/merchant/dashboard');
     } catch (error) {
       console.error('Error creating instant boost:', error);
+      alert((error as Error).message || 'Failed to start instant boost');
     } finally {
       setLoading(false);
     }
@@ -93,6 +108,7 @@ export default function InstantBoostPage() {
                   Deal Title *
                 </label>
                 <input
+                  name="title"
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -107,6 +123,7 @@ export default function InstantBoostPage() {
                   Description
                 </label>
                 <textarea
+                  name="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Quick note for diners..."
@@ -121,6 +138,7 @@ export default function InstantBoostPage() {
                     Discount (%) *
                   </label>
                   <input
+                    name="percentOff"
                     type="number"
                     value={formData.percentOff}
                     onChange={(e) => setFormData({ ...formData, percentOff: e.target.value })}
@@ -158,6 +176,7 @@ export default function InstantBoostPage() {
             </div>
 
             <select
+              name="duration"
               value={formData.duration}
               onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
               className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"

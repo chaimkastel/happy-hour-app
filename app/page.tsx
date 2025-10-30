@@ -178,8 +178,17 @@ export default function HomePage() {
       router.push('/login');
       return;
     }
-    // TODO: Call favorites API
-    console.log('Save deal:', dealId);
+    try {
+      const res = await fetch('/api/favorite/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dealId })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update favorite');
+    } catch (err) {
+      console.error('Favorite toggle failed', err);
+    }
   };
 
   const DealCard = ({ deal, index }: { deal: Deal; index: number }) => {
@@ -191,6 +200,7 @@ export default function HomePage() {
         whileHover={{ scale: 1.01, y: -4 }}
         onClick={() => router.push(`/deal/${deal.id}/view`)}
         className="flex-shrink-0 w-[280px] group cursor-pointer"
+        data-testid="deal-card"
       >
         <div className="relative bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 group">
           {/* Image with Gradient Overlay */}
@@ -409,12 +419,13 @@ export default function HomePage() {
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
-              placeholder="Find deals by cuisine, restaurant, or vibe…"
+              placeholder="Search deals by cuisine, restaurant, or vibe…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setShowTypeahead(true)}
               className="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm shadow-sm transition-all text-slate-900"
               aria-label="Search deals"
+              data-testid="search-input"
             />
             {searchQuery && (
               <button

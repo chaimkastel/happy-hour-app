@@ -24,12 +24,30 @@ export default function CreateDealPage() {
     setLoading(true);
     
     try {
-      // TODO: Implement API call to create deal
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      const response = await fetch('/api/merchant/deals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          percentOff: Number(formData.percentOff),
+          maxRedemptions: formData.maxRedemptions ? Number(formData.maxRedemptions) : undefined,
+          startTime: formData.startTime,
+          endTime: formData.endTime,
+          imageUrl: formData.imageUrl,
+          type: 'SCHEDULED'
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to create deal');
+      }
+
       router.push('/merchant/dashboard');
     } catch (error) {
       console.error('Error creating deal:', error);
+      alert((error as Error).message || 'Failed to create deal');
     } finally {
       setLoading(false);
     }
@@ -63,6 +81,7 @@ export default function CreateDealPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6"
+            id="section-details"
           >
             <div className="flex items-center gap-3 mb-4">
               <Tag className="w-6 h-6 text-orange-600" />
@@ -75,6 +94,7 @@ export default function CreateDealPage() {
                     Deal Title *
                   </label>
                   <input
+                    name="title"
                     type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -89,6 +109,7 @@ export default function CreateDealPage() {
                   Description
                 </label>
                 <textarea
+                  name="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Tell diners what makes this deal special..."
@@ -103,6 +124,7 @@ export default function CreateDealPage() {
                     Discount (%) *
                   </label>
                   <input
+                    name="percentOff"
                     type="number"
                     value={formData.percentOff}
                     onChange={(e) => setFormData({ ...formData, percentOff: e.target.value })}
@@ -117,6 +139,7 @@ export default function CreateDealPage() {
                     Max Redemptions
                   </label>
                   <input
+                    name="maxRedemptions"
                     type="number"
                     value={formData.maxRedemptions}
                     onChange={(e) => setFormData({ ...formData, maxRedemptions: e.target.value })}
@@ -125,7 +148,16 @@ export default function CreateDealPage() {
                   />
                 </div>
               </div>
-            </div>
+              </div>
+              <div className="mt-4 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('section-hours')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="px-4 py-2 text-sm font-semibold text-white bg-slate-900 rounded-lg"
+                >
+                  Next
+                </button>
+              </div>
           </motion.div>
 
           <motion.div
@@ -133,6 +165,7 @@ export default function CreateDealPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6"
+            id="section-hours"
           >
             <div className="flex items-center gap-3 mb-4">
               <Clock className="w-6 h-6 text-blue-600" />
@@ -144,7 +177,8 @@ export default function CreateDealPage() {
                 <label className="block text-sm font-semibold text-slate-700 mb-2">
                   Start Time *
                   </label>
-                  <input
+                <input
+                  name="startTime"
                   type="time"
                   value={formData.startTime}
                   onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
@@ -158,6 +192,7 @@ export default function CreateDealPage() {
                   End Time *
                 </label>
                 <input
+                  name="endTime"
                   type="time"
                   value={formData.endTime}
                   onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
@@ -166,6 +201,15 @@ export default function CreateDealPage() {
                 />
               </div>
             </div>
+            <div className="mt-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => document.getElementById('section-image')?.scrollIntoView({ behavior: 'smooth' })}
+                className="px-4 py-2 text-sm font-semibold text-white bg-slate-900 rounded-lg"
+              >
+                Next
+              </button>
+            </div>
           </motion.div>
 
           <motion.div
@@ -173,6 +217,7 @@ export default function CreateDealPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6"
+            id="section-image"
           >
             <div className="flex items-center gap-3 mb-4">
               <ImageIcon className="w-6 h-6 text-purple-600" />
@@ -180,12 +225,21 @@ export default function CreateDealPage() {
             </div>
 
             <input
+              name="imageUrl"
               type="url"
               value={formData.imageUrl}
               onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
               placeholder="https://example.com/image.jpg"
               className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
+            <div className="mt-4 flex justify-end">
+              <button
+                type="submit"
+                className="px-4 py-2 text-sm font-semibold text-white bg-slate-900 rounded-lg"
+              >
+                Next
+              </button>
+            </div>
           </motion.div>
 
           {/* Submit Button */}

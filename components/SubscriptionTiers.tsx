@@ -233,7 +233,7 @@ export default function SubscriptionTiers() {
         </div>
         
         <p className="text-slate-600 dark:text-slate-400 text-lg">
-          Need more than 25 venues? <a href="#" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">Contact us</a> for custom enterprise pricing.
+          Need more than 25 venues? <a href="/contact" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">Contact us</a> for custom enterprise pricing.
         </p>
       </div>
     </div>

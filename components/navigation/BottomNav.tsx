@@ -30,6 +30,7 @@ export default function BottomNav() {
                   ? 'text-orange-600'
                   : 'text-gray-400'
               }`}
+              data-testid={`nav-${label.toLowerCase()}`}
             >
               <div className={`p-2 rounded-lg ${isActive ? 'bg-orange-50' : ''} transition-all`}>
                 <Icon className={`w-6 h-6 ${isActive ? 'scale-110' : ''} transition-transform`} />
